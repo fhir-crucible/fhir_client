@@ -4,7 +4,7 @@ PATH
     fhir_client (1.0.0)
 
 PATH
-  remote: ../model
+  remote: ../fhir_dstu1/implementations/ruby/output/model
   specs:
     fhir_model (1.0.0)
 
@@ -42,6 +42,7 @@ GEM
     builder (3.1.4)
     coderay (1.1.0)
     connection_pool (2.0.0)
+    date_time_precision (0.8.0)
     docile (1.1.5)
     easy_diff (0.0.3)
     erubis (2.7.0)
@@ -122,6 +123,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  date_time_precision
   fhir_client!
   fhir_model!
   minitest (~> 4.0)
