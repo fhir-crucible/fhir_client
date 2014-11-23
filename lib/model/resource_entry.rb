@@ -1,6 +1,6 @@
 module FHIR
   class ResourceEntry
-    attr_accessor :id, :resource, :title, :last_updated, :published,
+    attr_accessor :id, :self_link, :resource, :title, :last_updated, :published,
                   :author_name, :author_uri, :links, :tags, :resource_class
 
     def initialize(data)
@@ -11,22 +11,22 @@ module FHIR
 
     def version
       if !@id.nil?
-
+        # TODO: ???
       end
       nil
     end
 
     def resource_id
-      if !@resource_class.nil? and !@id.nil?
-        @id =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
+      if !@resource_class.nil? and !@self_link.nil?
+        @self_link =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
         return $1
       end
       nil
     end
 
     def resource_version
-      if !@id.nil?
-        @id =~ %r{(?<=_history\/)(\w+)}
+      if !@self_link.nil?
+        @self_link =~ %r{(?<=_history\/)(\w+)}
         return $1
       end
       nil

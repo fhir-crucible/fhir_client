@@ -20,17 +20,19 @@ module FHIR
     end
 
     def get(index) 
-      if( (index < 1) or (index >= @size))
+      if( (index < 0) or (index >= @size))
         return nil
       end
 
-      entry = @xml.at_xpath("atom:feed/atom:entry[#{index}]")
+      # add 1 to allow get method to be 0 indexed
+      entry = @xml.at_xpath("atom:feed/atom:entry[#{index+1}]")
       if entry.nil?
         return nil
       end
 
       attributes = {}
       attributes[:id] = inner_text(entry,'atom:id')
+      attributes[:self_link] = inner_text(entry,"atom:link[@rel='self']/@href")
       if !@resource_class.nil?
         attributes[:resource] = @resource_class.from_xml( entry.at_xpath('atom:content/*').to_s )
         attributes[:resource_class] = @resource_class
