@@ -276,10 +276,6 @@ module FHIR
     history(resource: klass, id: id, history:{since: lastUpdate})
   end
 
-  def resource_instance_history_version(klass, id, version)
-    history(resource: klass, id: id, history:{id: version})
-  end
-
   def resource_instance_history(klass, id)
     history(resource: klass, id: id, history:{})
   end

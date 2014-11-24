@@ -22,17 +22,26 @@ module FHIR
         return nil
       end
 
+      regex = %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
+
       if !@response.nil? and !@response.headers.nil? and !@response.headers[:location].nil?
-        @response.headers[:location] =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
+        @response.headers[:location] =~ regex
+      elsif !@response.nil? and !@response.headers.nil? and !@response.headers[:content_location].nil?
+        @response.headers[:content_location] =~ regex
       else 
-        @request.url =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
+        @request.url =~ regex
       end
+
       $1
     end
 
     def version
+      regex = %r{(?<=_history\/)(\w+)}
       if !@response.nil? and !@response.headers.nil? and !@response.headers[:location].nil?
-        @response.headers[:location] =~ %r{(?<=_history\/)(\w+)}
+        @response.headers[:location] =~ regex
+        return $1
+      elsif !@response.nil? and !@response.headers.nil? and !@response.headers[:content_location].nil?
+        @response.headers[:content_location] =~ regex
         return $1
       end
       nil

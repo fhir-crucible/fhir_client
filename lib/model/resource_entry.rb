@@ -17,16 +17,24 @@ module FHIR
     end
 
     def resource_id
+      regex = %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
       if !@resource_class.nil? and !@self_link.nil?
-        @self_link =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
+        @self_link =~ regex
+        return $1
+      elsif !@resource_class.nil? and !@id.nil?
+        @id =~ regex
         return $1
       end
       nil
     end
 
     def resource_version
+      regex = %r{(?<=_history\/)(\w+)}
       if !@self_link.nil?
-        @self_link =~ %r{(?<=_history\/)(\w+)}
+        @self_link =~ regex
+        return $1
+      elsif !@id.nil?
+        @id =~ regex
         return $1
       end
       nil
