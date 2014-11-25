@@ -64,6 +64,7 @@ module FHIR
       params = {}
       url = ""
       url += "/#{options[:resource].name.demodulize}" if options[:resource]
+      url += "/_validate" if options[:validate]
       url += "/#{options[:id]}" if options[:id]
       if (options[:history])
         history = options[:history]
