@@ -313,12 +313,12 @@ module FHIR
   # public <T extends Resource> AtomEntry<OperationOutcome> validate(Class<T> resourceClass, T resource, String id);
   def validate(resource, format=FHIR::ResourceAddress::RESOURCE_XML)
     options = { resource: resource.class, validate: true, format: format }
-    put resource_url(options), resource, fhir_headers(options)
+    post resource_url(options), resource, fhir_headers(options)
   end
 
   def validate_existing(resource, id, format=FHIR::ResourceAddress::RESOURCE_XML)
     options = { resource: resource.class, id: id, validate: true, format: format }
-    put resource_url(options), resource, fhir_headers(options)
+    post resource_url(options), resource, fhir_headers(options)
   end
 
   #
