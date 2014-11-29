@@ -3,6 +3,8 @@ module FHIR
   class Client
 
     attr_accessor :reply
+    attr_accessor :use_format_param
+
   # public interface VersionInfo {
   #   public String getClientJavaLibVersion();
   #   public String getFhirJavaLibVersion();
@@ -30,6 +32,7 @@ module FHIR
   # 
   def initialize(baseServiceUrl)
     @baseServiceUrl = baseServiceUrl
+    @use_format_param = false
   end
   
   #
@@ -93,7 +96,7 @@ module FHIR
   
   # Method returns a conformance statement for the system queried.
   # @return
-  def conformanceStatement(format=FHIR::ResourceAddress::RESOURCE_XML)
+  def conformanceStatement(format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
     options = { format: format }
     reply = get 'metadata', fhir_headers(options)
     parse_reply(FHIR::Conformance, format, reply.body)
@@ -110,11 +113,11 @@ module FHIR
   
 
   def resource_url(options)
-    FHIR::ResourceAddress.new.resource_url(options)
+    FHIR::ResourceAddress.new.resource_url(options, @use_format_param)
   end
 
   def fhir_headers(options)
-    FHIR::ResourceAddress.new.fhir_headers(options)
+    FHIR::ResourceAddress.new.fhir_headers(options, @use_format_param)
   end
 
   def parse_reply(klass, format, response)
@@ -129,7 +132,7 @@ module FHIR
   # @return
   #
 
-  def read(klass, id, format=FHIR::ResourceAddress::RESOURCE_XML)
+  def read(klass, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
     options = { resource: klass, id: id, format: format }
     reply = get resource_url(options), fhir_headers(options)
     reply.resource = parse_reply(klass, format, reply.body)
@@ -140,7 +143,7 @@ module FHIR
   #
   # Read a resource bundle (an XML ATOM feed)
   #
-  def read_feed(klass, format=FHIR::ResourceAddress::FEED_XML)
+  def read_feed(klass, format=FHIR::Formats::FeedFormat::FEED_XML)
     options = { resource: klass, format: format }
     reply = get resource_url(options), fhir_headers(options)
     reply.resource = parse_reply(klass, format, reply.body)
@@ -156,7 +159,7 @@ module FHIR
   # @param versionid
   # @return
   #
-  def vread(klass, id, version_id, format=FHIR::ResourceAddress::RESOURCE_XML)
+  def vread(klass, id, version_id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
     options = { resource: klass, id: id, format: format, history: {id: version_id} }
     reply = get resource_url(options), fhir_headers(options)
     reply.resource = parse_reply(klass, format, reply.body)
@@ -184,7 +187,7 @@ module FHIR
   # @return
   #
   # public <T extends Resource> AtomEntry<T> update(Class<T> resourceClass, T resource, String id);
-  def update(resource, id, format=FHIR::ResourceAddress::RESOURCE_XML)
+  def update(resource, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
     options = { resource: resource.class, id: id, format: format }
     reply = put resource_url(options), resource, fhir_headers(options)
     # reply.resource = resource.class.from_xml(reply.body)
@@ -257,8 +260,8 @@ module FHIR
   # public <T extends Resource> AtomFeed history(DateAndTime lastUpdate, Class<T> resourceClass, String id);
   
   def history(options)
-    reply = get FHIR::ResourceAddress.new.resource_url(options), fhir_headers(options)
-    reply.resource = parse_reply(options[:resource], FHIR::ResourceAddress::FEED_XML, reply.body)
+    reply = get resource_url(options), fhir_headers(options)
+    reply.resource = parse_reply(options[:resource], FHIR::Formats::FeedFormat::FEED_XML, reply.body)
     reply.resource_class = options[:resource]
     reply
   end
@@ -311,12 +314,12 @@ module FHIR
   # @return
   #
   # public <T extends Resource> AtomEntry<OperationOutcome> validate(Class<T> resourceClass, T resource, String id);
-  def validate(resource, format=FHIR::ResourceAddress::RESOURCE_XML)
+  def validate(resource, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
     options = { resource: resource.class, validate: true, format: format }
     post resource_url(options), resource, fhir_headers(options)
   end
 
-  def validate_existing(resource, id, format=FHIR::ResourceAddress::RESOURCE_XML)
+  def validate_existing(resource, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
     options = { resource: resource.class, id: id, validate: true, format: format }
     post resource_url(options), resource, fhir_headers(options)
   end

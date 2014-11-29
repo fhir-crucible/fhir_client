@@ -8,15 +8,9 @@ module FHIR
       history: nil
     }
 
-    RESOURCE_XML = "application/fhir+xml"
-    RESOURCE_JSON = "application/fhir+json"
-
-    FEED_XML = "application/atom+xml"
-    FEED_JSON = "application/fhir+json"
-
     DEFAULT_CHARSET = 'UTF-8'
 
-    def fhir_headers(options)
+    def fhir_headers(options, use_format_param=false)
       options = DEFAULTS.merge(options)
 
       params = {}
@@ -27,16 +21,24 @@ module FHIR
         params[:_since] = history[:since] if history[:since]
       end
       # params[:_format] = options[:format] if options[:format]
-      format = options[:format] || RESOURCE_XML
 
       fhir_headers = {
         'User-Agent' => 'Ruby FHIR Client for FHIR',
-        'Accept' => format,
-        'Content-Type' => format + ';charset=' + DEFAULT_CHARSET,
+        'Content-Type' => 'charset=' + DEFAULT_CHARSET,
         'Accept-Charset' => DEFAULT_CHARSET
       }
-      fhir_headers.merge(options) unless options.blank?
-      fhir_headers.merge(params) unless params.blank?
+
+      unless use_format_param
+        format = options[:format] || FHIR::Formats::ResourceFormat::RESOURCE_XML
+        header = {
+          'Accept' => format,
+          'Content-Type' => format + ';charset=' + DEFAULT_CHARSET
+        }
+        fhir_headers.merge!(header)
+      end
+
+      fhir_headers.merge!(options) unless options.blank?
+      fhir_headers.merge!(params) unless params.blank?
       fhir_headers
     end
 
@@ -58,7 +60,7 @@ module FHIR
 #     return baseServiceUri.resolve(nameForClass(resourceClass));
 #   }
 
-    def resource_url(options)
+    def resource_url(options, use_format_param=false)
       options = DEFAULTS.merge(options)
 
       params = {}
@@ -74,6 +76,12 @@ module FHIR
       end
       params[:_format] = options[:format] if options[:format]
 
+      if use_format_param
+        format = {}
+        format[:_format] = params[:_format]
+        url += "?#{format.to_a.map {|x| x.join('=')}.join('&')}" unless format.empty?
+      end
+
       # url += "?#{params.to_a.map {|x| x.join('=')}.join('&')}" unless params.empty?
 
       url
@@ -85,11 +93,11 @@ module FHIR
     end
 
     def self.parse_resource(response, format, klass)
-      if format == RESOURCE_XML
+      if format == FHIR::Formats::ResourceFormat::RESOURCE_XML
         klass.from_xml(response)
-      elsif format == RESOURCE_JSON
+      elsif format == FHIR::Formats::ResourceFormat::RESOURCE_JSON
         klass.from_fhir_json(response)
-      elsif format == FEED_XML || format == FEED_JSON
+      elsif format == FHIR::Formats::FeedFormat::FEED_XML || format == FHIR::Formats::FeedFormat::FEED_JSON
         FHIR::Bundle.new(klass, response)
       end
     end
