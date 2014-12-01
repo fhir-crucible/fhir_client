@@ -17,35 +17,17 @@ module FHIR
       @size = Integer(@xml.at_xpath('atom:feed/a9:totalResults').inner_text)
       # @xml.remove_namespaces! # ignore namespaces!
       # @size = Integer(@xml.at_xpath('feed/totalResults').inner_text)
+      parse_bundle
     end
 
     def get(index) 
-      if( (index < 0) or (index >= @size))
-        return nil
-      end
+      return nil unless index >= 0 && index < @size
+      @entries.values[index]
+    end
 
-      # add 1 to allow get method to be 0 indexed
-      entry = @xml.at_xpath("atom:feed/atom:entry[#{index+1}]")
-      if entry.nil?
-        return nil
-      end
-
-      attributes = {}
-      attributes[:id] = inner_text(entry,'atom:id')
-      attributes[:self_link] = inner_text(entry,"atom:link[@rel='self']/@href")
-      if !@resource_class.nil?
-        attributes[:resource] = @resource_class.from_xml( entry.at_xpath('atom:content/*').to_s )
-        attributes[:resource_class] = @resource_class
-      end
-      attributes[:title] = inner_text(entry,'atom:title')
-      attributes[:last_updated] = inner_text(entry,'atom:updated')
-      attributes[:published] = inner_text(entry,'atom:published')
-      attributes[:author_name] = inner_text(entry,'atom:author/atom:name')
-      # attributes[:author_uri] = entry.at_xpath('author/uri')
-      # attributes[:links] = entry.at_xpath('link')
-      # attributes[:tags] = entry.at_xpath('tags')
-
-      ResourceEntry.new(attributes)
+    def get_by_id(id)
+      return nil unless @entries.keys.include?(id)
+      @entries[id]
     end
 
     def inner_text(element, xpath)
@@ -54,6 +36,35 @@ module FHIR
         return nil
       else
         return e.inner_text
+      end
+    end
+
+    private
+
+    def parse_bundle
+      @entries = {}
+      (0..@xml.css('entry').length-1).each do |index|
+        # add 1 to allow get method to be 0 indexed
+        entry = @xml.at_xpath("atom:feed/atom:entry[#{index+1}]")
+        if entry.nil?
+          @entries[index] = nil
+          next
+        end
+
+        attributes = {}
+        attributes[:id] = inner_text(entry,'atom:id')
+        attributes[:self_link] = inner_text(entry,"atom:link[@rel='self']/@href")
+        if !@resource_class.nil?
+          attributes[:resource] = @resource_class.from_xml( entry.at_xpath('atom:content/*').to_s )
+          attributes[:resource_class] = @resource_class
+          id = attributes[:id].split("/").fetch(attributes[:id].split("/").index(@resource_class.name.demodulize)+1)
+        end
+        attributes[:title] = inner_text(entry,'atom:title')
+        attributes[:last_updated] = inner_text(entry,'atom:updated')
+        attributes[:published] = inner_text(entry,'atom:published')
+        attributes[:author_name] = inner_text(entry,'atom:author/atom:name')
+
+        @entries[id] = ResourceEntry.new(attributes)
       end
     end
 
