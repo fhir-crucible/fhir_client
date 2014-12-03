@@ -11,47 +11,26 @@ module FHIR
     end
 
     def code
-      if !@response.nil?
-        return @response.code
-      end
-      nil
+      @response.code unless @response.nil?
     end
 
     def id
-      if @resource_class.nil?
-        return nil
-      end
-
-      regex = %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
-
-      if !@response.nil? and !@response.headers.nil? and !@response.headers[:location].nil?
-        @response.headers[:location] =~ regex
-      elsif !@response.nil? and !@response.headers.nil? and !@response.headers[:content_location].nil?
-        @response.headers[:content_location] =~ regex
-      else 
-        @request.url =~ regex
-      end
-
+      return nil if @resource_class.nil?
+      (self_link || @request.url) =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
       $1
     end
 
     def version
-      regex = %r{(?<=_history\/)(\w+)}
-      if !@response.nil? and !@response.headers.nil? and !@response.headers[:location].nil?
-        @response.headers[:location] =~ regex
-        return $1
-      elsif !@response.nil? and !@response.headers.nil? and !@response.headers[:content_location].nil?
-        @response.headers[:content_location] =~ regex
-        return $1
-      end
-      nil
+      self_link =~ %r{(?<=_history\/)(\w+)}
+      $1
+    end
+
+    def self_link
+      (@response.headers[:content_location] || @response.headers[:location]) unless @response.nil? || @response.headers.nil?
     end
 
     def body
-      if !@response.nil?
-        return @response.to_s
-      end
-      nil
+      @response.to_s unless @response.nil?
     end
 
   end

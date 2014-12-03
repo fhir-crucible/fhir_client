@@ -2,6 +2,12 @@ module FHIR
 
   class Client
 
+    include FHIR::Sections::History
+    include FHIR::Sections::Crud
+    include FHIR::Sections::Validate
+    include FHIR::Sections::Tags
+    include FHIR::Sections::Feed
+
     attr_accessor :reply
     attr_accessor :use_format_param
 
@@ -116,212 +122,12 @@ module FHIR
     FHIR::ResourceAddress.new.resource_url(options, @use_format_param)
   end
 
-  def fhir_headers(options)
+  def fhir_headers(options={})
     FHIR::ResourceAddress.new.fhir_headers(options, @use_format_param)
   end
 
   def parse_reply(klass, format, response)
-    FHIR::ResourceAddress.parse_resource(response, format, klass)
-  end
-
-  #
-  # Read the current state of a resource.
-  # 
-  # @param resource
-  # @param id
-  # @return
-  #
-
-  def read(klass, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
-    options = { resource: klass, id: id, format: format }
-    reply = get resource_url(options), fhir_headers(options)
-    reply.resource = parse_reply(klass, format, reply.body)
-    reply.resource_class = klass
-    reply
-  end
-
-  #
-  # Read a resource bundle (an XML ATOM feed)
-  #
-  def read_feed(klass, format=FHIR::Formats::FeedFormat::FEED_XML)
-    options = { resource: klass, format: format }
-    reply = get resource_url(options), fhir_headers(options)
-    reply.resource = parse_reply(klass, format, reply.body)
-    reply.resource_class = klass
-    reply
-  end
-
-  #
-  # Read the state of a specific version of the resource
-  # 
-  # @param resource
-  # @param id
-  # @param versionid
-  # @return
-  #
-  def vread(klass, id, version_id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
-    options = { resource: klass, id: id, format: format, history: {id: version_id} }
-    reply = get resource_url(options), fhir_headers(options)
-    reply.resource = parse_reply(klass, format, reply.body)
-    reply.resource_class = klass
-    reply
-  end
-
-  def raw_read(options)
-    reply = get resource_url(options), fhir_headers(options)
-    reply.body
-  end
-
-  def raw_read_url(url)
-    reply = get url, fhir_headers({})
-    reply.body
-  end
-
-  
-  #
-  # Update an existing resource by its id or create it if it is a new resource, not present on the server
-  # 
-  # @param resourceClass
-  # @param resource
-  # @param id
-  # @return
-  #
-  # public <T extends Resource> AtomEntry<T> update(Class<T> resourceClass, T resource, String id);
-  def update(resource, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
-    options = { resource: resource.class, id: id, format: format }
-    reply = put resource_url(options), resource, fhir_headers(options)
-    # reply.resource = resource.class.from_xml(reply.body)
-    reply.resource = resource
-    reply.resource_class = resource.class
-    reply
-  end
-  #
-  # Update an existing resource by its id or create it if it is a new resource, not present on the server
-  # 
-  # @param resourceClass
-  # @param resource
-  # @param id
-  # @return
-  #
-  # public <T extends Resource> AtomEntry<T> update(Class<T> resourceClass, T resource, String id, List<AtomCategory> tags);
-  
-  #
-  # Delete the resource with the given ID.
-  # 
-  # @param resourceClass
-  # @param id
-  # @return
-  #
-  def destroy(klass, id)
-    options = { resource: klass, id: id, format: nil }
-    reply = delete resource_url(options), fhir_headers(options)
-    reply.resource_class = klass
-    reply
-  end
-  # public <T extends Resource> boolean delete(Class<T> resourceClass, String id); 
-
-  #
-  # Create a new resource with a server assigned id. Return the newly created
-  # resource with the id the server assigned.
-  # 
-  # @param resourceClass
-  # @param resource
-  # @return
-  #
-  def create(resource)
-    options = { resource: resource.class, format: nil }
-    reply = post resource_url(options), resource, fhir_headers(options)
-    #reply.resource = resource.class.from_xml(reply.body)
-    reply.resource = resource
-    reply.resource_class = resource.class   
-    reply
-  end
-  
-  #
-  # Create a new resource with a server assigned id. Return the newly created
-  # resource with the id the server assigned. Associates tags with newly created resource.
-  # 
-  # @param resourceClass
-  # @param resource
-  # @return
-  #
-  # public <T extends Resource> AtomEntry<OperationOutcome> create(Class<T> resourceClass, T resource, List<AtomCategory> tags);
-  
-  #
-  # Retrieve the update history for a resource with given id since last update time. 
-  # Last update may be null TODO - ensure this is the case.
-  # 
-  # @param lastUpdate
-  # @param resourceClass
-  # @param id
-  # @return
-  #
-  # public <T extends Resource> AtomFeed history(Calendar lastUpdate, Class<T> resourceClass, String id);
-  # public <T extends Resource> AtomFeed history(DateAndTime lastUpdate, Class<T> resourceClass, String id);
-  
-  def history(options)
-    reply = get resource_url(options), fhir_headers(options)
-    reply.resource = parse_reply(options[:resource], FHIR::Formats::FeedFormat::FEED_XML, reply.body)
-    reply.resource_class = options[:resource]
-    reply
-  end
-
-  #
-  # Retrieve the entire update history for a resource with the given id.
-  # Last update may be null TODO - ensure this is the case.
-  # 
-  # @param resourceClass
-  # @param id
-  # @param lastUpdate
-  # @return
-  #
-  def resource_instance_history_as_of(klass, id, lastUpdate)
-    history(resource: klass, id: id, history:{since: lastUpdate})
-  end
-
-  def resource_instance_history(klass, id)
-    history(resource: klass, id: id, history:{})
-  end
-
-  def resource_history(klass)
-    history(resource: klass, history:{})
-  end
-  
-  #
-  # Retrieve the update history for all resource types since the start of server records.
-  # 
-  def all_history
-    history(history:{})
-  end
-
-  #
-  # Retrieve the update history for all resource types since a specific last update date/time.
-  # 
-  # Note: 
-  # @param lastUpdate
-  # @return
-  #
-  def all_history_as_of(lastUpdate)
-    history(history:{since: lastUpdate})
-  end
-
-  #
-  # Validate resource payload.
-  # 
-  # @param resourceClass
-  # @param resource
-  # @param id
-  # @return
-  #
-  # public <T extends Resource> AtomEntry<OperationOutcome> validate(Class<T> resourceClass, T resource, String id);
-  def validate(resource, options={}, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
-    options.merge!({ resource: resource.class, validate: true, format: format })
-    post resource_url(options), resource, fhir_headers(options)
-  end
-
-  def validate_existing(resource, id, options={}, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
-    options.merge!({ resource: resource.class, id: id, validate: true, format: format })
-    post resource_url(options), resource, fhir_headers(options)
+    FHIR::ResourceAddress.parse_resource(response, format, klass) if [200, 201].include? response.code
   end
 
   #
@@ -351,64 +157,6 @@ module FHIR
   #
   # public AtomFeed transaction(AtomFeed batch);
   
-  #
-  # Get a list of all tags on server 
-  # 
-  # GET [base]/_tags
-  #
-  # public List<AtomCategory> getAllTags();
-  
-  #
-  # Get a list of all tags used for the nominated resource type 
-  # 
-  # GET [base]/[type]/_tags
-  #
-  # public <T extends Resource> List<AtomCategory> getAllTagsForResourceType(Class<T> resourceClass);
-  
-  #
-  # Get a list of all tags affixed to the nominated resource. This duplicates the HTTP header entries 
-  # 
-  # GET [base]/[type]/[id]/_tags
-  #
-  # public <T extends Resource> List<AtomCategory> getTagsForResource(Class<T> resource, String id);
-  
-  #
-  # Get a list of all tags affixed to the nominated version of the resource. This duplicates the HTTP header entries
-  # 
-  # GET [base]/[type]/[id]/_history/[vid]/_tags
-  #
-  # public <T extends Resource> List<AtomCategory> getTagsForResourceVersion(Class<T> resource, String id, String versionId);
-  
-  #
-  # Remove all tags in the provided list from the list of tags for the nominated resource
-  # 
-  # DELETE [base]/[type]/[id]/_tags
-  #
-  # //public <T extends Resource> boolean deleteTagsForResource(Class<T> resourceClass, String id);
-  
-  #
-  # Remove tags in the provided list from the list of tags for the nominated version of the resource
-  # 
-  # DELETE [base]/[type]/[id]/_history/[vid]/_tags
-  #
-  # public <T extends Resource> List<AtomCategory> deleteTags(List<AtomCategory> tags, Class<T> resourceClass, String id, String version);
-  
-  #
-  # Affix tags in the list to the nominated resource
-  # 
-  # POST [base]/[type]/[id]/_tags
-  # @return
-  #
-  # public <T extends Resource> List<AtomCategory> createTags(List<AtomCategory> tags, Class<T> resourceClass, String id);
-  
-  #
-  # Affix tags in the list to the nominated version of the resource
-  # 
-  # POST [base]/[type]/[id]/_history/[vid]/_tags
-  # 
-  # @return
-  #
-  # public <T extends Resource> List<AtomCategory> createTags(List<AtomCategory> tags, Class<T> resourceClass, String id, String version);
 
   #
   # Use this to follow a link found in a feed (e.g. paging in a search)
@@ -436,7 +184,12 @@ module FHIR
       else
         FHIR::ResourceAddress.append_forward_slash_to_path(@baseServiceUrl)
       end
-    end   
+    end
+
+    def strip_base(path)
+      path.gsub(@baseServiceUrl, '')
+    end
+
 
     def get(path, headers)
       puts "GETTING: #{base_path(path)}#{path}"

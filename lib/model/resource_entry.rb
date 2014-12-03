@@ -1,7 +1,7 @@
 module FHIR
   class ResourceEntry
     attr_accessor :id, :self_link, :resource, :title, :last_updated, :published,
-                  :author_name, :author_uri, :links, :tags, :resource_class
+                  :author_name, :author_uri, :links, :tags, :resource_class, :deleted
 
     def initialize(data)
       data.keys.each do |key|

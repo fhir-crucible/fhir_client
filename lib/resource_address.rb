@@ -5,7 +5,6 @@ module FHIR
       id: nil,
       resource: nil,
       format: 'application/fhir+xml',
-      history: nil
     }
 
     DEFAULT_CHARSET = 'UTF-8'
@@ -14,12 +13,6 @@ module FHIR
       options = DEFAULTS.merge(options)
 
       params = {}
-      if (options[:history])
-        history = options[:history]
-        # url += "/_history/#{history[:id]}"
-        params[:_count] = history[:count] if history[:count]
-        params[:_since] = history[:since] if history[:since]
-      end
       # params[:_format] = options[:format] if options[:format]
 
       fhir_headers = {
@@ -81,17 +74,14 @@ module FHIR
         history = options[:history]
         url += "/_history/#{history[:id]}"
         params[:_count] = history[:count] if history[:count]
-        params[:_since] = history[:since] if history[:since]
-      end
-      params[:_format] = options[:format] if options[:format]
-
-      if use_format_param
-        format = {}
-        format[:_format] = params[:_format]
-        url += "?#{format.to_a.map {|x| x.join('=')}.join('&')}" unless format.empty?
+        params[:_since] = history[:since].iso8601 if history[:since]
       end
 
-      # url += "?#{params.to_a.map {|x| x.join('=')}.join('&')}" unless params.empty?
+      if use_format_param && options[:format]
+        params[:_format] = options[:format]
+      end
+
+      url += "?#{params.to_a.map {|x| x.join('=')}.join('&')}" unless params.empty?
 
       url
     end
