@@ -28,6 +28,15 @@ module FHIR
         'Accept-Charset' => DEFAULT_CHARSET
       }
 
+      if(options[:category])
+        # options[:category] should be an Array of FHIR::Tag objects
+        tags = {
+          'Category' => options[:category].collect { |h| h.to_header }.join(',')
+        }
+        fhir_headers.merge!(tags)
+        options.delete(:category)
+      end
+
       unless use_format_param
         format = options[:format] || FHIR::Formats::ResourceFormat::RESOURCE_XML
         header = {
