@@ -7,6 +7,7 @@ module FHIR
     include FHIR::Sections::Validate
     include FHIR::Sections::Tags
     include FHIR::Sections::Feed
+    include FHIR::Sections::Search
 
     attr_accessor :reply
     attr_accessor :use_format_param

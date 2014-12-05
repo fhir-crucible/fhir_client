@@ -77,6 +77,20 @@ module FHIR
         params[:_since] = history[:since].iso8601 if history[:since]
       end
 
+      if(options[:search])
+        search_options = options[:search]
+        url += '/_search' if search_options[:flag]
+        url += "/#{search_options[:compartment]}" if search_options[:compartment]
+        url += "?"
+
+        if search_options[:parameters]
+          search_options[:parameters].each do |key,value|
+            url += "#{key}=#{value}&"
+          end
+          url.chomp!('&')
+        end
+      end
+
       if use_format_param && options[:format]
         params[:_format] = options[:format]
       end
