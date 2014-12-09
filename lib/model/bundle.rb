@@ -74,6 +74,8 @@ module FHIR
           attributes[:id] = inner_text(entry,'atom:id')
           if !@resource_class.nil?
             content = entry.at_xpath('atom:content/*')
+            # TODO bundles can include resource types not requested (for instance, _includes)
+            # this deserialization should be more flexible...
             attributes[:resource] = @resource_class.from_xml( content.to_s ) if content
             attributes[:resource_class] = @resource_class
             id = attributes[:id].split("/").fetch(attributes[:id].split("/").index(@resource_class.name.demodulize)+1)

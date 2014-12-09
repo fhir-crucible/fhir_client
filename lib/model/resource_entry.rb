@@ -28,6 +28,12 @@ module FHIR
       nil
     end
 
+    def resource_url
+      return @self_link if !@self_link.nil?
+      return @id if !@id.nil?
+      nil
+    end
+
     def resource_version
       regex = %r{(?<=_history\/)(\w+)}
       if !@self_link.nil?
