@@ -9,7 +9,7 @@ class BasicTest < Test::Unit::TestCase
     assert !client.use_format_param, "Using _format instead of [Accept] headers."
   end
 
-  def retrieve_conformance
+  def test_conformance
     client = FHIR::Client.new(TESTING_ENDPOINT)
     assert !client.conformanceStatement.blank?, "Unable to retrieve conformance statement."
   end
