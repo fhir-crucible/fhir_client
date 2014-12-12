@@ -1,12 +1,14 @@
+GIT
+  remote: https://github.com/fhir-crucible/fhir_dstu1_models
+  revision: 3aab47f3016df507b2ed25c61a78d410a9436de6
+  branch: master
+  specs:
+    fhir_model (1.0.0)
+
 PATH
   remote: .
   specs:
     fhir_client (1.0.0)
-
-PATH
-  remote: ../fhir_dstu1/implementations/ruby/output/model
-  specs:
-    fhir_model (1.0.0)
 
 GEM
   remote: http://rubygems.org/

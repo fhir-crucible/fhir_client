@@ -8,7 +8,7 @@ gem 'rails', '>= 4.0.0'
 gem 'mongoid'
 gem 'mongoid-history'
 gem 'nokogiri'
-gem 'fhir_model', path: '../fhir_dstu1/implementations/ruby/output/model'
+gem 'fhir_model', :git => 'https://github.com/fhir-crucible/fhir_dstu1_models', :branch => 'master'
 gem 'rest-client'
 gem 'date_time_precision'
 
