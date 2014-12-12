@@ -11,7 +11,7 @@ class BasicTest < Test::Unit::TestCase
 
   def retrieve_conformance
     client = FHIR::Client.new(TESTING_ENDPOINT)
-    assert !client.conformanceStatement.blank?, "Unable to retrieve conformance statement"
+    assert !client.conformanceStatement.blank?, "Unable to retrieve conformance statement."
   end
 
 end
