@@ -2,6 +2,10 @@
 
 Ruby FHIR client.
 
+# DSTU2
+
+Updated to support the FHIR [DSTU2 branch](http://hl7.org/fhir-develop).
+
 # License
 
 Copyright 2014 The MITRE Corporation
@@ -17,4 +21,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
