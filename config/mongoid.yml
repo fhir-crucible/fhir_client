@@ -1,0 +1,6 @@
+test:
+  sessions:
+    default:
+      database: fhir_test
+      hosts:
+        - localhost:27017
