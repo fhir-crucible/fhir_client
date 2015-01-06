@@ -19,3 +19,5 @@ require_relative File.join('.','model','resource_entry.rb')
 # require_relative File.join('.','model','bundle.rb')
 require_relative File.join('.','model','client_reply.rb')
 require_relative File.join('.','model','tag.rb')
+
+Mongoid.load!("config/mongoid.yml", :test) unless (Mongoid.configured? || !File.exists?("config/mongoid.yml"))
