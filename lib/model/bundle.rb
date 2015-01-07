@@ -1,7 +1,6 @@
 module FHIR
   class Bundle
 
-
     def self_link
       link.select {|n| n.relation == 'self'}.first
     end
@@ -20,6 +19,13 @@ module FHIR
 
     def previous_link
       link.select {|n| n.relation == 'previous' || n.relation == 'prev'}.first
+    end
+
+    def get_by_id(id)
+      entry.each do |item|
+        return item.resource if item.xmlId == id || item.resource.xmlId == id
+      end
+      nil
     end
 
   end

@@ -68,8 +68,7 @@ module FHIR
       def update(resource, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
         options = { resource: resource.class, id: id, format: format }
         reply = put resource_url(options), resource, fhir_headers(options)
-        # reply.resource = resource.class.from_xml(reply.body)
-        reply.resource = resource
+        reply.resource = parse_reply(klass, format, reply.body)
         reply.resource_class = resource.class
         reply
       end
@@ -109,9 +108,20 @@ module FHIR
       def create(resource)
         options = { resource: resource.class, format: nil }
         reply = post resource_url(options), resource, fhir_headers(options)
-        #reply.resource = resource.class.from_xml(reply.body)
-        # TODO: need to fail on server error
-        reply.resource = resource
+        if [200,201].include? reply.code
+          type = reply.response.headers[:content_type]
+          if !type.nil?
+            if type.include? 'xml'
+              reply.resource = resource.class.from_xml(reply.body)
+            else
+              reply.resource = resource.class.from_fhir_json(reply.body)
+            end
+          else
+            reply.resource = resource # don't know the content type, so return the resource provided
+          end
+        else
+          reply.resource = resource # just send back the "bad" resource
+        end 
         reply.resource_class = resource.class   
         reply
       end
