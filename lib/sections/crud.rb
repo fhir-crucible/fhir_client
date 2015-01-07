@@ -110,6 +110,7 @@ module FHIR
         options = { resource: resource.class, format: nil }
         reply = post resource_url(options), resource, fhir_headers(options)
         #reply.resource = resource.class.from_xml(reply.body)
+        # TODO: need to fail on server error
         reply.resource = resource
         reply.resource_class = resource.class   
         reply
