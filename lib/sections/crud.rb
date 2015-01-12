@@ -68,7 +68,7 @@ module FHIR
       def update(resource, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
         options = { resource: resource.class, id: id, format: format }
         reply = put resource_url(options), resource, fhir_headers(options)
-        reply.resource = parse_reply(klass, format, reply.body)
+        reply.resource = parse_reply(resource.class, format, reply.body)
         reply.resource_class = resource.class
         reply
       end
