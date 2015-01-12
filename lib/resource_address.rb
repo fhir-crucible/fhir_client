@@ -70,6 +70,13 @@ module FHIR
       url += "/#{options[:resource].name.demodulize}" if options[:resource]
       url += "/_validate" if options[:validate]
       url += "/#{options[:id]}" if options[:id]
+
+      if (options[:operation] == :fetch_patient_record)
+        url += "/$everything"
+        params[:start] = options[:start] if options[:start]
+        params[:end] = options[:end] if options[:end]
+      end
+
       if (options[:history])
         history = options[:history]
         url += "/_history/#{history[:id]}"
@@ -108,7 +115,7 @@ module FHIR
     def self.parse_resource(response, format, klass)
       if format == FHIR::Formats::ResourceFormat::RESOURCE_XML
         klass.from_xml(response)
-      elsif format == FHIR::Formats::ResourceFormat::RESOURCE_JSON 
+      elsif format == FHIR::Formats::ResourceFormat::RESOURCE_JSON
         klass.from_fhir_json(response)
       elsif format == FHIR::Formats::FeedFormat::FEED_XML
         FHIR::Bundle.from_xml(response)
