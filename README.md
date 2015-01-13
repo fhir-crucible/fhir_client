@@ -1,4 +1,4 @@
-# FHIR Client
+# FHIR Client [![Build Status](https://travis-ci.org/fhir-crucible/fhir_client.svg?branch=dstu2)](https://travis-ci.org/fhir-crucible/fhir_client)
 
 Ruby FHIR client.
 
