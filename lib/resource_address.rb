@@ -113,14 +113,18 @@ module FHIR
     end
 
     def self.parse_resource(response, format, klass)
-      if format == FHIR::Formats::ResourceFormat::RESOURCE_XML
-        klass.from_xml(response)
-      elsif format == FHIR::Formats::ResourceFormat::RESOURCE_JSON
-        klass.from_fhir_json(response)
-      elsif format == FHIR::Formats::FeedFormat::FEED_XML
-        FHIR::Bundle.from_xml(response)
-      elsif format == FHIR::Formats::FeedFormat::FEED_JSON
-        FHIR::Bundle.from_fhir_json(response)
+      begin
+        if format == FHIR::Formats::ResourceFormat::RESOURCE_XML
+          klass.from_xml(response)
+        elsif format == FHIR::Formats::ResourceFormat::RESOURCE_JSON
+          klass.from_fhir_json(response)
+        elsif format == FHIR::Formats::FeedFormat::FEED_XML
+          FHIR::Bundle.from_xml(response)
+        elsif format == FHIR::Formats::FeedFormat::FEED_JSON
+          FHIR::Bundle.from_fhir_json(response)
+        end
+      rescue
+        nil
       end
     end
 
