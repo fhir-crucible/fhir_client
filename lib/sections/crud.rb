@@ -113,7 +113,7 @@ module FHIR
           if !type.nil?
             if type.include? 'xml'
               reply.resource = resource.class.from_xml(reply.body)
-            else
+            elsif !reply.body.empty?
               reply.resource = resource.class.from_fhir_json(reply.body)
             end
           else
@@ -122,7 +122,7 @@ module FHIR
         else
           reply.resource = resource # just send back the "bad" resource
         end 
-        reply.resource_class = resource.class   
+        reply.resource_class = resource.class
         reply
       end
 
