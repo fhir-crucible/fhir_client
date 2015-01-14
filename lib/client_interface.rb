@@ -41,6 +41,7 @@ module FHIR
   def initialize(baseServiceUrl)
     @baseServiceUrl = baseServiceUrl
     @use_format_param = false
+    $LOG.info "Initializing client with #{@baseServiceUrl}"
   end
 
   #
@@ -133,6 +134,7 @@ module FHIR
   end
 
   def parse_reply(klass, format, response)
+    $LOG.info "Parsing response with {klass: #{klass}, format: #{format}, code: #{response.code}}."
     FHIR::ResourceAddress.parse_resource(response, format, klass) if [200, 201].include? response.code
   end
 
@@ -199,22 +201,34 @@ module FHIR
 
     def get(path, headers)
       puts "GETTING: #{base_path(path)}#{path}"
-      RestClient.get(URI(URI.escape("#{base_path(path)}#{path}")).to_s, headers){ |response, request, result| FHIR::ClientReply.new(request, response) }
+      RestClient.get(URI(URI.escape("#{base_path(path)}#{path}")).to_s, headers){ |response, request, result|
+        $LOG.info "GET - Request: #{request.to_json}, Response: #{response}"
+        FHIR::ClientReply.new(request, response)
+      }
     end
 
     def post(path, resource, headers)
       puts "POSTING: #{base_path(path)}#{path}"
-      RestClient.post(URI(URI.escape("#{base_path(path)}#{path}")).to_s, resource.to_xml, headers) { |response, request, result| FHIR::ClientReply.new(request, response) }
+      RestClient.post(URI(URI.escape("#{base_path(path)}#{path}")).to_s, resource.to_xml, headers) { |response, request, result|
+        $LOG.info "POST - Request: #{request.to_json}, Response: #{response}"
+        FHIR::ClientReply.new(request, response)
+      }
     end
 
     def put(path, resource, headers)
       puts "PUTTING: #{base_path(path)}#{path}"
-      RestClient.put(URI(URI.escape("#{base_path(path)}#{path}")).to_s, resource.to_xml, headers) { |response, request, result| FHIR::ClientReply.new(request, response) }
+      RestClient.put(URI(URI.escape("#{base_path(path)}#{path}")).to_s, resource.to_xml, headers) { |response, request, result|
+        $LOG.info "PUT - Request: #{request.to_json}, Response: #{response}"
+        FHIR::ClientReply.new(request, response)
+      }
     end
 
     def delete(path, headers)
       puts "DELETING: #{base_path(path)}#{path}"
-      RestClient.delete(URI(URI.escape("#{base_path(path)}#{path}")).to_s, headers) { |response, request, result| FHIR::ClientReply.new(request, response) }
+      RestClient.delete(URI(URI.escape("#{base_path(path)}#{path}")).to_s, headers) { |response, request, result|
+        $LOG.info "Delete - Request: #{request.to_json}, Response: #{response}"
+        FHIR::ClientReply.new(request, response)
+      }
     end
 
   end
