@@ -111,9 +111,9 @@ module FHIR
         if [200,201].include? reply.code
           type = reply.response.headers[:content_type]
           if !type.nil?
-            if type.include? 'xml'
+            if type.include? 'xml' && !reply.body.empty?
               reply.resource = resource.class.from_xml(reply.body)
-            elsif type.include? 'json'
+            elsif type.include? 'json' && !reply.body.empty?
               reply.resource = resource.class.from_fhir_json(reply.body)
             else
               reply.resource = resource # just send back the submitted resource
@@ -124,7 +124,7 @@ module FHIR
         else
           reply.resource = resource # just send back the submitted resource
         end 
-        reply.resource_class = resource.class   
+        reply.resource_class = resource.class
         reply
       end
 
