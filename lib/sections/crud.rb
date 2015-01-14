@@ -113,14 +113,16 @@ module FHIR
           if !type.nil?
             if type.include? 'xml'
               reply.resource = resource.class.from_xml(reply.body)
-            else
+            elsif type.include? 'json'
               reply.resource = resource.class.from_fhir_json(reply.body)
+            else
+              reply.resource = resource # just send back the submitted resource
             end
           else
             reply.resource = resource # don't know the content type, so return the resource provided
           end
         else
-          reply.resource = resource # just send back the "bad" resource
+          reply.resource = resource # just send back the submitted resource
         end 
         reply.resource_class = resource.class   
         reply
