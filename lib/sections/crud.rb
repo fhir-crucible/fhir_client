@@ -1,10 +1,10 @@
 module FHIR
   module Sections
     module Crud
-      
+
       #
       # Read the current state of a resource.
-      # 
+      #
       # @param resource
       # @param id
       # @return
@@ -31,7 +31,7 @@ module FHIR
 
       #
       # Read the state of a specific version of the resource
-      # 
+      #
       # @param resource
       # @param id
       # @param versionid
@@ -55,10 +55,10 @@ module FHIR
         reply.body
       end
 
-      
+
       #
       # Update an existing resource by its id or create it if it is a new resource, not present on the server
-      # 
+      #
       # @param resourceClass
       # @param resource
       # @param id
@@ -74,17 +74,17 @@ module FHIR
       end
       #
       # Update an existing resource by its id or create it if it is a new resource, not present on the server
-      # 
+      #
       # @param resourceClass
       # @param resource
       # @param id
       # @return
       #
       # public <T extends Resource> AtomEntry<T> update(Class<T> resourceClass, T resource, String id, List<AtomCategory> tags);
-      
+
       #
       # Delete the resource with the given ID.
-      # 
+      #
       # @param resourceClass
       # @param id
       # @return
@@ -95,12 +95,12 @@ module FHIR
         reply.resource_class = klass
         reply
       end
-      # public <T extends Resource> boolean delete(Class<T> resourceClass, String id); 
+      # public <T extends Resource> boolean delete(Class<T> resourceClass, String id);
 
       #
       # Create a new resource with a server assigned id. Return the newly created
       # resource with the id the server assigned.
-      # 
+      #
       # @param resourceClass
       # @param resource
       # @return
@@ -113,15 +113,17 @@ module FHIR
           if !type.nil?
             if type.include? 'xml'
               reply.resource = resource.class.from_xml(reply.body)
-            elsif !reply.body.empty?
+            elsif type.include? 'json'
               reply.resource = resource.class.from_fhir_json(reply.body)
+            else
+              reply.resource = resource # just send back the submitted resource
             end
           else
             reply.resource = resource # don't know the content type, so return the resource provided
           end
         else
-          reply.resource = resource # just send back the "bad" resource
-        end 
+          reply.resource = resource # just send back the submitted resource
+        end
         reply.resource_class = resource.class
         reply
       end
