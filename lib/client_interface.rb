@@ -124,6 +124,10 @@ module FHIR
     FHIR::ResourceAddress.new.resource_url(options, @use_format_param)
   end
 
+  def full_resource_url(options)
+    @baseServiceUrl + resource_url(options)
+  end
+
   def fhir_headers(options={})
     FHIR::ResourceAddress.new.fhir_headers(options, @use_format_param)
   end
