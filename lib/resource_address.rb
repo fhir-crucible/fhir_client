@@ -125,6 +125,7 @@ module FHIR
         end
       rescue Exception => e
         $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
+        nil
       end
     end
 
