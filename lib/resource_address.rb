@@ -123,8 +123,8 @@ module FHIR
         elsif format == FHIR::Formats::FeedFormat::FEED_JSON
           FHIR::Bundle.from_fhir_json(response)
         end
-      rescue
-        nil
+      rescue Exception => e
+        $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
       end
     end
 
