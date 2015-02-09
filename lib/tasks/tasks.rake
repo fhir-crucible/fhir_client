@@ -11,7 +11,7 @@ namespace :fhir do
     counts = {}
     fhir_resources.map do | klass |
       reply = client.read_feed(klass)
-      counts["#{klass.name.demodulize}"] = reply.resource.size
+      counts["#{klass.name.demodulize}"] = reply.resource.total
     end
     printf "  %-30s %5s\n", 'Resource', 'Count'
     printf "  %-30s %5s\n", '--------', '-----'
@@ -26,18 +26,18 @@ namespace :fhir do
     client = FHIR::Client.new(args.url)
     fhir_resources.map do | klass |
       reply = client.read_feed(klass)
-      while reply != nil && reply.resource.size > 0
-        reply.resource.entries.each do |entry|
-          client.destroy(klass,entry.resource_id)
+      while reply != nil && reply.resource.total > 0
+        reply.resource.entry.each do |entry|
+          client.destroy(klass,entry.resource.xmlId)
         end
         reply = client.read_feed(klass)
       end
     end
     Rake::Task['fhir:count'].invoke(args.url)
-  end  
+  end
 
   def fhir_resources
     Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
-  end  
+  end
 
 end

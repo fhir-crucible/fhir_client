@@ -2,7 +2,7 @@ require_relative '../test_helper'
 
 class BasicTest < Test::Unit::TestCase
 
-  TESTING_ENDPOINT = 'http://fhir.healthintersections.com.au/open'
+  TESTING_ENDPOINT = 'http://fhirtest.uhn.ca/baseDstu2'
 
   def test_client_initialization
     client = FHIR::Client.new(TESTING_ENDPOINT)

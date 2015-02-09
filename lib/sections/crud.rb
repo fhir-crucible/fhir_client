@@ -1,10 +1,10 @@
 module FHIR
   module Sections
     module Crud
-      
+
       #
       # Read the current state of a resource.
-      # 
+      #
       # @param resource
       # @param id
       # @return
@@ -31,7 +31,7 @@ module FHIR
 
       #
       # Read the state of a specific version of the resource
-      # 
+      #
       # @param resource
       # @param id
       # @param versionid
@@ -55,10 +55,10 @@ module FHIR
         reply.body
       end
 
-      
+
       #
       # Update an existing resource by its id or create it if it is a new resource, not present on the server
-      # 
+      #
       # @param resourceClass
       # @param resource
       # @param id
@@ -68,24 +68,23 @@ module FHIR
       def update(resource, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
         options = { resource: resource.class, id: id, format: format }
         reply = put resource_url(options), resource, fhir_headers(options)
-        # reply.resource = resource.class.from_xml(reply.body)
-        reply.resource = resource
+        reply.resource = parse_reply(resource.class, format, reply.body)
         reply.resource_class = resource.class
         reply
       end
       #
       # Update an existing resource by its id or create it if it is a new resource, not present on the server
-      # 
+      #
       # @param resourceClass
       # @param resource
       # @param id
       # @return
       #
       # public <T extends Resource> AtomEntry<T> update(Class<T> resourceClass, T resource, String id, List<AtomCategory> tags);
-      
+
       #
       # Delete the resource with the given ID.
-      # 
+      #
       # @param resourceClass
       # @param id
       # @return
@@ -96,12 +95,12 @@ module FHIR
         reply.resource_class = klass
         reply
       end
-      # public <T extends Resource> boolean delete(Class<T> resourceClass, String id); 
+      # public <T extends Resource> boolean delete(Class<T> resourceClass, String id);
 
       #
       # Create a new resource with a server assigned id. Return the newly created
       # resource with the id the server assigned.
-      # 
+      #
       # @param resourceClass
       # @param resource
       # @return
@@ -109,9 +108,23 @@ module FHIR
       def create(resource)
         options = { resource: resource.class, format: nil }
         reply = post resource_url(options), resource, fhir_headers(options)
-        #reply.resource = resource.class.from_xml(reply.body)
-        reply.resource = resource
-        reply.resource_class = resource.class   
+        if [200,201].include? reply.code
+          type = reply.response.headers[:content_type]
+          if !type.nil?
+            if type.include?('xml') && !reply.body.empty?
+              reply.resource = resource.class.from_xml(reply.body)
+            elsif type.include?('json') && !reply.body.empty?
+              reply.resource = resource.class.from_fhir_json(reply.body)
+            else
+              reply.resource = resource # just send back the submitted resource
+            end
+          else
+            reply.resource = resource # don't know the content type, so return the resource provided
+          end
+        else
+          reply.resource = resource # just send back the submitted resource
+        end
+        reply.resource_class = resource.class
         reply
       end
 
