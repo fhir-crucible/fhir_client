@@ -67,7 +67,8 @@ module FHIR
 
       params = {}
       url = ""
-      url += "/#{options[:resource].name.demodulize}" if options[:resource]
+      # handle requests for resources by class or string; useful for testing nonexistent resource types
+      url += "/#{ options[:resource].try(:name).try(:demodulize) || options[:resource].split("::").last }" if options[:resource]
       url += "/_validate" if options[:validate]
       url += "/#{options[:id]}" if options[:id]
 
