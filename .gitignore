@@ -35,3 +35,4 @@ build/
 
 # Logs
 *.log
+*.log.*
