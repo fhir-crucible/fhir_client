@@ -135,7 +135,16 @@ module FHIR
 
   def parse_reply(klass, format, response)
     $LOG.info "Parsing response with {klass: #{klass}, format: #{format}, code: #{response.code}}."
-    FHIR::ResourceAddress.parse_resource(response, format, klass) if [200, 201].include? response.code
+    return nil if ![200,201].include? response.code
+    res = nil
+    begin
+      res = FHIR::Resource.from_contents(response)
+      $LOG.warn "Expected #{klass} but got #{res.class}" if res.class!=klass
+    rescue Exception => e
+      $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
+      nil
+    end
+    res
   end
 
   #

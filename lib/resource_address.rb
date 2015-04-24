@@ -112,23 +112,6 @@ module FHIR
       path
     end
 
-    def self.parse_resource(response, format, klass)
-      begin
-        if format == FHIR::Formats::ResourceFormat::RESOURCE_XML
-          klass.from_xml(response)
-        elsif format == FHIR::Formats::ResourceFormat::RESOURCE_JSON
-          klass.from_fhir_json(response)
-        elsif format == FHIR::Formats::FeedFormat::FEED_XML
-          FHIR::Bundle.from_xml(response)
-        elsif format == FHIR::Formats::FeedFormat::FEED_JSON
-          FHIR::Bundle.from_fhir_json(response)
-        end
-      rescue Exception => e
-        $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
-        nil
-      end
-    end
-
 #   public URI resolveGetHistoryForAllResources(int count) {
 #     if(count > 0) {
 #       return appendHttpParameter(baseServiceUri.resolve("_history"), "_count", ""+count);
