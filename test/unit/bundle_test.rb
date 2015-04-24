@@ -6,7 +6,7 @@ class BundleTest < Test::Unit::TestCase
     client = FHIR::Client.new("feed-test")
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     bundle_xml = File.read(File.join(root, 'fixtures', 'bundle-example.xml'))
-    response = RestClient::Response.create(bundle_xml, {}, {})
+    response = RestClient::Response.create(bundle_xml, {}, {}, {})
     def response.code; 200; end
     clientReply = FHIR::ClientReply.new('feed-test', response)
 
