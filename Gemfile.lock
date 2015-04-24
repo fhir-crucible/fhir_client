@@ -40,6 +40,8 @@ GEM
     ansi (1.5.0)
     arel (4.0.2)
     awesome_print (1.6.1)
+    bcp47 (0.3.3)
+      i18n
     bson (2.3.0)
     builder (3.1.4)
     coderay (1.1.0)
@@ -132,6 +134,7 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  bcp47
   date_time_precision
   fhir_client!
   fhir_model!

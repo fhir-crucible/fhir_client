@@ -67,7 +67,8 @@ module FHIR
 
       params = {}
       url = ""
-      url += "/#{options[:resource].name.demodulize}" if options[:resource]
+      # handle requests for resources by class or string; useful for testing nonexistent resource types
+      url += "/#{ options[:resource].try(:name).try(:demodulize) || options[:resource].split("::").last }" if options[:resource]
       url += "/_validate" if options[:validate]
       url += "/#{options[:id]}" if options[:id]
 
@@ -75,6 +76,20 @@ module FHIR
         url += "/$everything"
         params[:start] = options[:start] if options[:start]
         params[:end] = options[:end] if options[:end]
+      elsif (options[:operation] == :value_set_expansion)
+        url += "/$expand"
+        params[:filter] = options[:filter] if options[:filter]
+        params[:date] = options[:date] if options[:date]
+      elsif (options[:operation] == :value_set_based_validation)
+        url += "/$validate"
+        params[:code] = options[:code] if options[:code]
+        params[:system] = options[:system] if options[:system]
+        params[:version] = options[:version] if options[:version]
+        params[:display] = options[:display] if options[:display]
+        params[:coding] = options[:coding] if options[:coding]
+        params[:codeableConcept] = options[:codeableConcept] if options[:codeableConcept]
+        params[:date] = options[:date] if options[:date]
+        params[:abstract] = options[:abstract] if options[:abstract]
       end
 
       if (options[:history])

@@ -27,10 +27,32 @@ module FHIR
       # Populate Questionnaire	[base]/Questionnaire/$populate | [base]/Questionnaire/[id]/$populate
 
       # Value Set Expansion	[base]/ValueSet/$expand | [base]/ValueSet/[id]/$expand
+      # http://hl7.org/implement/standards/FHIR-Develop/valueset-operations.html#expand
+      # The definition of a value set is used to create a simple collection of codes suitable for use for data entry or validation.
+      def value_set_expansion(params={}, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+        options = { resource: FHIR::ValueSet, format: format, operation: :value_set_expansion }
+        # params = [id, filter, date]
+        options.merge!(params)
+        reply = get resource_url(options), fhir_headers(options)
+        reply.resource = parse_reply(options[:resource], format, reply.body)
+        reply.resource_class = options[:resource]
+        reply
+      end
 
       # Concept Look Up	[base]/ValueSet/$lookup
 
       # Value Set based Validation	[base]/ValueSet/$validate | [base]/ValueSet/[id]/$validate
+      # http://hl7.org/implement/standards/FHIR-Develop/valueset-operations.html#validate
+      # Validate that a coded value is in the set of codes allowed by a value set.
+      def value_set_code_validation(params={}, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+        options = { resource: FHIR::ValueSet, format: format, operation: :value_set_based_validation }
+        # params = [id, code, system, version, display, coding, codeableConcept, date, abstract]
+        options.merge!(params)
+        reply = get resource_url(options), fhir_headers(options)
+        reply.resource = parse_reply(options[:resource], format, reply.body)
+        reply.resource_class = options[:resource]
+        reply
+      end
 
       # Batch Mode Validation	[base]/ValueSet/$batch
 
