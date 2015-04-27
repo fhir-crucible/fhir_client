@@ -105,8 +105,8 @@ module FHIR
       # @param resource
       # @return
       #
-      def create(resource)
-        options = { resource: resource.class, format: nil }
+      def create(resource, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+        options = { resource: resource.class, format: format }
         reply = post resource_url(options), resource, fhir_headers(options)
         if [200,201].include? reply.code
           type = reply.response.headers[:content_type]

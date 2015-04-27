@@ -207,6 +207,21 @@ module FHIR
       path.gsub(@baseServiceUrl, '')
     end
 
+    # Extract the request payload in the specified format, defaults to XML
+    def request_payload(resource, headers)
+      if headers
+        case headers[:format]
+        when FHIR::Formats::ResourceFormat::RESOURCE_XML
+          resource.to_xml
+        when FHIR::Formats::ResourceFormat::RESOURCE_JSON
+          resource.to_fhir_json
+        else
+          resource.to_xml
+        end
+      else
+        resource.to_xml
+      end
+    end
 
     def get(path, headers)
       puts "GETTING: #{base_path(path)}#{path}"
@@ -218,7 +233,7 @@ module FHIR
 
     def post(path, resource, headers)
       puts "POSTING: #{base_path(path)}#{path}"
-      RestClient.post(URI(URI.escape("#{base_path(path)}#{path}")).to_s, resource.to_xml, headers) { |response, request, result|
+      RestClient.post(URI(URI.escape("#{base_path(path)}#{path}")).to_s, request_payload(resource, headers), headers) { |response, request, result|
         $LOG.info "POST - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         FHIR::ClientReply.new(request, response)
       }
@@ -226,7 +241,7 @@ module FHIR
 
     def put(path, resource, headers)
       puts "PUTTING: #{base_path(path)}#{path}"
-      RestClient.put(URI(URI.escape("#{base_path(path)}#{path}")).to_s, resource.to_xml, headers) { |response, request, result|
+      RestClient.put(URI(URI.escape("#{base_path(path)}#{path}")).to_s, request_payload(resource, headers), headers) { |response, request, result|
         $LOG.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         FHIR::ClientReply.new(request, response)
       }
