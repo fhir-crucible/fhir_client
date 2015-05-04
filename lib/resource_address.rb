@@ -103,9 +103,9 @@ module FHIR
         search_options = options[:search]
         url += '/_search' if search_options[:flag]
         url += "/#{search_options[:compartment]}" if search_options[:compartment]
-        url += "?"
 
         if search_options[:parameters]
+          url += "?"
           search_options[:parameters].each do |key,value|
             url += "#{key}=#{value}&"
           end
@@ -117,7 +117,14 @@ module FHIR
         params[:_format] = options[:format]
       end
 
-      url += "?#{params.to_a.map {|x| x.join('=')}.join('&')}" unless params.empty?
+      if !params.empty?
+        if url.include?('?')
+          url += '&'
+        else
+          url += '?'
+        end
+        url += "#{params.to_a.map {|x| x.join('=')}.join('&')}"
+      end
 
       url
     end
