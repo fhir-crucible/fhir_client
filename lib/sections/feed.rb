@@ -3,7 +3,7 @@ module FHIR
     module Feed
 
       FORWARD = :next_link
-      BACKWARD = :next_link
+      BACKWARD = :previous_link
       FIRST = :first_link
       LAST = :last_link
 
