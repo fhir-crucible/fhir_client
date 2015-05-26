@@ -105,11 +105,9 @@ module FHIR
         url += "/#{search_options[:compartment]}" if search_options[:compartment]
 
         if search_options[:parameters]
-          url += "?"
           search_options[:parameters].each do |key,value|
-            url += "#{key}=#{value}&"
+            params[key.to_sym] = value
           end
-          url.chomp!('&')
         end
       end
 
@@ -117,16 +115,9 @@ module FHIR
         params[:_format] = options[:format]
       end
 
-      if !params.empty?
-        if url.include?('?')
-          url += '&'
-        else
-          url += '?'
-        end
-        url += "#{params.to_a.map {|x| x.join('=')}.join('&')}"
-      end
-
-      url
+      uri = Addressable::URI.parse(url)
+      uri.query_values = params
+      uri.normalize.to_str
     end
 
     def self.append_forward_slash_to_path(path)

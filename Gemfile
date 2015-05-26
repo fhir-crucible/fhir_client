@@ -12,6 +12,7 @@ gem 'fhir_model', :git => 'https://github.com/fhir-crucible/fhir_dstu2_models', 
 gem 'rest-client'
 gem 'date_time_precision'
 gem 'bcp47'
+gem 'addressable'
 
 group :test do
   gem 'simplecov', :require => false

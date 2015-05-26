@@ -106,9 +106,24 @@ module FHIR
   # Method returns a conformance statement for the system queried.
   # @return
   def conformanceStatement(format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+    format = try_conformance_formats(format)
     options = { format: format }
     reply = get 'metadata', fhir_headers(options)
     parse_reply(FHIR::Conformance, format, reply.body)
+  end
+
+  def try_conformance_formats(default_format)
+    [ FHIR::Formats::ResourceFormat::RESOURCE_XML,
+      FHIR::Formats::ResourceFormat::RESOURCE_JSON,
+      'application/xml',
+      'application/json'].map do |frmt|
+      reply = head 'metadata', fhir_headers({format: frmt})
+      if reply.code == 200
+        frmt
+      else
+        nil
+      end
+    end.compact.try(:first) || default_format
   end
 
   #
@@ -197,9 +212,13 @@ module FHIR
 
     def base_path(path)
       if path.starts_with?('/')
-        @baseServiceUrl
+        if @baseServiceUrl.end_with?('/')
+          @baseServiceUrl.chop
+        else
+          @baseServiceUrl
+        end
       else
-        FHIR::ResourceAddress.append_forward_slash_to_path(@baseServiceUrl)
+        @baseServiceUrl + '/'
       end
     end
 
@@ -225,7 +244,7 @@ module FHIR
 
     def get(path, headers)
       puts "GETTING: #{base_path(path)}#{path}"
-      RestClient.get(URI(URI.escape("#{base_path(path)}#{path}")).to_s, headers){ |response, request, result|
+      RestClient.get(URI("#{base_path(path)}#{path}").to_s, headers){ |response, request, result|
         $LOG.info "GET - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         FHIR::ClientReply.new(request, response)
       }
@@ -233,7 +252,7 @@ module FHIR
 
     def post(path, resource, headers)
       puts "POSTING: #{base_path(path)}#{path}"
-      RestClient.post(URI(URI.escape("#{base_path(path)}#{path}")).to_s, request_payload(resource, headers), headers) { |response, request, result|
+      RestClient.post(URI("#{base_path(path)}#{path}").to_s, request_payload(resource, headers), headers) { |response, request, result|
         $LOG.info "POST - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         FHIR::ClientReply.new(request, response)
       }
@@ -241,7 +260,7 @@ module FHIR
 
     def put(path, resource, headers)
       puts "PUTTING: #{base_path(path)}#{path}"
-      RestClient.put(URI(URI.escape("#{base_path(path)}#{path}")).to_s, request_payload(resource, headers), headers) { |response, request, result|
+      RestClient.put(URI("#{base_path(path)}#{path}").to_s, request_payload(resource, headers), headers) { |response, request, result|
         $LOG.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         FHIR::ClientReply.new(request, response)
       }
@@ -249,8 +268,16 @@ module FHIR
 
     def delete(path, headers)
       puts "DELETING: #{base_path(path)}#{path}"
-      RestClient.delete(URI(URI.escape("#{base_path(path)}#{path}")).to_s, headers) { |response, request, result|
+      RestClient.delete(URI("#{base_path(path)}#{path}").to_s, headers) { |response, request, result|
         $LOG.info "Delete - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+        FHIR::ClientReply.new(request, response)
+      }
+    end
+
+    def head(path, headers)
+      puts "HEADING: #{base_path(path)}#{path}"
+      RestClient.head(URI("#{base_path(path)}#{path}").to_s, headers){ |response, request, result|
+        $LOG.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         FHIR::ClientReply.new(request, response)
       }
     end
