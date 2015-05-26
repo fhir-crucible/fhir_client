@@ -36,9 +36,9 @@ module FHIR
           xml += p.resource.to_xml({is_root: false})
           xml += '</resource>'          
         elsif !p.value.nil? && !p.valueType.nil?
-          xml += "<value#{p.valueType}>"
+          xml += "<value#{p.valueType} value=\""
           xml += p.value
-          xml += "</value#{p.valueType}>"          
+          xml += "\"></value#{p.valueType}>"          
         end
         xml += '</parameter>'
       end
