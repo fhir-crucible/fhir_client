@@ -13,6 +13,7 @@ gem 'rest-client'
 gem 'date_time_precision'
 gem 'bcp47'
 gem 'addressable'
+gem 'oauth2'
 
 group :test do
   gem 'simplecov', :require => false

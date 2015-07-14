@@ -6,6 +6,7 @@ require 'nokogiri'
 require 'fhir_model'
 require 'rest_client'
 require 'addressable/uri'
+require 'oauth2'
 
 # Simple and verbose loggers
 RestClient.log = Logger.new("fhir_client.log", 10, 1024000)

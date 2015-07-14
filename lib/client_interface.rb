@@ -12,6 +12,10 @@ module FHIR
 
     attr_accessor :reply
     attr_accessor :use_format_param
+    attr_accessor :use_basic_auth
+    attr_accessor :use_oauth2_auth
+    attr_accessor :security_headers
+    attr_accessor :client
 
   # public interface VersionInfo {
   #   public String getClientJavaLibVersion();
@@ -39,9 +43,112 @@ module FHIR
   # @return
   #
   def initialize(baseServiceUrl)
+    $LOG.info "Initializing client with #{@baseServiceUrl}"
     @baseServiceUrl = baseServiceUrl
     @use_format_param = false
-    $LOG.info "Initializing client with #{@baseServiceUrl}"
+    set_no_auth
+  end
+
+  # Set the client to use no authentication mechanisms
+  def set_no_auth
+    $LOG.info "Configuring the client to use no authentication."
+    @use_oauth2_auth = false
+    @use_basic_auth = false
+    @security_headers = {}
+    @client = RestClient
+  end
+
+  # Set the client to use HTTP Basic Authentication
+  def set_basic_auth(client,secret)
+    $LOG.info "Configuring the client to use HTTP Basic authentication."
+    token = Base64.encode64("#{client}:#{secret}")
+    value = "Basic #{token}"
+    @security_headers = { 'Authorization' => value }
+    @use_oauth2_auth = false
+    @use_basic_auth = true
+    @client = RestClient
+  end
+
+  # Set the client to use OpenID Connect OAuth2 Authentication
+  # client -- client id
+  # secret -- client secret
+  # baseUrl -- URL of the Authentication server (not the FHIR server endpoint)
+  # authorizePath -- path (appended to baseUrl) of authorization endpoint
+  # tokenPath -- path (appended to baseUrl) of token endpoint
+  def set_oauth2_auth(client,secret,baseUrl,authorizePath='/authorize',tokenPath='/token')
+    $LOG.info "Configuring the client to use OpenID Connect OAuth2 authentication."
+    @use_oauth2_auth = true
+    @use_basic_auth = false
+    @security_headers = {}
+    options = {
+      :site => baseUrl,
+      :authorize_url => authorizePath,
+      :token_url => tokenPath
+    }
+    client = OAuth2::Client.new(client,secret,options)
+    @client = client.client_credentials.get_token
+  end
+
+  # Get the OAuth2 server and endpoints from the conformance statement 
+  # (the server should not require OAuth2 or other special security to access
+  # the conformance statement).
+  # <rest>
+  #   <mode value="server"/>
+  #   <documentation value="All the functionality defined in FHIR"/>
+  #   <security>
+  #     <extension url="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#register">
+  #       <valueUri value="http://example:8080/openid-connect-server-webapp/register"/>
+  #     </extension>
+  #     <extension url="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#authorize">
+  #       <valueUri value="http://example:8080/openid-connect-server-webapp/authorize"/>
+  #     </extension>
+  #     <extension url="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#token">
+  #       <valueUri value="http://example:8080/openid-connect-server-webapp/token"/>
+  #     </extension>
+  #     <service>
+  #       <coding>
+  #         <system value="http://hl7.org/fhir/vs/restful-security-service"/>
+  #         <code value="OAuth2"/>
+  #       </coding>
+  #       <text value="OAuth version 2 (see oauth.net)."/>
+  #     </service>
+  #     <description value="SMART on FHIR uses OAuth2 for authorization"/>
+  #   </security>
+  def get_oauth2_metadata_from_conformance
+    options = {
+      :site => nil,
+      :authorize_url => nil,
+      :token_url => nil
+    }
+    authorize_extension = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#authorize'
+    token_extension = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#token'
+ 
+    begin
+      conformance = conformanceStatement
+      conformance.rest.each do |rest|
+        rest.security.service.each do |service|
+          service.coding.each do |coding|
+            if coding.code == 'OAuth2'
+              rest.security.extension.each do |ext|
+                case ext.url
+                when authorize_extension
+                  options[:site] = ext.value[:value].split('/')[0..-2].join('/')
+                  options[:authorize_url] = ext.value[:value].split('/').last
+                when token_extension
+                  options[:site] = ext.value[:value].split('/')[0..-2].join('/')
+                  options[:token_url] = ext.value[:value].split('/').last
+                end
+              end
+            end
+          end
+        end
+      end
+    rescue Exception => e
+      $LOG.error 'Failed to location SMART-on-FHIR OAuth2 Security Extensions.'
+    end
+    options.delete_if{|k,v|v.nil?}
+    options.clear if options.keys.size!=3
+    options
   end
 
   #
@@ -109,7 +216,7 @@ module FHIR
     format = try_conformance_formats(format)
     options = { format: format }
     reply = get 'metadata', fhir_headers(options)
-    parse_reply(FHIR::Conformance, format, reply.body)
+    parse_reply(FHIR::Conformance, format, reply)
   end
 
   def try_conformance_formats(default_format)
@@ -153,7 +260,7 @@ module FHIR
     return nil if ![200,201].include? response.code
     res = nil
     begin
-      res = FHIR::Resource.from_contents(response)
+      res = FHIR::Resource.from_contents(response.body)
       $LOG.warn "Expected #{klass} but got #{res.class}" if res.class!=klass
     rescue Exception => e
       $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
@@ -242,43 +349,160 @@ module FHIR
       end
     end
 
+    def clean_headers(headers)
+      headers.delete_if{|k,v|(k.nil? || v.nil?)}
+      headers.inject({}){|h,(k,v)| h[k.to_s]=v.to_s; h}     
+    end
+
     def get(path, headers)
       puts "GETTING: #{base_path(path)}#{path}"
-      RestClient.get(URI("#{base_path(path)}#{path}").to_s, headers){ |response, request, result|
-        $LOG.info "GET - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(request, response)
-      }
+      headers = clean_headers(headers)
+      url = URI("#{base_path(path)}#{path}").to_s
+      if @use_oauth2_auth
+        # @client.refresh!
+        response = @client.get(url, {:headers=>headers})
+        req = {
+          :method => :get,
+          :url => url,
+          :headers => headers,
+          :payload => nil
+        }
+        res = {
+          :code => response.status.to_s,
+          :headers => response.headers,
+          :body => response.body
+        }
+        $LOG.info "GET - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
+        FHIR::ClientReply.new(req, res)
+      else
+        headers.merge!(@security_headers) if @use_basic_auth
+        @client.get(url, headers){ |response, request, result|
+          $LOG.info "GET - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          res = {
+            :code => result.code,
+            :headers => result.each_key{},
+            :body => response
+          }
+          FHIR::ClientReply.new(request.args, res)
+        }
+      end
     end
 
     def post(path, resource, headers)
       puts "POSTING: #{base_path(path)}#{path}"
-      RestClient.post(URI("#{base_path(path)}#{path}").to_s, request_payload(resource, headers), headers) { |response, request, result|
-        $LOG.info "POST - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(request, response)
-      }
+      headers = clean_headers(headers)
+      url = URI("#{base_path(path)}#{path}").to_s
+      payload = request_payload(resource, headers)
+      if @use_oauth2_auth
+        # @client.refresh!
+        response = @client.post(url, {:headers=>headers,:body=>payload})
+        req = {
+          :method => :post,
+          :url => url,
+          :headers => headers,
+          :payload => payload
+        }
+        res = {
+          :code => response.status.to_s,
+          :headers => response.headers,
+          :body => response.body
+        }
+        $LOG.info "POST - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
+        FHIR::ClientReply.new(req, res)
+      else
+        headers.merge!(@security_headers) if @use_basic_auth
+        @client.post(url, payload, headers){ |response, request, result|
+          $LOG.info "POST - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          res = {
+            :code => result.code,
+            :headers => result.each_key{},
+            :body => response
+          }
+          FHIR::ClientReply.new(request.args, res)
+        }
+      end
     end
 
     def put(path, resource, headers)
       puts "PUTTING: #{base_path(path)}#{path}"
-      RestClient.put(URI("#{base_path(path)}#{path}").to_s, request_payload(resource, headers), headers) { |response, request, result|
-        $LOG.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(request, response)
-      }
+      headers = clean_headers(headers)
+      url = URI("#{base_path(path)}#{path}").to_s
+      payload = request_payload(resource, headers)
+      if @use_oauth2_auth
+        # @client.refresh!
+        response = @client.put(url, {:headers=>headers,:body=>payload})
+        req = {
+          :method => :put,
+          :url => url,
+          :headers => headers,
+          :payload => payload
+        }
+        res = {
+          :code => response.status.to_s,
+          :headers => response.headers,
+          :body => response.body
+        }
+        $LOG.info "PUT - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
+        FHIR::ClientReply.new(req, res)
+      else
+        headers.merge!(@security_headers) if @use_basic_auth
+        @client.put(url, payload, headers){ |response, request, result|
+          $LOG.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          res = {
+            :code => result.code,
+            :headers => result.each_key{},
+            :body => response
+          }
+          FHIR::ClientReply.new(request.args, res)
+        }
+      end
     end
 
     def delete(path, headers)
       puts "DELETING: #{base_path(path)}#{path}"
-      RestClient.delete(URI("#{base_path(path)}#{path}").to_s, headers) { |response, request, result|
-        $LOG.info "Delete - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(request, response)
-      }
+      headers = clean_headers(headers)
+      url = URI("#{base_path(path)}#{path}").to_s
+      if @use_oauth2_auth
+        # @client.refresh!
+        response = @client.delete(url, {:headers=>headers})
+        req = {
+          :method => :delete,
+          :url => url,
+          :headers => headers,
+          :payload => nil
+        }
+        res = {
+          :code => response.status.to_s,
+          :headers => response.headers,
+          :body => response.body
+        }
+        $LOG.info "DELETE - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
+        FHIR::ClientReply.new(req, res)
+      else
+        headers.merge!(@security_headers) if @use_basic_auth
+        @client.delete(url, headers){ |response, request, result|
+          $LOG.info "DELETE - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          res = {
+            :code => result.code,
+            :headers => result.each_key{},
+            :body => response
+          }
+          FHIR::ClientReply.new(request.args, res)
+        }
+      end
     end
 
     def head(path, headers)
+      headers.merge!(@security_headers) unless @security_headers.blank?
       puts "HEADING: #{base_path(path)}#{path}"
       RestClient.head(URI("#{base_path(path)}#{path}").to_s, headers){ |response, request, result|
         $LOG.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(request, response)
+        res = {
+          :code => result.code,
+          :headers => result.each_key{},
+          :body => response
+        }
+        FHIR::ClientReply.new(request.args, res)
       }
     end
 

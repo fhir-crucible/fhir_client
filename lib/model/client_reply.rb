@@ -1,7 +1,18 @@
 module FHIR
   class ClientReply
-    attr_accessor :request  # .args, .cookies, .headers, .method, .payload, .processed_headers, .url
-    attr_accessor :response # .code, .cookies, .description, .headers, .raw_headers
+    # {
+    #   :method => :get,
+    #   :url => 'http://bonfire.mitre.org/fhir/Patient/123/$everything',
+    #   :headers => {},
+    #   :payload => nil # body of request goes here in POST
+    # }
+    attr_accessor :request  
+    # {
+    #   :code => '200',
+    #   :headers => {},
+    #   :body => '{xml or json here}'
+    # }
+    attr_accessor :response 
     attr_accessor :resource # a FHIR resource
     attr_accessor :resource_class # class of the :resource
 
@@ -11,12 +22,12 @@ module FHIR
     end
 
     def code
-      @response.code unless @response.nil?
+      @response[:code].to_i unless @response.nil?
     end
 
     def id
       return nil if @resource_class.nil?
-      (self_link || @request.url) =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
+      (self_link || @request[:url]) =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
       $1
     end
 
@@ -26,11 +37,11 @@ module FHIR
     end
 
     def self_link
-      (@response.headers[:content_location] || @response.headers[:location]) unless @response.nil? || @response.headers.nil?
+      (@response[:headers][:content_location] || @response[:headers][:location]) unless @response.nil? || @response.headers.nil?
     end
 
     def body
-      @response.to_s unless @response.nil?
+      @response[:body] unless @response.nil?
     end
 
   end

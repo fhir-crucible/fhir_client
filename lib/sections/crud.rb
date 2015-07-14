@@ -13,7 +13,7 @@ module FHIR
       def read(klass, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
         options = { resource: klass, id: id, format: format }
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(klass, format, reply.body)
+        reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
         reply
       end
@@ -24,7 +24,7 @@ module FHIR
       def read_feed(klass, format=FHIR::Formats::FeedFormat::FEED_XML)
         options = { resource: klass, format: format }
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(klass, format, reply.body)
+        reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
         reply
       end
@@ -40,7 +40,7 @@ module FHIR
       def vread(klass, id, version_id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
         options = { resource: klass, id: id, format: format, history: {id: version_id} }
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(klass, format, reply.body)
+        reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
         reply
       end
@@ -68,7 +68,7 @@ module FHIR
       def update(resource, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
         options = { resource: resource.class, id: id, format: format }
         reply = put resource_url(options), resource, fhir_headers(options)
-        reply.resource = parse_reply(resource.class, format, reply.body)
+        reply.resource = parse_reply(resource.class, format, reply)
         reply.resource_class = resource.class
         reply
       end
@@ -109,7 +109,7 @@ module FHIR
         options = { resource: resource.class, format: format }
         reply = post resource_url(options), resource, fhir_headers(options)
         if [200,201].include? reply.code
-          type = reply.response.headers[:content_type]
+          type = reply.response[:headers][:content_type]
           if !type.nil?
             if type.include?('xml') && !reply.body.empty?
               reply.resource = resource.class.from_xml(reply.body)

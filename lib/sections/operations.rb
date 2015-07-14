@@ -17,7 +17,7 @@ module FHIR
         options.merge!({start: startTime}) if !startTime.nil?
         options.merge!({end: endTime}) if !endTime.nil?
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(FHIR::Bundle, format, reply.body)
+        reply.resource = parse_reply(FHIR::Bundle, format, reply)
         reply.resource_class = options[:resource]
         reply
       end
@@ -34,7 +34,7 @@ module FHIR
         # params = [id, filter, date]
         options.merge!(params)
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(options[:resource], format, reply.body)
+        reply.resource = parse_reply(options[:resource], format, reply)
         reply.resource_class = options[:resource]
         reply
       end
@@ -49,7 +49,7 @@ module FHIR
         # params = [id, code, system, version, display, coding, codeableConcept, date, abstract]
         options.merge!(params)
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(options[:resource], format, reply.body)
+        reply.resource = parse_reply(options[:resource], format, reply)
         reply.resource_class = options[:resource]
         reply
       end

@@ -12,7 +12,7 @@ module FHIR
       def search(klass, options={}, format=FHIR::Formats::FeedFormat::FEED_XML)
         options.merge!({ resource: klass, format: format })
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(klass, format, reply.body)
+        reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
         reply
       end
@@ -20,7 +20,7 @@ module FHIR
       def search_existing(klass, id, options={}, format=FHIR::Formats::FeedFormat::FEED_XML)
         options.merge!({ resource: klass, id: id, format: format })
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(klass, format, reply.body)
+        reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
         reply
       end
@@ -28,7 +28,7 @@ module FHIR
       def search_all(options={}, format=FHIR::Formats::FeedFormat::FEED_XML)
         options.merge!({ format: format })
         reply = get resource_url(options), fhir_headers(options)
-        reply.resource = parse_reply(nil, format, reply.body)
+        reply.resource = parse_reply(nil, format, reply)
         reply.resource_class = nil
         reply
       end
