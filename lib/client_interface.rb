@@ -355,6 +355,13 @@ module FHIR
       headers.inject({}){|h,(k,v)| h[k.to_s]=v.to_s; h}     
     end
 
+    def scrubbed_response_headers(result)
+      result.each_key do |k|
+        v = result[k]
+        result[k] = v[0] if (v.is_a? Array)
+      end
+    end
+
     def get(path, headers)
       puts "GETTING: #{base_path(path)}#{path}"
       headers = clean_headers(headers)
@@ -374,17 +381,17 @@ module FHIR
           :body => response.body
         }
         $LOG.info "GET - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.get(url, headers){ |response, request, result|
           $LOG.info "GET - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
           res = {
             :code => result.code,
-            :headers => result.each_key{},
+            :headers => scrubbed_response_headers(result.each_key{}),
             :body => response
           }
-          FHIR::ClientReply.new(request.args, res)
+          @reply = FHIR::ClientReply.new(request.args, res)
         }
       end
     end
@@ -409,17 +416,17 @@ module FHIR
           :body => response.body
         }
         $LOG.info "POST - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.post(url, payload, headers){ |response, request, result|
           $LOG.info "POST - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
           res = {
             :code => result.code,
-            :headers => result.each_key{},
+            :headers => scrubbed_response_headers(result.each_key{}),
             :body => response
           }
-          FHIR::ClientReply.new(request.args, res)
+          @reply = FHIR::ClientReply.new(request.args, res)
         }
       end
     end
@@ -444,17 +451,17 @@ module FHIR
           :body => response.body
         }
         $LOG.info "PUT - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.put(url, payload, headers){ |response, request, result|
           $LOG.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
           res = {
             :code => result.code,
-            :headers => result.each_key{},
+            :headers => scrubbed_response_headers(result.each_key{}),
             :body => response
           }
-          FHIR::ClientReply.new(request.args, res)
+          @reply = FHIR::ClientReply.new(request.args, res)
         }
       end
     end
@@ -478,17 +485,17 @@ module FHIR
           :body => response.body
         }
         $LOG.info "DELETE - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
-        FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.delete(url, headers){ |response, request, result|
           $LOG.info "DELETE - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
           res = {
             :code => result.code,
-            :headers => result.each_key{},
+            :headers => scrubbed_response_headers(result.each_key{}),
             :body => response
           }
-          FHIR::ClientReply.new(request.args, res)
+          @reply = FHIR::ClientReply.new(request.args, res)
         }
       end
     end
@@ -500,10 +507,10 @@ module FHIR
         $LOG.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         res = {
           :code => result.code,
-          :headers => result.each_key{},
+          :headers => scrubbed_response_headers(result.each_key{}),
           :body => response
         }
-        FHIR::ClientReply.new(request.args, res)
+        @reply = FHIR::ClientReply.new(request.args, res)
       }
     end
 
