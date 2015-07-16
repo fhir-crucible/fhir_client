@@ -83,7 +83,8 @@ module FHIR
     options = {
       :site => baseUrl,
       :authorize_url => authorizePath,
-      :token_url => tokenPath
+      :token_url => tokenPath,
+      :raise_errors => false
     }
     client = OAuth2::Client.new(client,secret,options)
     @client = client.client_credentials.get_token
