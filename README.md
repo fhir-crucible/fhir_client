@@ -27,7 +27,7 @@ Supports:
 
     # read an existing patient with id "example"
     patient = client.read(FHIR::Patient, "example")
-    patient = client.read(FHIR::Patient, "example", FHIR::Formats::ResourceFormat::RESOURCE_JSON) # specifying Formats
+    patient = client.read(FHIR::Patient, "example", FHIR::Formats::FeedFormat::FEED_JSON) # specifying Formats
 
     # update the patient
     patient.gender = 'female'
