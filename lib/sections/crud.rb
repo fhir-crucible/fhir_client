@@ -10,7 +10,7 @@ module FHIR
       # @return
       #
 
-      def read(klass, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+      def read(klass, id, format=@default_format)
         options = { resource: klass, id: id, format: format }
         reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(klass, format, reply)
@@ -21,7 +21,7 @@ module FHIR
       #
       # Read a resource bundle (an XML ATOM feed)
       #
-      def read_feed(klass, format=FHIR::Formats::FeedFormat::FEED_XML)
+      def read_feed(klass, format=@default_format_bundle)
         options = { resource: klass, format: format }
         reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(klass, format, reply)
@@ -37,7 +37,7 @@ module FHIR
       # @param versionid
       # @return
       #
-      def vread(klass, id, version_id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+      def vread(klass, id, version_id, format=@default_format)
         options = { resource: klass, id: id, format: format, history: {id: version_id} }
         reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(klass, format, reply)
@@ -65,7 +65,7 @@ module FHIR
       # @return
       #
       # public <T extends Resource> AtomEntry<T> update(Class<T> resourceClass, T resource, String id);
-      def update(resource, id, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+      def update(resource, id, format=@default_format)
         options = { resource: resource.class, id: id, format: format }
         reply = put resource_url(options), resource, fhir_headers(options)
         reply.resource = parse_reply(resource.class, format, reply)
@@ -105,7 +105,7 @@ module FHIR
       # @param resource
       # @return
       #
-      def create(resource, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+      def create(resource, format=@default_format)
         options = { resource: resource.class, format: format }
         reply = post resource_url(options), resource, fhir_headers(options)
         if [200,201].include? reply.code

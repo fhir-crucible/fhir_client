@@ -12,7 +12,7 @@ module FHIR
         link = bundle.next_link #bundle.method(page).call
         return nil unless link
         reply = get strip_base(link.url), fhir_headers
-        reply.resource = parse_reply(current.resource_class, FHIR::Formats::FeedFormat::FEED_XML, reply)
+        reply.resource = parse_reply(current.resource_class, @default_format_bundle, reply)
         reply.resource_class = current.resource_class
         reply
       end

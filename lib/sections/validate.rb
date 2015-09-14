@@ -10,7 +10,7 @@ module FHIR
       # @return
       #
       # public <T extends Resource> AtomEntry<OperationOutcome> validate(Class<T> resourceClass, T resource, String id);
-      def validate(resource, options={}, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+      def validate(resource, options={}, format=@default_format)
         options.merge!({ resource: resource.class, validate: true, format: format })
         params = FHIR::Parameters.new
         params.add_resource_parameter('resource',resource)
@@ -18,7 +18,7 @@ module FHIR
         post resource_url(options), params, fhir_headers(options)
       end
 
-      def validate_existing(resource, id, options={}, format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
+      def validate_existing(resource, id, options={}, format=@default_format)
         options.merge!({ resource: resource.class, id: id, validate: true, format: format })
         params = FHIR::Parameters.new
         params.add_resource_parameter('resource',resource)

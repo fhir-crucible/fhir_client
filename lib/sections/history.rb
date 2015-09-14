@@ -25,7 +25,7 @@ module FHIR
       
       def history(options)
         reply = get resource_url(options), fhir_headers(options).except(:history)
-        reply.resource = parse_reply(options[:resource], FHIR::Formats::FeedFormat::FEED_XML, reply)
+        reply.resource = parse_reply(options[:resource], @default_format_bundle, reply)
         reply.resource_class = options[:resource]
         reply
       end

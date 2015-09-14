@@ -17,6 +17,9 @@ module FHIR
     attr_accessor :security_headers
     attr_accessor :client
 
+    attr_accessor :default_format
+    attr_accessor :default_format_bundle
+
   # public interface VersionInfo {
   #   public String getClientJavaLibVersion();
   #   public String getFhirJavaLibVersion();
@@ -46,6 +49,8 @@ module FHIR
     $LOG.info "Initializing client with #{@baseServiceUrl}"
     @baseServiceUrl = baseServiceUrl
     @use_format_param = false
+    @default_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
+    @default_format_bundle = FHIR::Formats::FeedFormat::FEED_XML
     set_no_auth
   end
 
@@ -216,6 +221,8 @@ module FHIR
   def conformanceStatement(format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
     format = try_conformance_formats(format)
     options = { format: format }
+    @default_format = format
+    @default_format_bundle = format
     reply = get 'metadata', fhir_headers(options)
     parse_reply(FHIR::Conformance, format, reply)
   end
@@ -225,7 +232,7 @@ module FHIR
       FHIR::Formats::ResourceFormat::RESOURCE_JSON,
       'application/xml',
       'application/json'].map do |frmt|
-      reply = head 'metadata', fhir_headers({format: frmt})
+      reply = get 'metadata', fhir_headers({format: frmt})
       if reply.code == 200
         frmt
       else
