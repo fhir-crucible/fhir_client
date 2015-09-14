@@ -21,7 +21,13 @@ Supports:
 ### Fetching a Bundle
 
     reply = client.read_feed(FHIR::Patient) # fetch Bundle of Patients
-    puts reply.body
+    bundle = reply.resource
+    bundle.entry.each do |entry|
+      patient = entry.resource
+      puts patient.name[0].text
+    end
+    puts reply.code # HTTP 200 (or whatever was returned)
+    puts reply.body # Raw XML or JSON
 
 ### CRUD Examples
 
