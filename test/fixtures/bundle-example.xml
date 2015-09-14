@@ -9,17 +9,17 @@
   <total value="3"/>
   <link>
     <relation value="next"/>
-    <url value="https://example.com/base/MedicationPrescription?patient=347&amp;searchId=ff15fd40-ff71-4b48-b366-09c
+    <url value="https://example.com/base/MedicationOrder?patient=347&amp;searchId=ff15fd40-ff71-4b48-b366-09c
       706bed9d0&amp;page=2"/>
     </link>
     <link>
       <relation value="self"/>
-      <url value="https://example.com/base/MedicationPrescription?patient=347"/>
+      <url value="https://example.com/base/MedicationOrder?patient=347"/>
     </link>
     <entry>
       <status value="update"/>
       <resource>
-        <MedicationPrescription>
+        <MedicationOrder>
           <id value="3123"/>
           <meta>
             <versionId value="1"/>
@@ -37,18 +37,18 @@
             <reference value="Practitioner/example"/>
           </prescriber>
 
-          <medication>
+          <medicationReference>
             <reference value="Medication/example"/>
-          </medication>
+          </medicationReference>
 
           <dosageInstruction>
-            <scheduledTiming>
+            <timing>
               <repeat>
                 <frequency value="3"/>
                 <duration value="1"/>
                 <units value="d"/>
               </repeat>
-            </scheduledTiming>
+            </timing>
             <route>
               <coding>
                 <system value="http://snomed.info/sct"/>
@@ -64,16 +64,16 @@
             </doseQuantity>
           </dosageInstruction>
 
-          <dispense>
+          <dispenseRequest>
             <quantity>
               <value value="100"/>
               <units value="ml"/>
               <system value="http://unitsofmeasure.org"/>
               <code value="ml"/>
             </quantity>
-          </dispense>
+          </dispenseRequest>
 
-        </MedicationPrescription>
+        </MedicationOrder>
       </resource>
     </entry>
   </Bundle>
