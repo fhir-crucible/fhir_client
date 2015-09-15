@@ -10,8 +10,9 @@ module FHIR
       # @return
       #
 
-      def read(klass, id, format=@default_format)
+      def read(klass, id, format=@default_format, summary=nil)
         options = { resource: klass, id: id, format: format }
+        options[:summary] = summary if summary
         reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass

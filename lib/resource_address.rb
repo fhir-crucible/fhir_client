@@ -111,6 +111,10 @@ module FHIR
         end
       end
 
+      if(options[:summary])
+        params[:_summary] = options[:summary]
+      end
+
       if use_format_param && options[:format]
         params[:_format] = options[:format]
       end
