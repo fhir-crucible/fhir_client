@@ -407,7 +407,7 @@ module FHIR
       puts "POSTING: #{base_path(path)}#{path}"
       headers = clean_headers(headers)
       url = URI("#{base_path(path)}#{path}").to_s
-      payload = request_payload(resource, headers)
+      payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
         # @client.refresh!
         response = @client.post(url, {:headers=>headers,:body=>payload})
@@ -442,7 +442,7 @@ module FHIR
       puts "PUTTING: #{base_path(path)}#{path}"
       headers = clean_headers(headers)
       url = URI("#{base_path(path)}#{path}").to_s
-      payload = request_payload(resource, headers)
+      payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
         # @client.refresh!
         response = @client.put(url, {:headers=>headers,:body=>payload})
