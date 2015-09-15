@@ -27,7 +27,7 @@ module FHIR
 
     def id
       return nil if @resource_class.nil?
-      (self_link || @request[:url]) =~ %r{(?<=#{@resource_class.name.demodulize}\/)(\w+)}
+      (self_link || @request[:url]) =~ %r{(?<=#{@resource_class.name.demodulize}\/)([^\/]+)}
       $1
     end
 

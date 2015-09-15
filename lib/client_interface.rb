@@ -74,19 +74,27 @@ module FHIR
     @client = RestClient
   end
 
+  # Set the client to use Bearer Token Authentication
+  def set_bearer_token(token)
+    $LOG.info "Configuring the client to use Bearer Token authentication."
+    value = "Bearer #{token}"
+    @security_headers = { 'Authorization' => value }
+    @use_oauth2_auth = false
+    @use_basic_auth = true
+    @client = RestClient
+  end
+
   # Set the client to use OpenID Connect OAuth2 Authentication
   # client -- client id
   # secret -- client secret
-  # baseUrl -- URL of the Authentication server (not the FHIR server endpoint)
-  # authorizePath -- path (appended to baseUrl) of authorization endpoint
-  # tokenPath -- path (appended to baseUrl) of token endpoint
-  def set_oauth2_auth(client,secret,baseUrl,authorizePath='/authorize',tokenPath='/token')
+  # authorizePath -- absolute path of authorization endpoint
+  # tokenPath -- absolute path of token endpoint
+  def set_oauth2_auth(client,secret,authorizePath,tokenPath)
     $LOG.info "Configuring the client to use OpenID Connect OAuth2 authentication."
     @use_oauth2_auth = true
     @use_basic_auth = false
     @security_headers = {}
     options = {
-      :site => baseUrl,
       :authorize_url => authorizePath,
       :token_url => tokenPath,
       :raise_errors => false
@@ -122,7 +130,6 @@ module FHIR
   #   </security>
   def get_oauth2_metadata_from_conformance
     options = {
-      :site => nil,
       :authorize_url => nil,
       :token_url => nil
     }
@@ -135,14 +142,12 @@ module FHIR
         rest.security.service.each do |service|
           service.coding.each do |coding|
             if coding.code == 'OAuth2'
-              rest.security.extension.each do |ext|
-                case ext.url
+              rest.security.extension.where({url: "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris"}).first.extension.each do |ext|
+                case ext.absolute_url
                 when authorize_extension
-                  options[:site] = ext.value[:value].split('/')[0..-2].join('/')
-                  options[:authorize_url] = ext.value[:value].split('/').last
+                  options[:authorize_url] = ext.value[:value]
                 when token_extension
-                  options[:site] = ext.value[:value].split('/')[0..-2].join('/')
-                  options[:token_url] = ext.value[:value].split('/').last
+                  options[:token_url] = ext.value[:value]
                 end
               end
             end
@@ -150,10 +155,10 @@ module FHIR
         end
       end
     rescue Exception => e
-      $LOG.error 'Failed to location SMART-on-FHIR OAuth2 Security Extensions.'
+      $LOG.error 'Failed to locate SMART-on-FHIR OAuth2 Security Extensions.'
     end
     options.delete_if{|k,v|v.nil?}
-    options.clear if options.keys.size!=3
+    options.clear if options.keys.size!=2
     options
   end
 
