@@ -30,35 +30,29 @@ module FHIR
       # http://hl7.org/implement/standards/FHIR-Develop/valueset-operations.html#expand
       # The definition of a value set is used to create a simple collection of codes suitable for use for data entry or validation.
       def value_set_expansion(params={}, format=@default_format)
-        options = { resource: FHIR::ValueSet, format: format, operation: { name: :value_set_expansion } }
-        # params = [id, filter, date]
+        options = { operation: { name: :value_set_expansion } }
         options.deep_merge!(params)
-        if options[:operation][:method]=='GET'
-          reply = get resource_url(options), fhir_headers(options)
-        else
-          # create Parameters body
-          body = nil
-          if(options[:operation] && options[:operation][:parameters])
-            p = FHIR::Parameters.new
-            options[:operation][:parameters].each do |key,value|
-              p.add_parameter(key.to_s,value[:type],value[:value])
-            end
-            body = p.to_xml
-          end
-          reply = post resource_url(options), body, fhir_headers(options)
-        end
-        reply.resource = parse_reply(options[:resource], format, reply)
-        reply.resource_class = options[:resource]
-        reply
+        value_set_operation(options, format)
       end
-
-      # Concept Look Up	[base]/ValueSet/$lookup
 
       # Value Set based Validation	[base]/ValueSet/$validate | [base]/ValueSet/[id]/$validate
       # http://hl7.org/implement/standards/FHIR-Develop/valueset-operations.html#validate
       # Validate that a coded value is in the set of codes allowed by a value set.
       def value_set_code_validation(params={}, format=@default_format)
-        options = { resource: FHIR::ValueSet, format: format, operation: { name: :value_set_based_validation } }
+        options = { operation: { name: :value_set_based_validation } }
+        options.deep_merge!(params)
+        value_set_operation(options, format)
+      end
+
+      # Concept Look Up [base]/ValueSet/$lookup
+      def value_set_code_lookup(params={}, format=@default_format)
+        options = { operation: { name: :value_set_code_lookup } }
+        options.deep_merge!(params)
+        value_set_operation(options, format)
+      end
+
+      def value_set_operation(params={}, format=@default_format)
+        options = { resource: FHIR::ValueSet, format: format }
         # params = [id, code, system, version, display, coding, codeableConcept, date, abstract]
         options.deep_merge!(params)
 
@@ -74,7 +68,7 @@ module FHIR
             end
             body = p.to_xml
           end
-          reply = post resource_url(options), body, fhir_headers(options)
+          reply = post resource_url(options), p, fhir_headers(options)
         end
 
         reply.resource = parse_reply(options[:resource], format, reply)
