@@ -12,10 +12,10 @@ module FHIR
       # http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything
       # Fetches resources for a given patient record, scoped by a start and end time, and returns a Bundle of results
       def fetch_patient_record(id=nil, startTime=nil, endTime=nil, format=@default_format)
-        options = { resource: FHIR::Patient, format: format, operation: :fetch_patient_record }
-        options.merge!({id: id}) if !id.nil?
-        options.merge!({start: startTime}) if !startTime.nil?
-        options.merge!({end: endTime}) if !endTime.nil?
+        options = { resource: FHIR::Patient, format: format, operation: { name: :fetch_patient_record } }
+        options.deep_merge!({id: id}) if !id.nil?
+        options[:operation][:parameters].merge!({start: startTime}) if !startTime.nil?
+        options[:operation][:parameters].merge!({end: endTime}) if !endTime.nil?
         reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(FHIR::Bundle, format, reply)
         reply.resource_class = options[:resource]
@@ -30,10 +30,23 @@ module FHIR
       # http://hl7.org/implement/standards/FHIR-Develop/valueset-operations.html#expand
       # The definition of a value set is used to create a simple collection of codes suitable for use for data entry or validation.
       def value_set_expansion(params={}, format=@default_format)
-        options = { resource: FHIR::ValueSet, format: format, operation: :value_set_expansion }
+        options = { resource: FHIR::ValueSet, format: format, operation: { name: :value_set_expansion } }
         # params = [id, filter, date]
-        options.merge!(params)
-        reply = get resource_url(options), fhir_headers(options)
+        options.deep_merge!(params)
+        if options[:operation][:method]=='GET'
+          reply = get resource_url(options), fhir_headers(options)
+        else
+          # create Parameters body
+          body = nil
+          if(options[:operation] && options[:operation][:parameters])
+            p = FHIR::Parameters.new
+            options[:operation][:parameters].each do |key,value|
+              p.add_parameter(key.to_s,value[:type],value[:value])
+            end
+            body = p.to_xml
+          end
+          reply = post resource_url(options), body, fhir_headers(options)
+        end
         reply.resource = parse_reply(options[:resource], format, reply)
         reply.resource_class = options[:resource]
         reply
@@ -45,10 +58,25 @@ module FHIR
       # http://hl7.org/implement/standards/FHIR-Develop/valueset-operations.html#validate
       # Validate that a coded value is in the set of codes allowed by a value set.
       def value_set_code_validation(params={}, format=@default_format)
-        options = { resource: FHIR::ValueSet, format: format, operation: :value_set_based_validation }
+        options = { resource: FHIR::ValueSet, format: format, operation: { name: :value_set_based_validation } }
         # params = [id, code, system, version, display, coding, codeableConcept, date, abstract]
-        options.merge!(params)
-        reply = get resource_url(options), fhir_headers(options)
+        options.deep_merge!(params)
+
+        if options[:operation][:method]=='GET'
+          reply = get resource_url(options), fhir_headers(options)
+        else
+          # create Parameters body
+          body = nil
+          if(options[:operation] && options[:operation][:parameters])
+            p = FHIR::Parameters.new
+            options[:operation][:parameters].each do |key,value|
+              p.add_parameter(key.to_s,value[:type],value[:value])
+            end
+            body = p.to_xml
+          end
+          reply = post resource_url(options), body, fhir_headers(options)
+        end
+
         reply.resource = parse_reply(options[:resource], format, reply)
         reply.resource_class = options[:resource]
         reply

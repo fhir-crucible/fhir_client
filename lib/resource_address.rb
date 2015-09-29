@@ -40,6 +40,7 @@ module FHIR
       end
 
       fhir_headers.merge!(options) unless options.blank?
+      fhir_headers[:operation] = options[:operation][:name] if options[:operation] && options[:operation][:name]
       fhir_headers.merge!(params) unless params.blank?
       fhir_headers
     end
@@ -72,24 +73,19 @@ module FHIR
       url += "/#{options[:id]}" if options[:id]
       url += "/$validate" if options[:validate]
 
-      if (options[:operation] == :fetch_patient_record)
-        url += "/$everything"
-        params[:start] = options[:start] if options[:start]
-        params[:end] = options[:end] if options[:end]
-      elsif (options[:operation] == :value_set_expansion)
-        url += "/$expand"
-        params[:filter] = options[:filter] if options[:filter]
-        params[:date] = options[:date] if options[:date]
-      elsif (options[:operation] == :value_set_based_validation)
-        url += "/$validate"
-        params[:code] = options[:code] if options[:code]
-        params[:system] = options[:system] if options[:system]
-        params[:version] = options[:version] if options[:version]
-        params[:display] = options[:display] if options[:display]
-        params[:coding] = options[:coding] if options[:coding]
-        params[:codeableConcept] = options[:codeableConcept] if options[:codeableConcept]
-        params[:date] = options[:date] if options[:date]
-        params[:abstract] = options[:abstract] if options[:abstract]
+      if(options[:operation])
+        opr = options[:operation]
+        p = opr[:parameters]
+        p = p.each{|k,v|p[k]=v[:value]} if p
+        params.merge!(p) if p && opr[:method]=='GET'
+
+        if (opr[:name] == :fetch_patient_record)
+          url += "/$everything"
+        elsif (opr[:name] == :value_set_expansion)
+          url += "/$expand"
+        elsif (opr  && opr[:name]== :value_set_based_validation)
+          url += "/$validate"
+        end
       end
 
       if (options[:history])
