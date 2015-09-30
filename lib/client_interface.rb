@@ -20,6 +20,8 @@ module FHIR
     attr_accessor :default_format
     attr_accessor :default_format_bundle
 
+    attr_accessor :cached_conformance
+
   # public interface VersionInfo {
   #   public String getClientJavaLibVersion();
   #   public String getFhirJavaLibVersion();
@@ -224,26 +226,34 @@ module FHIR
   # Method returns a conformance statement for the system queried.
   # @return
   def conformanceStatement(format=FHIR::Formats::ResourceFormat::RESOURCE_XML)
-    format = try_conformance_formats(format)
-    options = { format: format }
-    @default_format = format
-    @default_format_bundle = format
-    reply = get 'metadata', fhir_headers(options)
-    parse_reply(FHIR::Conformance, format, reply)
+    if (@cached_conformance.nil? || format!=@default_format)
+      format = try_conformance_formats(format)
+    end
+    @cached_conformance
   end
 
   def try_conformance_formats(default_format)
-    [ FHIR::Formats::ResourceFormat::RESOURCE_XML,
+    formats = [ FHIR::Formats::ResourceFormat::RESOURCE_XML,
       FHIR::Formats::ResourceFormat::RESOURCE_JSON,
       'application/xml',
-      'application/json'].map do |frmt|
+      'application/json']
+    formats.insert(0,default_format)
+    
+    @cached_conformance = nil
+    @default_format = nil
+    @default_format_bundle = nil
+ 
+    formats.each do |frmt|
       reply = get 'metadata', fhir_headers({format: frmt})
       if reply.code == 200
-        frmt
-      else
-        nil
+        @cached_conformance = parse_reply(FHIR::Conformance, frmt, reply)
+        @default_format = frmt
+        @default_format_bundle = frmt
+        break
       end
-    end.compact.try(:first) || default_format
+    end
+    @default_format = default_format if @default_format.nil?
+    @default_format
   end
 
   #
