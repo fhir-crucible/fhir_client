@@ -14,8 +14,9 @@ module FHIR
       def fetch_patient_record(id=nil, startTime=nil, endTime=nil, format=@default_format)
         options = { resource: FHIR::Patient, format: format, operation: { name: :fetch_patient_record } }
         options.deep_merge!({id: id}) if !id.nil?
-        options[:operation][:parameters].merge!({start: startTime}) if !startTime.nil?
-        options[:operation][:parameters].merge!({end: endTime}) if !endTime.nil?
+        options[:operation][:parameters] = {} if options[:operation][:parameters].nil?
+        options[:operation][:parameters].merge!({start: { type: 'Date', value: startTime}}) if !startTime.nil?
+        options[:operation][:parameters].merge!({end: { type: 'Date', value:endTime}}) if !endTime.nil?
         reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(FHIR::Bundle, format, reply)
         reply.resource_class = options[:resource]
