@@ -97,9 +97,10 @@ module FHIR
     @use_basic_auth = false
     @security_headers = {}
     options = {
+      :site => @baseServiceUrl,
       :authorize_url => authorizePath,
       :token_url => tokenPath,
-      :raise_errors => false
+      :raise_errors => true
     }
     client = OAuth2::Client.new(client,secret,options)
     @client = client.client_credentials.get_token
@@ -112,44 +113,50 @@ module FHIR
   #   <mode value="server"/>
   #   <documentation value="All the functionality defined in FHIR"/>
   #   <security>
-  #     <extension url="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#register">
-  #       <valueUri value="http://example:8080/openid-connect-server-webapp/register"/>
+  #   <extension url="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris">
+  #     <extension url="register">
+  #       <valueUri value="https://authorize-dstu2.smarthealthit.org/register"/>
   #     </extension>
-  #     <extension url="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#authorize">
-  #       <valueUri value="http://example:8080/openid-connect-server-webapp/authorize"/>
+  #     <extension url="authorize">
+  #       <valueUri value="https://authorize-dstu2.smarthealthit.org/authorize"/>
   #     </extension>
-  #     <extension url="http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#token">
-  #       <valueUri value="http://example:8080/openid-connect-server-webapp/token"/>
+  #     <extension url="token">
+  #       <valueUri value="https://authorize-dstu2.smarthealthit.org/token"/>
   #     </extension>
-  #     <service>
-  #       <coding>
-  #         <system value="http://hl7.org/fhir/vs/restful-security-service"/>
-  #         <code value="OAuth2"/>
-  #       </coding>
-  #       <text value="OAuth version 2 (see oauth.net)."/>
-  #     </service>
-  #     <description value="SMART on FHIR uses OAuth2 for authorization"/>
-  #   </security>
+  #   </extension>
+  #   <service>
+  #     <coding>
+  #       <system value="http://hl7.org/fhir/vs/restful-security-service"/>
+  #       <code value="OAuth2"/>
+  #     </coding>
+  #     <text value="OAuth version 2 (see oauth.net)."/>
+  #   </service>
+  #   <description value="SMART on FHIR uses OAuth2 for authorization"/>
+  # </security>
   def get_oauth2_metadata_from_conformance
     options = {
       :authorize_url => nil,
       :token_url => nil
     }
-    authorize_extension = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#authorize'
-    token_extension = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris#token'
- 
+    oauth_extension = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
+    authorize_extension = 'authorize'
+    token_extension = 'token'
     begin
       conformance = conformanceStatement
       conformance.rest.each do |rest|
         rest.security.service.each do |service|
           service.coding.each do |coding|
             if coding.code == 'OAuth2'
-              rest.security.extension.where({url: "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris"}).first.extension.each do |ext|
-                case ext.absolute_url
+              rest.security.extension.where({url: oauth_extension}).first.extension.each do |ext|
+                case ext.url
                 when authorize_extension
-                  options[:authorize_url] = ext.value[:value]
+                  options[:authorize_url] = ext.value.value
+                when "#{oauth_extension}\##{authorize_extension}"
+                  options[:authorize_url] = ext.value.value
                 when token_extension
-                  options[:token_url] = ext.value[:value]
+                  options[:token_url] = ext.value.value
+                when "#{oauth_extension}\##{token_extension}"
+                  options[:token_url] = ext.value.value
                 end
               end
             end
@@ -390,7 +397,11 @@ module FHIR
       url = URI("#{base_path(path)}#{path}").to_s
       if @use_oauth2_auth
         # @client.refresh!
-        response = @client.get(url, {:headers=>headers})
+        begin
+          response = @client.get(url, {:headers=>headers})
+        rescue Exception => e
+          response = e.response if e.response
+        end
         req = {
           :method => :get,
           :url => url,
@@ -425,7 +436,11 @@ module FHIR
       payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
         # @client.refresh!
-        response = @client.post(url, {:headers=>headers,:body=>payload})
+        begin
+          response = @client.post(url, {:headers=>headers,:body=>payload})
+        rescue Exception => e
+          response = e.response if e.response
+        end
         req = {
           :method => :post,
           :url => url,
@@ -460,7 +475,11 @@ module FHIR
       payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
         # @client.refresh!
-        response = @client.put(url, {:headers=>headers,:body=>payload})
+        begin
+          response = @client.put(url, {:headers=>headers,:body=>payload})
+        rescue Exception => e
+          response = e.response if e.response
+        end
         req = {
           :method => :put,
           :url => url,
@@ -494,7 +513,11 @@ module FHIR
       url = URI("#{base_path(path)}#{path}").to_s
       if @use_oauth2_auth
         # @client.refresh!
-        response = @client.delete(url, {:headers=>headers})
+        begin
+          response = @client.delete(url, {:headers=>headers})
+        rescue Exception => e 
+          response = e.response if e.response
+        end
         req = {
           :method => :delete,
           :url => url,
