@@ -11,13 +11,28 @@ module FHIR
       # Fetch Patient Record	[base]/Patient/$everything | [base]/Patient/[id]/$everything
       # http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything
       # Fetches resources for a given patient record, scoped by a start and end time, and returns a Bundle of results
-      def fetch_patient_record(id=nil, startTime=nil, endTime=nil, format=@default_format)
-        options = { resource: FHIR::Patient, format: format, operation: { name: :fetch_patient_record } }
+      def fetch_patient_record(id=nil, startTime=nil, endTime=nil, method='GET', format=@default_format)
+        options = { resource: FHIR::Patient, format: format, operation: { name: :fetch_patient_record, method: method } }
         options.deep_merge!({id: id}) if !id.nil?
         options[:operation][:parameters] = {} if options[:operation][:parameters].nil?
         options[:operation][:parameters].merge!({start: { type: 'Date', value: startTime}}) if !startTime.nil?
         options[:operation][:parameters].merge!({end: { type: 'Date', value:endTime}}) if !endTime.nil?
-        reply = get resource_url(options), fhir_headers(options)
+
+        if options[:operation][:method]=='GET'
+          reply = get resource_url(options), fhir_headers(options)
+        else
+          # create Parameters body
+          body = nil
+          if(options[:operation] && options[:operation][:parameters])
+            p = FHIR::Parameters.new
+            options[:operation][:parameters].each do |key,value|
+              p.add_parameter(key.to_s,value[:type],value[:value])
+            end
+            body = p.to_xml
+          end
+          reply = post resource_url(options), p, fhir_headers(options)
+        end
+
         reply.resource = parse_reply(FHIR::Bundle, format, reply)
         reply.resource_class = options[:resource]
         reply
