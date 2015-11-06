@@ -20,17 +20,18 @@ module FHIR
       # @param method one of ['GET','POST','PUT','DELETE']
       # @param url relative path, such as 'Patient/123'. Do not include the [base]
       # @param resource The resource if a POST or PUT
-      def add_transaction_request(method, url, resource=nil)
-        add_batch_request(method, url, resource)
+      def add_transaction_request(method, url, resource=nil, if_none_exist=nil)
+        add_batch_request(method, url, resource, if_none_exist)
       end
 
-      def add_batch_request(method, url, resource=nil)
+      def add_batch_request(method, url, resource=nil, if_none_exist=nil)
         request = FHIR::Bundle::BundleEntryRequestComponent.new
         if FHIR::Bundle::BundleEntryRequestComponent::VALID_CODES.include?(method.upcase)
           request.method = method.upcase 
         else
           request.method = 'POST'
         end
+        request.ifNoneExist = if_none_exist if !if_none_exist.nil?
         if url.nil? && !resource.nil?
           options = Hash.new
           options[:resource] = resource.class
