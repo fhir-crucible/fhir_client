@@ -44,5 +44,12 @@ module FHIR
       @response[:body] unless @response.nil?
     end
 
+    def to_hash
+      hash = {}
+      hash['request'] = @request
+      hash['response'] = @response
+      hash
+    end
+
   end
 end
