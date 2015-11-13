@@ -5,7 +5,6 @@ module FHIR
       attr_accessor :transaction_bundle
 
       def begin_transaction
-binding.pry
         @transaction_bundle = FHIR::Bundle.new
         @transaction_bundle.fhirType = 'transaction'
         @transaction_bundle
