@@ -26,7 +26,7 @@ module FHIR
 
       def add_batch_request(method, url, resource=nil, if_none_exist=nil)
         request = FHIR::Bundle::BundleEntryRequestComponent.new
-        if FHIR::Bundle::BundleEntryRequestComponent::VALID_CODES.include?(method.upcase)
+        if FHIR::Bundle::BundleEntryRequestComponent::VALID_CODES[:method].include?(method.upcase)
           request.method = method.upcase 
         else
           request.method = 'POST'
