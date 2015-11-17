@@ -11,11 +11,14 @@ module FHIR
       #
       def search(klass, options={}, format=@default_format_bundle)
         options.merge!({ resource: klass, format: format })
-        if options[:search][:flag]
+
+#        if options[:search][:flag]
+        if options.has_key? :search  and options.has_key? :flag
           reply = post resource_url(options), nil, fhir_headers(options)
         else
           reply = get resource_url(options), fhir_headers(options)
         end
+        # reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
         reply
@@ -23,7 +26,8 @@ module FHIR
 
       def search_existing(klass, id, options={}, format=@default_format_bundle)
         options.merge!({ resource: klass, id: id, format: format })
-        if options[:search][:flag]
+        #if options[:search][:flag]
+        if options.has_key? :search  and options.has_key? :flag
           reply = post resource_url(options), nil, fhir_headers(options)
         else
           reply = get resource_url(options), fhir_headers(options)
