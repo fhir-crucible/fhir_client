@@ -9,22 +9,17 @@ Supports:
 * Operations (e.g. `$everything`, `$validate`)
 * Support for OAuth2
 
-Does not fillin values like reference range on Observations. Requires additional hits to server.
-http://wildfhir.aegis.net/dstu2gui/index.jsf does somehow
-
-
 ### Getting Started
 
     $ bundle install
     $ bundle exec rake fhir:console
 
 ### Creating a Client
-    client = FHIR::Client.new("http://localhost:8080/hapi-fhir-jpaserver-example/baseDstu2")
-    client = FHIR::Client.new("http://spark.furore.com/fhir") Best one
-    client = FHIR::Client.new("http://fhir-dev.healthintersections.com.au/open")
+
     client = FHIR::Client.new(url)
 
 ### Searching
+
     reply = client.search(FHIR::Patient, search: {parameters: {name: 'P'}})
     bundle = reply.resource
 
@@ -32,11 +27,6 @@ http://wildfhir.aegis.net/dstu2gui/index.jsf does somehow
 
     reply = client.read_feed(FHIR::Patient) # fetch Bundle of Patients
     bundle = reply.resource
-    entry = bundle.entry[0]  # for each result
-    patient = entry.resource
-    
-
-# bundle is a list of patients. use the read to get the full record
     bundle.entry.each do |entry|
       patient = entry.resource
       puts patient.name[0].text
@@ -48,9 +38,9 @@ http://wildfhir.aegis.net/dstu2gui/index.jsf does somehow
 
     # read an existing patient with id "example"
     patient = client.read(FHIR::Patient, "example").resource
-    patient = client.read(FHIR::Patient, "example", FHIR::Formats::FeedFormat::FEED_JSON) # specifying Formats
+    # specifying Formats
+    patient = client.read(FHIR::Patient, "example", FHIR::Formats::FeedFormat::FEED_JSON).resource
 
-    ## It is actually the patient.resource  dhf
     # update the patient
     patient.gender = 'female'
     client.update(patient, patient.xmlId)
