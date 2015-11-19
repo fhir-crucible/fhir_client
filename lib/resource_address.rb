@@ -15,11 +15,15 @@ module FHIR
       params = {}
       # params[:_format] = options[:format] if options[:format]
 
+      format = options[:format] || FHIR::Formats::ResourceFormat::RESOURCE_XML
       fhir_headers = {
-        'User-Agent' => 'Ruby FHIR Client for FHIR',
-        'Content-Type' => 'charset=' + DEFAULT_CHARSET,
+        'User-Agent' => 'Ruby FHIR Client',
+        'Content-Type' => format + ';charset=' + DEFAULT_CHARSET,
         'Accept-Charset' => DEFAULT_CHARSET
       }
+      # remove the content-type header if the format is 'xml' or 'json' because
+      # even those are valid _format parameter options, they are not valid MimeTypes.
+      fhir_headers.delete('Content-Type') if ['xml','json'].include?(format.downcase)
 
       if(options[:category])
         # options[:category] should be an Array of FHIR::Tag objects
@@ -30,14 +34,14 @@ module FHIR
         options.delete(:category)
       end
 
-      unless use_format_param
-        format = options[:format] || FHIR::Formats::ResourceFormat::RESOURCE_XML
-        header = {
-          'Accept' => format,
-          'Content-Type' => format + ';charset=' + DEFAULT_CHARSET
-        }
-        fhir_headers.merge!(header)
+      if use_format_param
+        fhir_headers.delete('Accept')
+        options.delete('Accept')
+        options.delete(:accept)
+      else
+        fhir_headers['Accept'] = format
       end
+      options.delete(:format)
 
       fhir_headers.merge!(options) unless options.blank?
       fhir_headers[:operation] = options[:operation][:name] if options[:operation] && options[:operation][:name]
