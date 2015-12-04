@@ -12,7 +12,15 @@ module FHIR
       # http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything
       # Fetches resources for a given patient record, scoped by a start and end time, and returns a Bundle of results
       def fetch_patient_record(id=nil, startTime=nil, endTime=nil, method='GET', format=@default_format)
-        options = { resource: FHIR::Patient, format: format, operation: { name: :fetch_patient_record, method: method } }
+        fetch_record(id,startTime,endTime,method,FHIR::Patient,format)
+      end
+
+      def fetch_encounter_record(id=nil, method='GET', format=@default_format)
+        fetch_record(id,nil,nil,method,FHIR::Encounter,format)
+      end
+
+      def fetch_record(id=nil, startTime=nil, endTime=nil, method='GET', klass=FHIR::Patient, format=@default_format)
+        options = { resource: klass, format: format, operation: { name: :fetch_patient_record, method: method } }
         options.deep_merge!({id: id}) if !id.nil?
         options[:operation][:parameters] = {} if options[:operation][:parameters].nil?
         options[:operation][:parameters].merge!({start: { type: 'Date', value: startTime}}) if !startTime.nil?
