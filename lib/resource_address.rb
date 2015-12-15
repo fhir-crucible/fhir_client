@@ -95,6 +95,10 @@ module FHIR
         end
       end
 
+      if(options[:params])
+        url += options[:params]
+      end
+
       if(options[:summary])
         params[:_summary] = options[:summary]
       end

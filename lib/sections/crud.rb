@@ -10,8 +10,8 @@ module FHIR
       # @return
       #
 
-      def read(klass, id, format=@default_format, summary=nil)
-        options = { resource: klass, id: id, format: format }
+      def read(klass, id, format=@default_format, summary=nil, options = {})
+        options = { resource: klass, id: id, format: format }.merge(options)
         options[:summary] = summary if summary
         reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(klass, format, reply)
@@ -90,8 +90,8 @@ module FHIR
       # @param id
       # @return
       #
-      def destroy(klass, id)
-        options = { resource: klass, id: id, format: nil }
+      def destroy(klass, id=nil, options={})
+        options = { resource: klass, id: id, format: nil }.merge options
         reply = delete resource_url(options), fhir_headers(options)
         reply.resource_class = klass
         reply
