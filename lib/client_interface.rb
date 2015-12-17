@@ -88,7 +88,7 @@ module FHIR
     @client = client.client_credentials.get_token
   end
 
-  # Get the OAuth2 server and endpoints from the conformance statement 
+  # Get the OAuth2 server and endpoints from the conformance statement
   # (the server should not require OAuth2 or other special security to access
   # the conformance statement).
   # <rest>
@@ -168,11 +168,11 @@ module FHIR
       'application/xml',
       'application/json']
     formats.insert(0,default_format)
-    
+
     @cached_conformance = nil
     @default_format = nil
     @default_format_bundle = nil
- 
+
     formats.each do |frmt|
       reply = get 'metadata', fhir_headers({format: frmt})
       if reply.code == 200
@@ -212,6 +212,10 @@ module FHIR
     res
   end
 
+  def strip_base(path)
+    path.gsub(@baseServiceUrl, '')
+  end
+
   private
 
     def base_path(path)
@@ -224,10 +228,6 @@ module FHIR
       else
         @baseServiceUrl + '/'
       end
-    end
-
-    def strip_base(path)
-      path.gsub(@baseServiceUrl, '')
     end
 
     # Extract the request payload in the specified format, defaults to XML
@@ -248,7 +248,7 @@ module FHIR
 
     def clean_headers(headers)
       headers.delete_if{|k,v|(k.nil? || v.nil?)}
-      headers.inject({}){|h,(k,v)| h[k.to_s]=v.to_s; h}     
+      headers.inject({}){|h,(k,v)| h[k.to_s]=v.to_s; h}
     end
 
     def scrubbed_response_headers(result)
@@ -382,7 +382,7 @@ module FHIR
         # @client.refresh!
         begin
           response = @client.delete(url, {:headers=>headers})
-        rescue Exception => e 
+        rescue Exception => e
           response = e.response if e.response
         end
         req = {
