@@ -1,7 +1,7 @@
 module FHIR
   class Parameters
 
-    attr_accessor :parameter
+    attr_accessor :xmlId, :parameter
 
     class ParameterComponent
       attr_accessor :name, :valueType, :value, :resource
@@ -117,9 +117,11 @@ module FHIR
           obj.add_resource_parameter(pname,presource)
         else
           key = p.xpath('./*').select{|x|x.name.start_with?'value'}.try(:first).try(:name)
-          pvalue = p.at_xpath("./fhir:#{key}/@value").try(:value)
-          pvalueType = key[5..-1]
-          obj.add_parameter(pname,pvalueType,pvalue)
+          unless key.nil?
+            pvalue = p.at_xpath("./fhir:#{key}/@value").try(:value)
+            pvalueType = key[5..-1]
+            obj.add_parameter(pname,pvalueType,pvalue)
+          end
         end
       end
       obj
