@@ -85,7 +85,7 @@ module FHIR
 
       if(options[:search])
         search_options = options[:search]
-        url += '/_search' if search_options[:flag]
+        url += '?' if search_options[:flag]
         url += "/#{search_options[:compartment]}" if search_options[:compartment]
 
         if search_options[:parameters]
