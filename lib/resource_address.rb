@@ -108,7 +108,7 @@ module FHIR
       end
 
       uri = Addressable::URI.parse(url)
-      uri.query_values = params
+      uri.query_values = params unless options[:params] && options[:params].include?("?")
       uri.normalize.to_str
     end
 
