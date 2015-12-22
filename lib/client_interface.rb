@@ -128,7 +128,7 @@ module FHIR
       conformance.rest.each do |rest|
         rest.security.service.each do |service|
           service.coding.each do |coding|
-            if coding.code == 'OAuth2'
+            if coding.code == 'SMART-on-FHIR'
               rest.security.extension.where({url: oauth_extension}).first.extension.each do |ext|
                 case ext.url
                 when authorize_extension
