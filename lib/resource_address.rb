@@ -95,9 +95,8 @@ module FHIR
         end
       end
 
-      if(options[:params])
-        url += options[:params]
-      end
+      # options[:params] is a raw querystring used by testscripts
+      url += options[:params] if options[:params]
 
       if(options[:summary])
         params[:_summary] = options[:summary]
@@ -108,6 +107,8 @@ module FHIR
       end
 
       uri = Addressable::URI.parse(url)
+      # params passed in options takes precidence over params calculated in this method
+      # for use by testscript primarily
       uri.query_values = params unless options[:params] && options[:params].include?("?")
       uri.normalize.to_str
     end
