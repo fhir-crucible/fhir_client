@@ -95,7 +95,7 @@ module FHIR
         end
       end
 
-      # options[:params] is a raw querystring used by testscripts
+      # options[:params] is simply appended at the end of a url and is used by testscripts
       url += options[:params] if options[:params]
 
       if(options[:summary])
