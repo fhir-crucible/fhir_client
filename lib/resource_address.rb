@@ -95,6 +95,9 @@ module FHIR
         end
       end
 
+      # options[:params] is simply appended at the end of a url and is used by testscripts
+      url += options[:params] if options[:params]
+
       if(options[:summary])
         params[:_summary] = options[:summary]
       end
@@ -104,7 +107,9 @@ module FHIR
       end
 
       uri = Addressable::URI.parse(url)
-      uri.query_values = params
+      # params passed in options takes precidence over params calculated in this method
+      # for use by testscript primarily
+      uri.query_values = params unless options[:params] && options[:params].include?("?")
       uri.normalize.to_str
     end
 
