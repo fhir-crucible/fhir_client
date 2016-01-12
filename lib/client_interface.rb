@@ -259,9 +259,9 @@ module FHIR
     end
 
     def get(path, headers)
-      puts "GETTING: #{base_path(path)}#{path}"
+      url = URI(build_url(path)).to_s
+      puts "GETTING: #{url}"
       headers = clean_headers(headers)
-      url = URI("#{base_path(path)}#{path}").to_s
       if @use_oauth2_auth
         # @client.refresh!
         begin
@@ -297,9 +297,9 @@ module FHIR
     end
 
     def post(path, resource, headers)
-      puts "POSTING: #{base_path(path)}#{path}"
+      url = URI(build_url(path)).to_s
+      puts "POSTING: #{url}"
       headers = clean_headers(headers)
-      url = URI("#{base_path(path)}#{path}").to_s
       payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
         # @client.refresh!
@@ -336,9 +336,9 @@ module FHIR
     end
 
     def put(path, resource, headers)
-      puts "PUTTING: #{base_path(path)}#{path}"
+      url = URI(build_url(path)).to_s
+      puts "PUTTING: #{url}"
       headers = clean_headers(headers)
-      url = URI("#{base_path(path)}#{path}").to_s
       payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
         # @client.refresh!
@@ -375,9 +375,9 @@ module FHIR
     end
 
     def delete(path, headers)
-      puts "DELETING: #{base_path(path)}#{path}"
+      url = URI(build_url(path)).to_s
+      puts "DELETING: #{url}"
       headers = clean_headers(headers)
-      url = URI("#{base_path(path)}#{path}").to_s
       if @use_oauth2_auth
         # @client.refresh!
         begin
@@ -414,8 +414,9 @@ module FHIR
 
     def head(path, headers)
       headers.merge!(@security_headers) unless @security_headers.blank?
-      puts "HEADING: #{base_path(path)}#{path}"
-      RestClient.head(URI("#{base_path(path)}#{path}").to_s, headers){ |response, request, result|
+      url = URI(build_url(path)).to_s
+      puts "HEADING: #{url}"
+      RestClient.head(url, headers){ |response, request, result|
         $LOG.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         res = {
           :code => result.code,
@@ -424,6 +425,14 @@ module FHIR
         }
         @reply = FHIR::ClientReply.new(request.args, res)
       }
+    end
+
+    def build_url(path)
+      if path =~ /^\w+:\/\//
+        path
+      else
+        "#{base_path(path)}#{path}"
+      end
     end
 
   end
