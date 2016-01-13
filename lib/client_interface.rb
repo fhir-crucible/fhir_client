@@ -216,6 +216,15 @@ module FHIR
     path.gsub(@baseServiceUrl, '')
   end
 
+  def reissue_request(request)
+    if [:get, :delete, :head].include?(request['method'])
+      method(request['method']).call(request['url'], request['headers'])
+    elsif [:post, :put].include?(request['method'])
+      resource = request['headers']['resource'].constantize.from_xml(request['payload'])
+      method(request['method']).call(request['url'], resource, request['headers'])
+    end
+  end
+
   private
 
     def base_path(path)
