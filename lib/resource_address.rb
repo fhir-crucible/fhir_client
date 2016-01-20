@@ -120,7 +120,7 @@ module FHIR
         token = "#{resourceType}/"
         start = url.index(token) + token.length
         t = url[start..-1]
-        stop = t.index("/")-1
+        stop = (t.index("/") || 0)-1
         stop = -1 if stop.nil?
         id = t[0..stop]
       end
