@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_dstu2_models
-  revision: 27a6f8152a1d6897e3e065390e8e8d7533ce326c
+  revision: 7a0920145c38c2fc5871c0ee57adcb9eb5aa151d
   branch: master
   specs:
     fhir_model (1.0.0)
@@ -163,3 +163,6 @@ DEPENDENCIES
   simplecov
   tilt
   turn
+
+BUNDLED WITH
+   1.11.1
