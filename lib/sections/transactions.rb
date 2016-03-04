@@ -65,9 +65,9 @@ module FHIR
         begin
           reply.resource = FHIR::Resource.from_contents(reply.body)
         rescue Exception => e 
-          reply.resource = @transaction_bundle # just send back the submitted resource
+          reply.resource = nil
         end
-        reply.resource_class = @transaction_bundle.class
+        reply.resource_class = reply.resource.class
         reply
       end
 
