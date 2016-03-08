@@ -60,7 +60,7 @@ module FHIR
       # @return FHIR::ClientReply
       #
       def end_batch(format=@default_format)
-        options = { format: format }
+        options = { format: format, 'Prefer' => 'return=representation' }
         reply = post resource_url(options), @transaction_bundle, fhir_headers(options)
         begin
           reply.resource = FHIR::Resource.from_contents(reply.body)
