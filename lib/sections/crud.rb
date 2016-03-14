@@ -5,11 +5,6 @@ module FHIR
       #
       # Read the current state of a resource.
       #
-      # @param resource
-      # @param id
-      # @return
-      #
-
       def read(klass, id, format=@default_format, summary=nil, options = {})
         options = { resource: klass, id: id, format: format }.merge(options)
         options[:summary] = summary if summary
@@ -33,11 +28,6 @@ module FHIR
       #
       # Read the state of a specific version of the resource
       #
-      # @param resource
-      # @param id
-      # @param versionid
-      # @return
-      #
       def vread(klass, id, version_id, format=@default_format)
         options = { resource: klass, id: id, format: format, history: {id: version_id} }
         reply = get resource_url(options), fhir_headers(options)
@@ -56,39 +46,46 @@ module FHIR
         reply.body
       end
 
+      #
+      # Update an existing resource by its id or create it if it is a new resource, not present on the server
+      #
+      def update(resource, id, format=@default_format)
+        base_update(resource, id, nil, format)
+      end
 
       #
       # Update an existing resource by its id or create it if it is a new resource, not present on the server
       #
-      # @param resourceClass
-      # @param resource
-      # @param id
-      # @return
+      def conditional_update(resource, id, searchParams, format=@default_format)
+        options = {
+          :search => {
+            :flag => false,
+            :compartment => nil,
+            :parameters => {}
+          }
+        }
+        searchParams.each do |key,value|
+          options[:search][:parameters][key] = value
+        end
+        base_update(resource, id, options, format)
+      end
+
       #
-      # public <T extends Resource> AtomEntry<T> update(Class<T> resourceClass, T resource, String id);
-      def update(resource, id, format=@default_format)
-        options = { resource: resource.class, id: id, format: format }
+      # Update an existing resource by its id or create it if it is a new resource, not present on the server
+      #
+      def base_update(resource, id, options, format)
+        options = {} if options.nil?
+        options[:resource] = resource.class
+        options[:format] = format
+        options[:id] = id
         reply = put resource_url(options), resource, fhir_headers(options)
         reply.resource = parse_reply(resource.class, format, reply)
         reply.resource_class = resource.class
         reply
       end
-      #
-      # Update an existing resource by its id or create it if it is a new resource, not present on the server
-      #
-      # @param resourceClass
-      # @param resource
-      # @param id
-      # @return
-      #
-      # public <T extends Resource> AtomEntry<T> update(Class<T> resourceClass, T resource, String id, List<AtomCategory> tags);
 
       #
       # Delete the resource with the given ID.
-      #
-      # @param resourceClass
-      # @param id
-      # @return
       #
       def destroy(klass, id=nil, options={})
         options = { resource: klass, id: id, format: nil }.merge options
@@ -96,18 +93,37 @@ module FHIR
         reply.resource_class = klass
         reply
       end
-      # public <T extends Resource> boolean delete(Class<T> resourceClass, String id);
 
       #
       # Create a new resource with a server assigned id. Return the newly created
       # resource with the id the server assigned.
       #
-      # @param resourceClass
-      # @param resource
-      # @return
-      #
       def create(resource, format=@default_format)
-        options = { resource: resource.class, format: format }
+        base_create(resource, nil ,format)
+      end
+
+      #
+      # Conditionally create a new resource with a server assigned id.
+      #
+      def conditional_create(resource, ifNoneExistParameters, format=@default_format)
+        query = ''
+        ifNoneExistParameters.each do |key,value|
+          query += "#{key.to_s}=#{value.to_s}&"
+        end
+        query = query[0..-2] # strip off the trailing ampersand
+        options = {}
+        options['If-None-Exist'] = query
+        base_create(resource, options, format)
+      end
+
+      #
+      # Create a new resource with a server assigned id. Return the newly created
+      # resource with the id the server assigned.
+      #
+      def base_create(resource, options, format)
+        options = {} if options.nil?
+        options[:resource] = resource.class
+        options[:format] = format
         reply = post resource_url(options), resource, fhir_headers(options)
         if [200,201].include? reply.code
           type = reply.response[:headers][:content_type]

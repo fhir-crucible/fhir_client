@@ -12,9 +12,6 @@ module FHIR
     def fhir_headers(options, use_format_param=false)
       options = DEFAULTS.merge(options)
 
-      params = {}
-      # params[:_format] = options[:format] if options[:format]
-
       format = options[:format] || FHIR::Formats::ResourceFormat::RESOURCE_XML
       fhir_headers = {
         'User-Agent' => 'Ruby FHIR Client',
@@ -45,7 +42,6 @@ module FHIR
 
       fhir_headers.merge!(options) unless options.blank?
       fhir_headers[:operation] = options[:operation][:name] if options[:operation] && options[:operation][:name]
-      fhir_headers.merge!(params) unless params.blank?
       fhir_headers
     end
 

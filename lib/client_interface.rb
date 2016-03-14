@@ -196,7 +196,7 @@ module FHIR
 
   def fhir_headers(options={})
     FHIR::ResourceAddress.new.fhir_headers(options, @use_format_param)
-  end
+  end  
 
   def parse_reply(klass, format, response)
     $LOG.info "Parsing response with {klass: #{klass}, format: #{format}, code: #{response.code}}."
