@@ -38,7 +38,6 @@ module FHIR
       else
         fhir_headers['Accept'] = format
       end
-      options.delete(:format)
 
       fhir_headers.merge!(options) unless options.blank?
       fhir_headers[:operation] = options[:operation][:name] if options[:operation] && options[:operation][:name]
