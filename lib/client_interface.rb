@@ -242,7 +242,7 @@ module FHIR
     # Extract the request payload in the specified format, defaults to XML
     def request_payload(resource, headers)
       if headers
-        case headers[:format]
+        case headers["format"]
         when FHIR::Formats::ResourceFormat::RESOURCE_XML
           resource.to_xml
         when FHIR::Formats::ResourceFormat::RESOURCE_JSON
