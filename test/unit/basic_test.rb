@@ -2,7 +2,7 @@ require_relative '../test_helper'
 
 class BasicTest < Test::Unit::TestCase
 
-  TESTING_ENDPOINT = 'http://fhirtest.uhn.ca/baseDstu2'
+  TESTING_ENDPOINT = 'http://fhirtest.uhn.ca/baseDstu3'
 
   def test_client_initialization
     client = FHIR::Client.new(TESTING_ENDPOINT)
@@ -11,7 +11,7 @@ class BasicTest < Test::Unit::TestCase
 
   def test_conformance
     client = FHIR::Client.new(TESTING_ENDPOINT)
-    assert !client.conformanceStatement.blank?, "Unable to retrieve conformance statement."
+    assert !client.conformanceStatement.nil?, "Unable to retrieve conformance statement."
   end
 
 end

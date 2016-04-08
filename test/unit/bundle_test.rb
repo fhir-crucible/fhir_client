@@ -15,7 +15,7 @@ class BundleTest < Test::Unit::TestCase
 
     bundle = client.parse_reply(FHIR::Bundle, FHIR::Formats::FeedFormat::FEED_XML, clientReply)
 
-    assert !bundle.blank?, "Failed to parse example Bundle."
+    assert !bundle.nil?, "Failed to parse example Bundle."
   end
 
 end
