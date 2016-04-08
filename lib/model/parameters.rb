@@ -81,14 +81,14 @@ module FHIR
       end
       
       resourceType = hash['resourceType']
-      return FHIR::Resource.from_contents(json) if !resourceType.nil? && resourceType!='Parameters'
+      return FHIR::Json.from_json(json) if !resourceType.nil? && resourceType!='Parameters'
 
       obj = FHIR::Parameters.new
       hash['parameter'].each do |phash|
         pname = phash['name']
         presource = phash['resource']
         if !presource.nil?
-          presource = FHIR::Resource.from_contents(JSON.pretty_unparse(presource))
+          presource = FHIR::Json.from_json(JSON.pretty_unparse(presource))
           obj.add_resource_parameter(pname,presource)
         else
           key = phash.keys.select{|k|k.start_with?'value'}.first
@@ -104,21 +104,21 @@ module FHIR
       doc = Nokogiri::XML(xml)
       doc.root.add_namespace_definition('fhir', 'http://hl7.org/fhir')
       doc.root.add_namespace_definition('xhtml', 'http://www.w3.org/1999/xhtml')
-      entry = doc.at_xpath("./fhir:#{self.name.demodulize}")
+      entry = doc.at_xpath("./fhir:Parameters")
       
       obj = FHIR::Parameters.new
       entry.xpath('./fhir:parameter').each do |p|
-        pname = p.at_xpath('./fhir:name/@value').try(:value)
-        presource = p.at_xpath('./fhir:resource/*').try(:to_xml)
+        pname = p.at_xpath('./fhir:name/@value').value rescue nil
+        presource = p.at_xpath('./fhir:resource/*').to_xml rescue nil
         if !presource.nil?
           rdoc = Nokogiri::XML(presource)
           add_namespace_definition(rdoc.root)
-          presource = FHIR::Resource.from_contents(rdoc.to_xml)
+          presource = FHIR::Xml.from_xml(rdoc.to_xml)
           obj.add_resource_parameter(pname,presource)
         else
-          key = p.xpath('./*').select{|x|x.name.start_with?'value'}.try(:first).try(:name)
+          key = p.xpath('./*').select{|x|x.name.start_with?'value'}.first.name rescue nil
           unless key.nil?
-            pvalue = p.at_xpath("./fhir:#{key}/@value").try(:value)
+            pvalue = p.at_xpath("./fhir:#{key}/@value").value rescue nil
             pvalueType = key[5..-1]
             obj.add_parameter(pname,pvalueType,pvalue)
           end

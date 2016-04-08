@@ -63,7 +63,11 @@ module FHIR
         options = { format: format, 'Prefer' => 'return=representation' }
         reply = post resource_url(options), @transaction_bundle, fhir_headers(options)
         begin
-          reply.resource = FHIR::Resource.from_contents(reply.body)
+          if(format.downcase.include?('xml'))
+            reply.resource = FHIR::Xml.from_xml(reply.body)
+          else
+            reply.resource = FHIR::Json.from_json(reply.body)
+          end
         rescue Exception => e 
           reply.resource = nil
         end

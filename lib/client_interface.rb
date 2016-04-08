@@ -203,7 +203,12 @@ module FHIR
     return nil if ![200,201].include? response.code
     res = nil
     begin
-      res = FHIR::Resource.from_contents(response.body)
+      res = nil
+      if(format.downcase.include?('xml'))
+        res = FHIR::Xml.from_xml(response.body)
+      else
+        res = FHIR::Json.from_json(response.body)
+      end
       $LOG.warn "Expected #{klass} but got #{res.class}" if res.class!=klass
     rescue Exception => e
       $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
@@ -228,7 +233,7 @@ module FHIR
   private
 
     def base_path(path)
-      if path.starts_with?('/')
+      if path.start_with?('/')
         if @baseServiceUrl.end_with?('/')
           @baseServiceUrl.chop
         else
