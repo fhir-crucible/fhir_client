@@ -6,13 +6,15 @@ module FHIR
 
       def begin_transaction
         @transaction_bundle = FHIR::Bundle.new
-        @transaction_bundle.fhirType = 'transaction'
+        @transaction_bundle.type = 'transaction'
+        @transaction_bundle.entry ||= []
         @transaction_bundle
       end
 
       def begin_batch
         @transaction_bundle = FHIR::Bundle.new
-        @transaction_bundle.fhirType = 'batch'
+        @transaction_bundle.type = 'batch'
+        @transaction_bundle.entry ||= []
         @transaction_bundle
       end
 
@@ -25,8 +27,8 @@ module FHIR
       end
 
       def add_batch_request(method, url, resource=nil, if_none_exist=nil)
-        request = FHIR::Bundle::BundleEntryRequestComponent.new
-        if FHIR::Bundle::BundleEntryRequestComponent::VALID_CODES[:method].include?(method.upcase)
+        request = FHIR::Bundle::Entry::Request.new
+        if FHIR::Bundle::Entry::Request::METADATA['method']['valid_codes'].values.first.include?(method.upcase)
           request.method = method.upcase 
         else
           request.method = 'POST'
@@ -42,7 +44,7 @@ module FHIR
           request.url = url
         end
 
-        entry = FHIR::Bundle::BundleEntryComponent.new
+        entry = FHIR::Bundle::Entry.new
         entry.resource = resource
         entry.request = request
 
