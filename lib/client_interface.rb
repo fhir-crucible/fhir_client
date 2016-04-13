@@ -251,7 +251,7 @@ module FHIR
         when FHIR::Formats::ResourceFormat::RESOURCE_XML
           resource.to_xml
         when FHIR::Formats::ResourceFormat::RESOURCE_JSON
-          resource.to_fhir_json
+          resource.to_json
         else
           resource.to_xml
         end

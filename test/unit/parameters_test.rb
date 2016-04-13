@@ -21,14 +21,14 @@ class ParametersTest < Test::Unit::TestCase
   def test_example_parameters_xml
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     xml = File.read(File.join(root, 'fixtures', 'parameters-example.xml'))
-    parameters = FHIR::Parameters.from_xml(xml)
+    parameters = FHIR::Xml.from_xml(xml)
     check_params(parameters)
    end
 
   def test_example_parameters_json
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     json = File.read(File.join(root, 'fixtures', 'parameters-example.json'))
-    parameters = FHIR::Parameters.from_fhir_json(json)
+    parameters = FHIR::Json.from_json(json)
     check_params(parameters)
   end
 
@@ -36,8 +36,7 @@ class ParametersTest < Test::Unit::TestCase
     message = "Failed to parse example Parameters."
     assert parameters.parameter.length==2, message
     assert parameters.parameter[0].name=='start', message
-    assert parameters.parameter[0].valueType=='Date', message
-    assert parameters.parameter[0].value=='2010-01-01', message
+    assert parameters.parameter[0].valueDate=='2010-01-01', message
     assert parameters.parameter[1].name=='end', message
     assert !parameters.parameter[1].resource.nil? && parameters.parameter[1].resource.class==FHIR::Binary, message
   end
