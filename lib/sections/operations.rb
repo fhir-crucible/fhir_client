@@ -34,7 +34,9 @@ module FHIR
           if(options[:operation] && options[:operation][:parameters])
             p = FHIR::Parameters.new
             options[:operation][:parameters].each do |key,value|
-              p.add_parameter(key.to_s,value[:type],value[:value])
+              parameter = FHIR::Parameters::Parameter.new.from_hash(name: key.to_s)
+              parameter.method("value#{value[:type]}=").call(value[:value])
+              p.parameter << parameter
             end
             body = p.to_xml
           end
@@ -88,7 +90,9 @@ module FHIR
           if(options[:operation] && options[:operation][:parameters])
             p = FHIR::Parameters.new
             options[:operation][:parameters].each do |key,value|
-              p.add_parameter(key.to_s,value[:type],value[:value])
+              parameter = FHIR::Parameters::Parameter.new.from_hash(name: key.to_s)
+              parameter.method("value#{value[:type]}=").call(value[:value])
+              p.parameter << parameter
             end
             body = p.to_xml
           end

@@ -24,7 +24,6 @@ require_relative File.join('.','feed_format.rb')
 require_relative File.join('.','model','bundle.rb')
 require_relative File.join('.','model','client_reply.rb')
 require_relative File.join('.','model','tag.rb')
-require_relative File.join('.','model','parameters.rb')
 
 generator = FHIR::Boot::Generator.new
 # 1. generate the lists of primitive data types, complex types, and resources
