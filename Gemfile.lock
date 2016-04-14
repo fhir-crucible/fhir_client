@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_models
-  revision: 3a129eb685b24b22202604c39d1f6be12a5fba39
+  revision: c1215007d727aa616b1c8c6d10807c2ae1b1f170
   branch: master
   specs:
     fhir_models (1.0.0)
@@ -145,4 +145,4 @@ DEPENDENCIES
   turn
 
 BUNDLED WITH
-   1.11.1
+   1.11.2
