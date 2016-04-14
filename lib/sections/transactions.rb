@@ -29,15 +29,15 @@ module FHIR
       def add_batch_request(method, url, resource=nil, if_none_exist=nil)
         request = FHIR::Bundle::Entry::Request.new
         if FHIR::Bundle::Entry::Request::METADATA['method']['valid_codes'].values.first.include?(method.upcase)
-          request.method = method.upcase 
+          request.local_method = method.upcase 
         else
-          request.method = 'POST'
+          request.local_method = 'POST'
         end
         request.ifNoneExist = if_none_exist if !if_none_exist.nil?
         if url.nil? && !resource.nil?
           options = Hash.new
           options[:resource] = resource.class
-          options[:id] = resource.xmlId if request.method!='POST'
+          options[:id] = resource.id if request.method!='POST'
           request.url = resource_url(options)
           request.url = request.url[1..-1] if request.url.starts_with?('/')
         else
