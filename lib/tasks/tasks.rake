@@ -58,7 +58,7 @@ namespace :fhir do
       reply = client.read_feed(klass)
       while !reply.nil? && !reply.resource.nil? && reply.resource.total > 0
         reply.resource.entry.each do |entry|
-          client.destroy(klass,entry.resource.xmlId) unless entry.resource.nil?
+          client.destroy(klass,entry.resource.id) unless entry.resource.nil?
         end
         reply = client.read_feed(klass)
       end

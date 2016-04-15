@@ -37,7 +37,7 @@ module FHIR
         if url.nil? && !resource.nil?
           options = Hash.new
           options[:resource] = resource.class
-          options[:id] = resource.id if request.method!='POST'
+          options[:id] = resource.id if request.local_method != 'POST'
           request.url = resource_url(options)
           request.url = request.url[1..-1] if request.url.starts_with?('/')
         else
