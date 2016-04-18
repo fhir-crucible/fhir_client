@@ -56,29 +56,29 @@ module FHIR
       # http://hl7.org/implement/standards/FHIR-Develop/valueset-operations.html#expand
       # The definition of a value set is used to create a simple collection of codes suitable for use for data entry or validation.
       def value_set_expansion(params={}, format=@default_format)
-        options = { operation: { name: :value_set_expansion } }
+        options = { resource: FHIR::ValueSet, operation: { name: :value_set_expansion } }
         options.deep_merge!(params)
-        value_set_operation(options, format)
+        terminology_operation(options, format)
       end
 
       # Value Set based Validation	[base]/ValueSet/$validate | [base]/ValueSet/[id]/$validate
       # http://hl7.org/implement/standards/FHIR-Develop/valueset-operations.html#validate
       # Validate that a coded value is in the set of codes allowed by a value set.
       def value_set_code_validation(params={}, format=@default_format)
-        options = { operation: { name: :value_set_based_validation } }
+        options = { resource: FHIR::ValueSet,  operation: { name: :value_set_based_validation } }
         options.deep_merge!(params)
-        value_set_operation(options, format)
+        terminology_operation(options, format)
       end
 
-      # Concept Look Up [base]/ValueSet/$lookup
-      def value_set_code_lookup(params={}, format=@default_format)
-        options = { operation: { name: :value_set_code_lookup } }
+      # Concept Look Up [base]/CodeSystem/$lookup
+      def code_system_lookup(params={}, format=@default_format)
+        options = { resource: FHIR::CodeSystem, operation: { name: :code_system_lookup } }
         options.deep_merge!(params)
-        value_set_operation(options, format)
+        terminology_operation(options, format)
       end
 
-      def value_set_operation(params={}, format=@default_format)
-        options = { resource: FHIR::ValueSet, format: format }
+      def terminology_operation(params={}, format=@default_format)
+        options = { format: format }
         # params = [id, code, system, version, display, coding, codeableConcept, date, abstract]
         options.deep_merge!(params)
 

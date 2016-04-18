@@ -66,7 +66,7 @@ module FHIR
           url += "/$expand"
         elsif (opr  && opr[:name]== :value_set_based_validation)
           url += "/$validate-code"
-        elsif (opr  && opr[:name]== :value_set_code_lookup)
+        elsif (opr  && opr[:name]== :code_system_lookup)
           url += "/$lookup"
         end
       end
