@@ -260,6 +260,26 @@ module FHIR
       end
     end
 
+    def request_patch_payload(patchset, format)
+      if (format == FHIR::Formats::PatchFormat::PATCH_JSON)
+        patchset.each do |patch|
+          # remove the resource name from the patch path, since the JSON representation doesn't have that
+          patch[:path] = patch[:path].slice(patch[:path].index('/')..-1)
+        end
+        patchset.to_json
+      elsif (format == FHIR::Formats::PatchFormat::PATCH_XML)
+        builder = Nokogiri::XML::Builder.new(encoding: 'UTF-8') do |xml|
+          patchset.each do |patch|
+            xml.diff {
+              # TODO: support other kinds besides just replace
+              xml.replace(patch[:value], sel: patch[:path] + '/@value') if patch[:op] == 'replace'
+            }
+          end
+        end
+        builder.to_xml
+      end
+    end
+
     def clean_headers(headers)
       headers.delete_if{|k,v|(k.nil? || v.nil?)}
       headers.inject({}){|h,(k,v)| h[k.to_s]=v.to_s; h}
@@ -378,6 +398,46 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.put(url, payload, headers){ |response, request, result|
           $LOG.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          res = {
+            :code => result.code,
+            :headers => scrubbed_response_headers(result.each_key{}),
+            :body => response
+          }
+          @reply = FHIR::ClientReply.new(request.args, res)
+        }
+      end
+    end
+
+    def patch(path, patchset, headers)
+      url = URI(build_url(path)).to_s
+      puts "PATCHING: #{url}"
+      headers = clean_headers(headers)
+      payload = request_patch_payload(patchset, headers['format'])
+      if @use_oauth2_auth
+        # @client.refresh!
+        begin
+          response = @client.patch(url, {:headers=>headers,:body=>payload})
+        rescue Exception => e
+          response = e.response if e.response
+        end
+        req = {
+          :method => :patch,
+          :url => url,
+          :headers => headers,
+          :payload => payload
+        }
+        res = {
+          :code => response.status.to_s,
+          :headers => response.headers,
+          :body => response.body
+        }
+        $LOG.info "PATCH - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
+        @reply = FHIR::ClientReply.new(req, res)
+      else
+        headers.merge!(@security_headers) if @use_basic_auth
+        # url = 'http://requestb.in/o8juy3o8'
+        @client.patch(url, payload, headers){ |response, request, result|
+          $LOG.info "PATCH - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
