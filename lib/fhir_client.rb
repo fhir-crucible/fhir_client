@@ -26,10 +26,14 @@ require_relative File.join('.','model','bundle.rb')
 require_relative File.join('.','model','client_reply.rb')
 require_relative File.join('.','model','tag.rb')
 
-generator = FHIR::Boot::Generator.new
-# 1. generate the lists of primitive data types, complex types, and resources
-generator.generate_metadata
-# 2. generate the complex data types
-generator.generate_types
-# 3. generate the base Resources
-generator.generate_resources
+begin
+	generator = FHIR::Boot::Generator.new
+	# 1. generate the lists of primitive data types, complex types, and resources
+	generator.generate_metadata
+	# 2. generate the complex data types
+	generator.generate_types
+	# 3. generate the base Resources
+	generator.generate_resources
+rescue Exception => e 
+	$LOG.error("Could not re-generate fhir models... this can happen in production, but the code does not need to be re-generated")
+end
