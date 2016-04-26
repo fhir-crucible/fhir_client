@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_models
-  revision: c8dee5b24710b1d75d7ae2ec5f0cf7db157b0c15
+  revision: 475d9f5ad1c30b13eb67055dbbed1d872cef8c65
   branch: master
   specs:
     fhir_models (1.0.0)
