@@ -68,6 +68,8 @@ module FHIR
           url += "/$validate-code"
         elsif (opr  && opr[:name]== :code_system_lookup)
           url += "/$lookup"
+        elsif (opr  && opr[:name]== :concept_map_translate)
+          url += "/$translate"
         end
       end
 
