@@ -7,6 +7,7 @@ require 'fhir_models'
 require 'rest_client'
 require 'addressable/uri'
 require 'oauth2'
+require 'active_support/core_ext'
 
 # Simple and verbose loggers
 RestClient.log = Logger.new("fhir_client.log", 10, 1024000)
