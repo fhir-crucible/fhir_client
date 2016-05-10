@@ -10,6 +10,14 @@ Gem::Specification.new do |s|
   s.version = '1.0.0'
 
   s.files = s.files = `git ls-files`.split("\n")
+
+  s.add_dependency 'fhir_models', '~> 0.3'
+  s.add_dependency 'tilt', '~> 2.0'
+  s.add_dependency 'rest-client', '~> 1.8'
+  s.add_dependency 'oauth2', '~> 1.1'
+  s.add_dependency 'activesupport', '>= 3'
+  s.add_dependency 'addressable', '>= 2.3'
+  s.add_development_dependency 'pry'
 end
 
 
