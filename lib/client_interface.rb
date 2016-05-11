@@ -196,7 +196,7 @@ module FHIR
 
   def fhir_headers(options={})
     FHIR::ResourceAddress.new.fhir_headers(options, @use_format_param)
-  end  
+  end
 
   def parse_reply(klass, format, response)
     $LOG.info "Parsing response with {klass: #{klass}, format: #{format}, code: #{response.code}}."
@@ -295,7 +295,7 @@ module FHIR
 
     def get(path, headers)
       url = URI(build_url(path)).to_s
-      puts "GETTING: #{url}"
+      $LOG.info "GETTING: #{url}"
       headers = clean_headers(headers)
       if @use_oauth2_auth
         # @client.refresh!
