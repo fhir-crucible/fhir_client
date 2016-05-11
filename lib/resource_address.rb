@@ -39,7 +39,7 @@ module FHIR
         fhir_headers['Accept'] = format
       end
 
-      fhir_headers.merge!(options) unless options.blank?
+      fhir_headers.merge!(options) unless options.empty?
       fhir_headers[:operation] = options[:operation][:name] if options[:operation] && options[:operation][:name]
       fhir_headers
     end
@@ -66,7 +66,7 @@ module FHIR
           url += "/$expand"
         elsif (opr  && opr[:name]== :value_set_based_validation)
           url += "/$validate-code"
-        elsif (opr  && opr[:name]== :value_set_code_lookup)
+        elsif (opr  && opr[:name]== :code_system_lookup)
           url += "/$lookup"
         end
       end

@@ -23,7 +23,7 @@ module FHIR
 
     def get_by_id(id)
       entry.each do |item|
-        return item.resource if item.xmlId == id || item.resource.xmlId == id
+        return item.resource if item.id == id || item.resource.id == id
       end
       nil
     end
