@@ -156,9 +156,11 @@ module FHIR
               reply.resource = resource # just send back the submitted resource
             end
           else
+            resource.id = FHIR::ResourceAddress.pull_out_id(resource.class.name.demodulize, reply.response[:headers]['location'])
             reply.resource = resource # don't know the content type, so return the resource provided
           end
         else
+          resource.id = FHIR::ResourceAddress.pull_out_id(resource.class.name.demodulize, reply.response[:headers]['location'])
           reply.resource = resource # just send back the submitted resource
         end
         reply.resource_class = resource.class
