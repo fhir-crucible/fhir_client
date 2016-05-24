@@ -306,6 +306,7 @@ module FHIR
         req = {
           :method => :get,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => nil
         }
@@ -320,6 +321,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.get(url, headers){ |response, request, result|
           $LOG.info "GET - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
