@@ -347,6 +347,7 @@ module FHIR
         req = {
           :method => :post,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => payload
         }
@@ -361,6 +362,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.post(url, payload, headers){ |response, request, result|
           $LOG.info "POST - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
@@ -386,6 +388,7 @@ module FHIR
         req = {
           :method => :put,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => payload
         }
@@ -400,6 +403,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.put(url, payload, headers){ |response, request, result|
           $LOG.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
@@ -425,6 +429,7 @@ module FHIR
         req = {
           :method => :patch,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => payload
         }
@@ -440,6 +445,7 @@ module FHIR
         # url = 'http://requestb.in/o8juy3o8'
         @client.patch(url, payload, headers){ |response, request, result|
           $LOG.info "PATCH - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
@@ -464,6 +470,7 @@ module FHIR
         req = {
           :method => :delete,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => nil
         }
@@ -478,6 +485,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.delete(url, headers){ |response, request, result|
           $LOG.info "DELETE - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
@@ -494,6 +502,7 @@ module FHIR
       puts "HEADING: #{url}"
       RestClient.head(url, headers){ |response, request, result|
         $LOG.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+        request.args[:path] = url.gsub(@baseServiceUrl,'')
         res = {
           :code => result.code,
           :headers => scrubbed_response_headers(result.each_key{}),
