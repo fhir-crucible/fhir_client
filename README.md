@@ -3,7 +3,7 @@
 Ruby FHIR client.
 
 Supports:
-* FHIR DSTU2
+* FHIR STU3
 * XML and JSON
 * All CRUD, including version read and history
 * Transactions and Batches
@@ -77,7 +77,7 @@ client.destroy(FHIR::Patient, patient_id)
 ```ruby
 # Create a patient
 @patient = FHIR::Patient.new
-@patient.xmlId = 'temporary_id'
+@patient.id = 'temporary_id'
 
 # Create an observation
 @observation = FHIR::Observation.new
@@ -93,7 +93,7 @@ client.destroy(FHIR::Patient, patient_id)
 @quantity.system = 'http://unitsofmeasure.org'
 @observation.valueQuantity = @quantity
 @reference = FHIR::Reference.new
-@reference.reference = "Patient/#{@patient.xmlId}"
+@reference.reference = "Patient/#{@patient.id}"
 @observation.subject = @reference
 
 # Submit them both as a transaction

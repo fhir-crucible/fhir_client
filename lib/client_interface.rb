@@ -203,7 +203,12 @@ module FHIR
     return nil if ![200,201].include? response.code
     res = nil
     begin
-      res = FHIR::Resource.from_contents(response.body)
+      res = nil
+      if(format.downcase.include?('xml'))
+        res = FHIR::Xml.from_xml(response.body)
+      else
+        res = FHIR::Json.from_json(response.body)
+      end
       $LOG.warn "Expected #{klass} but got #{res.class}" if res.class!=klass
     rescue Exception => e
       $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
@@ -228,7 +233,7 @@ module FHIR
   private
 
     def base_path(path)
-      if path.starts_with?('/')
+      if path.start_with?('/')
         if @baseServiceUrl.end_with?('/')
           @baseServiceUrl.chop
         else
@@ -246,12 +251,32 @@ module FHIR
         when FHIR::Formats::ResourceFormat::RESOURCE_XML
           resource.to_xml
         when FHIR::Formats::ResourceFormat::RESOURCE_JSON
-          resource.to_fhir_json
+          resource.to_json
         else
           resource.to_xml
         end
       else
         resource.to_xml
+      end
+    end
+
+    def request_patch_payload(patchset, format)
+      if (format == FHIR::Formats::PatchFormat::PATCH_JSON)
+        patchset.each do |patch|
+          # remove the resource name from the patch path, since the JSON representation doesn't have that
+          patch[:path] = patch[:path].slice(patch[:path].index('/')..-1)
+        end
+        patchset.to_json
+      elsif (format == FHIR::Formats::PatchFormat::PATCH_XML)
+        builder = Nokogiri::XML::Builder.new(encoding: 'UTF-8') do |xml|
+          patchset.each do |patch|
+            xml.diff {
+              # TODO: support other kinds besides just replace
+              xml.replace(patch[:value], sel: patch[:path] + '/@value') if patch[:op] == 'replace'
+            }
+          end
+        end
+        builder.to_xml
       end
     end
 
@@ -281,6 +306,7 @@ module FHIR
         req = {
           :method => :get,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => nil
         }
@@ -295,6 +321,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.get(url, headers){ |response, request, result|
           $LOG.info "GET - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
@@ -320,6 +347,7 @@ module FHIR
         req = {
           :method => :post,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => payload
         }
@@ -334,6 +362,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.post(url, payload, headers){ |response, request, result|
           $LOG.info "POST - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
@@ -359,6 +388,7 @@ module FHIR
         req = {
           :method => :put,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => payload
         }
@@ -373,6 +403,49 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.put(url, payload, headers){ |response, request, result|
           $LOG.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
+          res = {
+            :code => result.code,
+            :headers => scrubbed_response_headers(result.each_key{}),
+            :body => response
+          }
+          @reply = FHIR::ClientReply.new(request.args, res)
+        }
+      end
+    end
+
+    def patch(path, patchset, headers)
+      url = URI(build_url(path)).to_s
+      puts "PATCHING: #{url}"
+      headers = clean_headers(headers)
+      payload = request_patch_payload(patchset, headers['format'])
+      if @use_oauth2_auth
+        # @client.refresh!
+        begin
+          response = @client.patch(url, {:headers=>headers,:body=>payload})
+        rescue Exception => e
+          response = e.response if e.response
+        end
+        req = {
+          :method => :patch,
+          :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
+          :headers => headers,
+          :payload => payload
+        }
+        res = {
+          :code => response.status.to_s,
+          :headers => response.headers,
+          :body => response.body
+        }
+        $LOG.info "PATCH - Request: #{req.to_s}, Response: #{response.body.force_encoding("UTF-8")}"
+        @reply = FHIR::ClientReply.new(req, res)
+      else
+        headers.merge!(@security_headers) if @use_basic_auth
+        # url = 'http://requestb.in/o8juy3o8'
+        @client.patch(url, payload, headers){ |response, request, result|
+          $LOG.info "PATCH - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
@@ -397,6 +470,7 @@ module FHIR
         req = {
           :method => :delete,
           :url => url,
+          :path => url.gsub(@baseServiceUrl,''),
           :headers => headers,
           :payload => nil
         }
@@ -411,6 +485,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.delete(url, headers){ |response, request, result|
           $LOG.info "DELETE - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+          request.args[:path] = url.gsub(@baseServiceUrl,'')
           res = {
             :code => result.code,
             :headers => scrubbed_response_headers(result.each_key{}),
@@ -427,6 +502,7 @@ module FHIR
       puts "HEADING: #{url}"
       RestClient.head(url, headers){ |response, request, result|
         $LOG.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
+        request.args[:path] = url.gsub(@baseServiceUrl,'')
         res = {
           :code => result.code,
           :headers => scrubbed_response_headers(result.each_key{}),

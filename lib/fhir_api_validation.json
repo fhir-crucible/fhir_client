@@ -1,0 +1,360 @@
+[
+  {
+    "interaction": "read",
+    "path": ["/[type]/[id]"],
+    "verb": "GET",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false,
+        "ETag": "optional",
+        "If-Modified-Since": "optional",
+        "If-None-Match": "optional"
+      },
+      "body": false
+    },
+    "response": {
+      "status": [200,404,410],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": true,
+        "Last-Modified": true
+      },
+      "body": { "types": ["Resource"] }
+    }
+  },{
+    "interaction": "vread",
+    "path": ["/[type]/[id]/_history/[vid]"],
+    "verb": "GET",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false 
+    },
+    "response": {
+      "status": [200,404],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": true,
+        "Last-Modified": true
+      },
+      "body": { "types": ["Resource"] }
+    }
+  },{
+    "interaction": "update",
+    "path": ["/[type]/[id]"],
+    "verb": "PUT",
+    "request": {
+      "headers": {
+        "Content-Type": true,
+        "Accept": "optional",
+        "Prefer": "optional",
+        "If-Match": "optional"
+      },
+      "body": { "types": ["Resource"] }
+    },
+    "response": {
+      "status": [200,201,400,404,405,409,412,422],
+      "headers": {
+        "Content-Type": "optional",
+        "Location": "optional",
+        "ETag": true,
+        "Last-Modified": true
+      },
+      "body": { "types": ["Resource"] }
+    }
+  },{
+    "interaction": "delete",
+    "path": ["/[type]/[id]"],
+    "verb": "DELETE",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false      
+    },
+    "response": {
+      "status": [200,204,404,405,409,412],
+      "headers": {
+        "Content-Type": "optional",
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["OperationOutcome"] }
+    }
+  },{
+    "interaction": "create",
+    "path": ["/[type]"],
+    "verb": "POST",
+    "request": {
+      "headers": {
+        "Content-Type": true,
+        "Accept": "optional",
+        "Prefer": "optional",
+        "If-None-Exist": "optional"
+      },
+      "body": { "types": ["Resource"] }
+    },
+    "response": {
+      "status": [201,400,404,405,422],
+      "headers": {
+        "Content-Type": true,
+        "Location": true,
+        "ETag": true,
+        "Last-Modified": true
+      },
+      "body": { "types": ["Resource"] }
+    }
+  },{
+    "interaction": "search",
+    "path": ["/[type]?"],
+    "verb": "GET",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false      
+    },
+    "response": {
+      "status": [200,403],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Bundle"] }
+    }
+  },{
+    "interaction": "search",
+    "path": ["/[type]/_search?"],
+    "verb": "POST",
+    "request": {
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": "form data"      
+    },
+    "response": {
+      "status": [200,403],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Bundle"] }
+    }
+  },{
+    "interaction": "search-all",
+    "path": ["/_search?"],
+    "verb": "GET",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false      
+    },
+    "response": {
+      "status": [200,403],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Bundle"] }
+    }
+  },{
+    "interaction": "conformance",
+    "path": ["/","/metadata"],
+    "verb": ["GET","OPTIONS"],
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false      
+    },
+    "response": {
+      "status": [200,404],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Conformance"] }
+    }
+  },{      
+    "interaction": "transaction",
+    "path": ["/"],
+    "verb": "POST",
+    "request": {
+      "headers": {
+        "Content-Type": true,
+        "Accept": "optional",
+        "Prefer": "optional"
+      },
+      "body": { "types": ["Bundle"] }      
+    },
+    "response": {
+      "status": [200,400,404,405,409,412,422],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Bundle"] }
+    }
+  },{      
+    "interaction": "history",
+    "path": ["/[type]/[id]/_history"],
+    "verb": "GET",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false      
+    },
+    "response": {
+      "status": [200],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Bundle"] }
+    }
+  },{      
+    "interaction": "history-type",
+    "path": ["/[type]/_history"],
+    "verb": "GET",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false      
+    },
+    "response": {
+      "status": [200],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Bundle"] }
+    }
+  },{      
+    "interaction": "history-all",
+    "path": ["/_history"],
+    "verb": "GET",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false      
+    },
+    "response": {
+      "status": [200],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Bundle"] }
+    }
+  },{      
+    "interaction": "operation",
+    "path": ["/$[name]","/[type]/$[name]","/[type]/[id]/$[name]"],
+    "verb": "POST",
+    "request": {
+      "headers": {
+        "Content-Type": true,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": { "types": ["Parameters"] }
+    },
+    "response": {
+      "status": [200],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Parameters","Resource"] }
+    }
+  },{      
+    "interaction": "operation",
+    "path": ["/$[name]","/[type]/$[name]","/[type]/[id]/$[name]"],
+    "verb": "GET",
+    "request": {
+      "headers": {
+        "Content-Type": false,
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": false
+    },
+    "response": {
+      "status": [200],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Parameters","Resource"] }
+    }
+  },{      
+    "interaction": "operation",
+    "path": ["/$[name]","/[type]/$[name]","/[type]/[id]/$[name]"],
+    "verb": "POST",
+    "request": {
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "optional",
+        "Prefer": false
+      },
+      "body": { "regex": "([\w\-]+(=[\w\-.:\/\|]*)?(&[\w\-]+(=[\w\-.:\/\|]*)?)*)?" }
+    },
+    "response": {
+      "status": [200],
+      "headers": {
+        "Content-Type": true,
+        "Location": false,
+        "ETag": false,
+        "Last-Modified": false
+      },
+      "body": { "types": ["Parameters","Resource"] }
+    }
+  }
+]

@@ -3,10 +3,11 @@ require 'bundler/setup'
 require 'rubygems'
 require 'yaml'
 require 'nokogiri'
-require 'fhir_model'
+require 'fhir_models'
 require 'rest_client'
 require 'addressable/uri'
 require 'oauth2'
+require 'active_support/core_ext'
 
 # Simple and verbose loggers
 RestClient.log = Logger.new("fhir_client.log", 10, 1024000)
@@ -21,10 +22,19 @@ require_relative File.join('.','client_interface.rb')
 require_relative File.join('.','resource_address.rb')
 require_relative File.join('.','resource_format.rb')
 require_relative File.join('.','feed_format.rb')
+require_relative File.join('.','patch_format.rb')
 require_relative File.join('.','model','bundle.rb')
 require_relative File.join('.','model','client_reply.rb')
 require_relative File.join('.','model','tag.rb')
-require_relative File.join('.','model','parameters.rb')
 
-mongo_config = File.join(root, "config/mongoid.yml")
-Mongoid.load!(mongo_config, :test) unless (Mongoid.configured? || !File.exists?(mongo_config))
+begin
+	generator = FHIR::Boot::Generator.new
+	# 1. generate the lists of primitive data types, complex types, and resources
+	generator.generate_metadata
+	# 2. generate the complex data types
+	generator.generate_types
+	# 3. generate the base Resources
+	generator.generate_resources
+rescue Exception => e 
+	$LOG.error("Could not re-generate fhir models... this can happen in production, but the code does not need to be re-generated")
+end

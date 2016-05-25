@@ -85,6 +85,26 @@ module FHIR
       end
 
       #
+      # Partial update using a patchset (PATCH)
+      #
+      def partial_update(klass, id, patchset, options={}, format=@default_format)
+        options = { resource: klass, id: id, format: format }.merge options
+        
+        if (format == FHIR::Formats::ResourceFormat::RESOURCE_XML)
+          options[:format] = FHIR::Formats::PatchFormat::PATCH_XML
+          options[:Accept] = format
+        elsif (format == FHIR::Formats::ResourceFormat::RESOURCE_JSON)
+          options[:format] = FHIR::Formats::PatchFormat::PATCH_JSON
+          options[:Accept] = format
+        end
+
+        reply = patch resource_url(options), patchset, fhir_headers(options)
+        reply.resource = parse_reply(klass, format, reply)
+        reply.resource_class = klass
+        reply
+      end
+
+      #
       # Delete the resource with the given ID.
       #
       def destroy(klass, id=nil, options={})
