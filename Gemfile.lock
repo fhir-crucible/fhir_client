@@ -1,9 +1,18 @@
 GIT
   remote: https://github.com/fhir-crucible/fhir_dstu2_models
-  revision: d97eb1a7ad805128e200ff12736668355c778741
+  revision: 51c1b4ba96a1b67256f7752d1ebc82d67a72fcf1
   branch: master
   specs:
     fhir_model (1.0.0)
+      bcp47
+      date_time_precision
+      mongoid
+      mongoid-history
+      moped
+      nokogiri
+      pry
+      rails (>= 4.0.0)
+      tilt
 
 PATH
   remote: .
@@ -165,4 +174,4 @@ DEPENDENCIES
   turn
 
 BUNDLED WITH
-   1.11.1
+   1.11.2
