@@ -16,15 +16,15 @@ module FHIR
 
     def self.find(id, options = {})
       client = self.pull_client_from options
-      response = client.read(self, id)
-      response.resource.client = client
+      response = client.read(self, id, client.default_format, options[:summary], options)
+      response.resource.client = client unless response.resource.nil?
       response.resource
     end
 
     def self.all(options = {})
       client = pull_client_from options
       response = client.read_feed(self)
-      response.resource.client = client
+      response.resource.client = client unless response.resource.nil?
       response.resource
     end
 
@@ -32,7 +32,7 @@ module FHIR
       client = pull_client_from options
       resource = self.new.from_hash(options)
       response = client.create(resource)
-      response.resource.client = client
+      response.resource.client = client unless response.resource.nil?
       response.resource
     end
 
@@ -47,7 +47,7 @@ module FHIR
 
       options = { search: { parameters: options }}
       response = client.search(self, options)
-      response.resource.client = client
+      response.resource.client = client unless response.resource.nil?
       response.resource
     end
 
