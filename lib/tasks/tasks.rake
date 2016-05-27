@@ -9,28 +9,46 @@ namespace :fhir do
   task :api_testing, [] do |t, args|
 
     client = FHIR::Client.new 'http://fhirtest.uhn.ca/baseDstu3'
-    # client = FHIR::Client.new 'http://sqlonfhir-may.azurewebsites.net/fhir'
+    client2 = FHIR::Client.new 'http://sqlonfhir-may.azurewebsites.net/fhir'
 
     FHIR::Model.configure { |c| c.client = client }
 
-    patient = FHIR::Patient.create(name: {given: 'Joe', family: 'Smith'})
+    patient1 = FHIR::Patient.create(name: {given: 'Joe', family: 'Smith'})
+    patient2 = FHIR::Patient.create(name: {given: 'Joe', family: 'Smith'}, client: client2)
 
     results = FHIR::Patient.where(given: 'Joe', family: 'Smith')
+    results = FHIR::Patient.where(given: 'Joe', family: 'Smith', client: client2)
 
-    patient.name[0].family = 'Smithfield'
-    patient.save
-
-    patient_check = FHIR::Patient.find(patient.id)
-
-    patient2 = FHIR::Patient.new(name: {given: 'Sam', family: 'Jones'})
+    patient1.save
+    patient2.name[0].family = 'Smithfield'
     patient2.save
 
-    all_patients = FHIR::Patient.all
-    # all_patients.count() # enumerable
-    binding.pry
+    patient_check = FHIR::Patient.find(patient1.id)
+    patient_check = FHIR::Patient.find(patient1.id, client: client)
 
-    patient.destroy
+    patient3 = FHIR::Patient.new(name: {given: 'Sam', family: 'Jones'})
+    patient3.save(client:client)
+    patient4 = FHIR::Patient.new(name: {given: 'Sam', family: 'Jones'})
+    patient4.save(client: client2)
+    patient_check = FHIR::Patient.find(patient1.id)
+
+    all_patients = FHIR::Patient.all()
+    all_patients = FHIR::Patient.all(client: client2)
+
+    # all_patients.count() # enumerable
+
+    patient1.destroy
     patient2.destroy
+    patient3.destroy
+
+  end
+
+  desc 'WIP to test the new API; delete when done'
+  task :api_testing_noconfig, [] do |t, args|
+
+    client = FHIR::Client.new 'http://fhirtest.uhn.ca/baseDstu3'
+    patient = FHIR::Patient.create(name: {given: 'Joe', family: 'Smith'}, client: client)
+    patient.destroy
 
   end
 
