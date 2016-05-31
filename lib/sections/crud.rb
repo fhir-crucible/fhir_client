@@ -163,6 +163,7 @@ module FHIR
           resource.id = FHIR::ResourceAddress.pull_out_id(resource.class.name.demodulize, reply.response[:headers]['location'])
           reply.resource = resource # just send back the submitted resource
         end
+        reply.resource.client = self
         reply.resource_class = resource.class
         reply
       end

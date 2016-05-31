@@ -214,6 +214,7 @@ module FHIR
       $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
       nil
     end
+    res.client = self
     res
   end
 
