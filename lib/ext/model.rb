@@ -18,6 +18,10 @@ module FHIR
     def self.read(client, id)
       client.read(self, id).resource
     end
+
+    def self.search(client, params = {})
+      client.search(self, search: { parameters: params }).resource
+    end
   end
 end
 
