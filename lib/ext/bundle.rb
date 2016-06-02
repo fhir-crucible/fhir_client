@@ -1,5 +1,6 @@
 module FHIR
   class Bundle
+    include Enumerable
 
     def self_link
       link.select {|n| n.relation == 'self'}.first
@@ -28,5 +29,17 @@ module FHIR
       nil
     end
 
+    def each(&block)
+      iteration = @entry.map(&:resource).each(&block)
+      iteration += next_bundle.each(&block) if next_bundle
+      iteration
+    end
+
+    def next_bundle
+      # TODO: test this
+      return nil unless client && next_link.try(:url)
+      @next_bundle ||= client.parse_reply(client.raw_read_url(next_link.url))
+    end
   end
 end
+
