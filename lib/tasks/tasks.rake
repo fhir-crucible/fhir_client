@@ -13,27 +13,29 @@ namespace :fhir do
 
     FHIR::Model.configure { |c| c.client = client }
 
-    patient1 = FHIR::Patient.create(name: {given: 'Joe', family: 'Smith'})
-    patient2 = FHIR::Patient.create(name: {given: 'Joe', family: 'Smith'}, client: client2)
+    patient1 = FHIR::Patient.create(client, name: {given: 'Joe', family: 'Smith'})
+    patient2 = FHIR::Patient.create(client2, name: {given: 'Joe', family: 'Smith'})
 
-    results = FHIR::Patient.where(given: 'Joe', family: 'Smith')
-    results = FHIR::Patient.where(given: 'Joe', family: 'Smith', client: client2)
+    results = FHIR::Patient.search(client, given: 'Joe', family: 'Smith')
+    results = FHIR::Patient.search(client2, given: 'Joe', family: 'Smith')
 
-    patient1.save
+    patient1.update
     patient2.name[0].family = 'Smithfield'
-    patient2.save
+    patient2.update
 
-    patient_check = FHIR::Patient.find(patient1.id)
-    patient_check = FHIR::Patient.find(patient1.id, client: client)
+    patient_check = FHIR::Patient.read(client2, patient1.id)
+    patient_check = FHIR::Patient.read(client, patient1.id)
 
     patient3 = FHIR::Patient.new(name: {given: 'Sam', family: 'Jones'})
-    patient3.save(client:client)
+    patient3.client = client
+    patient3.update
     patient4 = FHIR::Patient.new(name: {given: 'Sam', family: 'Jones'})
-    patient4.save(client: client2)
-    patient_check = FHIR::Patient.find(patient1.id)
+    patient4.client = client
+    patient4.update
+    patient_check = FHIR::Patient.read(client, patient1.id)
 
-    all_patients = FHIR::Patient.all()
-    all_patients = FHIR::Patient.all(client: client2)
+    #all_patients = FHIR::Patient.all()
+    #all_patients = FHIR::Patient.all(client: client2)
 
     # all_patients.count() # enumerable
 
@@ -47,7 +49,7 @@ namespace :fhir do
   task :api_testing_noconfig, [] do |t, args|
 
     client = FHIR::Client.new 'http://fhirtest.uhn.ca/baseDstu3'
-    patient = FHIR::Patient.create(name: {given: 'Joe', family: 'Smith'}, client: client)
+    patient = FHIR::Patient.create(client, name: {given: 'Joe', family: 'Smith'})
     patient.destroy
 
   end

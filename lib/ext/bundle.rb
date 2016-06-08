@@ -30,21 +30,16 @@ module FHIR
     end
 
     def each(&block)
-      @entry.each(&block)
+      iteration = @entry.map(&:resource).each(&block)
+      iteration += next_bundle.each(&block) if next_bundle
+      iteration
     end
 
-    # TODO: upgrade client to easily get a bundle if given a link
-    # def next
-    #   return nil if next_link.nil?
-    #   self.class.last_response = self.class.configuration.client.raw_read_url next_link.url
-    #   self.class.last_response.resource
-    # end
-
-    # def previous
-    #   return nil if previous_link.nil?
-    #   self.class.last_response = self.class.configuration.client.raw_read_url previous_link.url
-    #   self.class.last_response.resource
-    # end
+    def next_bundle
+      # TODO: test this
+      return nil unless client && next_link.try(:url)
+      @next_bundle ||= client.parse_reply(client.raw_read_url(next_link.url))
+    end
   end
 end
 
