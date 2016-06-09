@@ -39,7 +39,7 @@ module FHIR
     end
 
     def destroy
-      client.destroy(self, id) unless id.nil?
+      client.destroy(self.class, id) unless id.nil?
       nil
     end
 
