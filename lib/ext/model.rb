@@ -42,13 +42,5 @@ module FHIR
       client.destroy(self.class, id) unless id.nil?
       nil
     end
-
-    def save
-      if id.nil?
-        self.class.create(self, client)
-      else
-        update
-      end
-    end
   end
 end
