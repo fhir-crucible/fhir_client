@@ -46,5 +46,9 @@ module FHIR
       client.destroy(self.class, id) unless id.nil?
       nil
     end
+
+    def create
+      client.create(self).resource
+    end
   end
 end
