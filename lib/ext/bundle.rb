@@ -38,7 +38,7 @@ module FHIR
     def next_bundle
       # TODO: test this
       return nil unless client && next_link.try(:url)
-      @next_bundle ||= client.parse_reply(client.raw_read_url(next_link.url))
+      @next_bundle ||= client.parse_reply(self.class, client.default_format, client.raw_read_url(next_link.url))
     end
   end
 end
