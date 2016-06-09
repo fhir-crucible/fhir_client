@@ -38,17 +38,30 @@ module FHIR
       client.create(model).resource
     end
 
+    def self.conditional_create(model, params, client = self.client)
+      model = new(model) unless model.is_a?(self)
+      client.conditional_create(model, params)
+    end
+
+    def create
+      client.create(self).resource
+    end
+
+    def conditional_create(params)
+      client.conditional_create(self, params)
+    end
+
     def update
       client.update(self, id).resource
+    end
+
+    def conditional_update(params)
+      client.conditional_update(self, self.id, params).resource
     end
 
     def destroy
       client.destroy(self.class, id) unless id.nil?
       nil
-    end
-
-    def create
-      client.create(self).resource
     end
   end
 end
