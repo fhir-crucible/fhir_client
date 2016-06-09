@@ -25,6 +25,10 @@ module FHIR
       client.read(self, id).resource
     end
 
+    def self.read_with_summary(id, summary, client = self.client)
+      client.read(self, id, client.default_format, summary).resource
+    end
+
     def self.search(params = {}, client = self.client)
       client.search(self, search: { parameters: params }).resource
     end
