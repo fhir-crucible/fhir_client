@@ -11,34 +11,49 @@ Supports:
 * Operations (e.g. `$everything`, `$validate`)
 * Support for OAuth2
 
-### Getting Started
+## Getting Started
 
     $ bundle install
     $ bundle exec rake fhir:console
 
-### Creating a Client
+## Creating a Client
 ```ruby
 client = FHIR::Client.new(url)
 ```
 
-### Searching
+This client supports two modes of operation: basic and advanced.  The basic mode is useful for simple operations
+because it promotes an ActiveRecord-like style of interaction.  The advanced mode is less developer-friendly, but is currently necessary if you would like to use the entire range of operations exposed by FHIR.
+
+## Basic Usage
+
+Associate the client with the model:
+
 ```ruby
-reply = client.search(FHIR::Patient, search: {parameters: {name: 'P'}})
-bundle = reply.resource
-patient = bundle.entry.first.resource
+FHIR::Model.client = client
 ```
 
-### Fetching a Bundle
+The FHIR models can now be used to directly interact with a FHIR server.
+
 ```ruby
-reply = client.read_feed(FHIR::Patient) # fetch Bundle of Patients
-bundle = reply.resource
-bundle.entry.each do |entry|
-  patient = entry.resource
-  puts patient.name[0].text
-end
-puts reply.code # HTTP 200 (or whatever was returned)
-puts reply.body # Raw XML or JSON
+# read an existing patient with an ID of 'example'
+patient = FHIR::Patient.read('example')
+
+# update a patient
+patient.gender = 'female'
+patient.update # saves the patient 
+
+# create a patient
+patient = FHIR::Patient.create(name: {given: 'John', family: 'Doe'})
+
+# search patients
+results = FHIR::Patient.search(given: 'John', family: 'Doe')
+results.count # results in an enumeration
+
+# delete the recently created patient
+patient.destroy
 ```
+
+## Advanced Usage
 
 ### CRUD Examples
 ```ruby
@@ -71,6 +86,25 @@ client.conditional_create(patient, ifNoneExist)
 
 # destroy the patient
 client.destroy(FHIR::Patient, patient_id)
+```
+
+### Searching
+```ruby
+reply = client.search(FHIR::Patient, search: {parameters: {name: 'P'}})
+bundle = reply.resource
+patient = bundle.entry.first.resource
+```
+
+### Fetching a Bundle
+```ruby
+reply = client.read_feed(FHIR::Patient) # fetch Bundle of Patients
+bundle = reply.resource
+bundle.entry.each do |entry|
+  patient = entry.resource
+  puts patient.name[0].text
+end
+puts reply.code # HTTP 200 (or whatever was returned)
+puts reply.body # Raw XML or JSON
 ```
 
 ### Transactions
