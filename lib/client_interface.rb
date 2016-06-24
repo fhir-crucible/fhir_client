@@ -320,16 +320,22 @@ module FHIR
         @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
-        @client.get(url, headers){ |response, request, result|
-          $LOG.info "GET - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
-          request.args[:path] = url.gsub(@baseServiceUrl,'')
-          res = {
-            :code => result.code,
-            :headers => scrubbed_response_headers(result.each_key{}),
-            :body => response
-          }
-          @reply = FHIR::ClientReply.new(request.args, res)
+        begin
+          response = @client.get(url, headers)
+        rescue Exception => e
+          response = e.response if e.response
+        end
+
+        $LOG.info "GET - Request: #{response.request.to_json}, Response: #{response.body.force_encoding("UTF-8")}"
+        response.request.args[:path] = response.request.args[:url].gsub(@baseServiceUrl,'')
+        headers = response.headers.inject({}){ |h,(k,v)| h[k.to_s.gsub('_','-')] = v.to_s; h}
+        res = {
+          :code => response.code,
+          :headers => scrubbed_response_headers(headers),
+          :body => response.body
         }
+
+        @reply = FHIR::ClientReply.new(response.request.args, res)
       end
     end
 
