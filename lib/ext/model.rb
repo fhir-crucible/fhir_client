@@ -29,6 +29,26 @@ module FHIR
       handle_response client.read(self, id, client.default_format, summary)
     end
 
+    def self.vread(id, version_id, client = self.client)
+      handle_response client.vread(self, id, version_id)
+    end
+
+    def self.resource_history(client = self.client)
+      handle_response client.resource_history(self)
+    end
+
+    def self.resource_history_as_of(last_update)
+      handle_response client.resource_history_as_of(self, last_update)
+    end
+
+    def self.resource_instance_history(id, client = self.client)
+      handle_response client.resource_instance_history(self, id)
+    end
+
+    def self.resource_instance_history_as_of(id, last_update, client = self.client)
+      handle_response client.resource_instance_history_as_of(self, id, last_update)
+    end
+
     def self.search(params = {}, client = self.client)
       handle_response client.search(self, search: { parameters: params })
     end
@@ -43,8 +63,12 @@ module FHIR
       handle_response client.conditional_create(model, params)
     end
 
+    def self.all
+      handle_response client.read_feed(self)
+    end
+
     def create
-      handle_response client.create(self).resource
+      handle_response client.create(self)
     end
 
     def conditional_create(params)
