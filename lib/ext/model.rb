@@ -64,6 +64,14 @@ module FHIR
       nil
     end
 
+    def resolve(reference)
+      if reference.contained?
+        contained.detect { |c| c.id == reference.id }
+      else
+        reference.read
+      end
+    end
+
     private
 
     def self.handle_response(response)
