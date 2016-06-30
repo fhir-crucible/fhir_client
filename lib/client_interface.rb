@@ -341,7 +341,7 @@ module FHIR
 
     def post(path, resource, headers)
       url = URI(build_url(path)).to_s
-      puts "POSTING: #{url}"
+      $LOG.info "POSTING: #{url}"
       headers = clean_headers(headers)
       payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
@@ -382,7 +382,7 @@ module FHIR
 
     def put(path, resource, headers)
       url = URI(build_url(path)).to_s
-      puts "PUTTING: #{url}"
+      $LOG.info "PUTTING: #{url}"
       headers = clean_headers(headers)
       payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
@@ -423,7 +423,7 @@ module FHIR
 
     def patch(path, patchset, headers)
       url = URI(build_url(path)).to_s
-      puts "PATCHING: #{url}"
+      $LOG.info "PATCHING: #{url}"
       headers = clean_headers(headers)
       payload = request_patch_payload(patchset, headers['format'])
       if @use_oauth2_auth
@@ -465,7 +465,7 @@ module FHIR
 
     def delete(path, headers)
       url = URI(build_url(path)).to_s
-      puts "DELETING: #{url}"
+      $LOG.info "DELETING: #{url}"
       headers = clean_headers(headers)
       if @use_oauth2_auth
         # @client.refresh!
@@ -506,7 +506,7 @@ module FHIR
     def head(path, headers)
       headers.merge!(@security_headers) unless @security_headers.blank?
       url = URI(build_url(path)).to_s
-      puts "HEADING: #{url}"
+      $LOG.info "HEADING: #{url}"
       RestClient.head(url, headers){ |response, request, result|
         $LOG.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding("UTF-8")}"
         request.args[:path] = url.gsub(@baseServiceUrl,'')
