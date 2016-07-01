@@ -226,13 +226,7 @@ module FHIR
     if [:get, :delete, :head].include?(request['method'])
       method(request['method']).call(request['url'], request['headers'])
     elsif [:post, :put].include?(request['method'])
-      if request['payload'] != nil
-        if request['headers']['format'].downcase.include?('xml')
-          resource = FHIR::Xml.from_xml(request['payload'])
-        else
-          resource = FHIR::Json.from_json(request['payload'])
-        end
-      end
+      resource = FHIR.from_contents(request['payload']) unless request['payload'].nil?
       method(request['method']).call(request['url'], resource, request['headers'])
     end
   end
