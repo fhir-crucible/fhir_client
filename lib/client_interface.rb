@@ -226,7 +226,7 @@ module FHIR
     if [:get, :delete, :head].include?(request['method'])
       method(request['method']).call(request['url'], request['headers'])
     elsif [:post, :put].include?(request['method'])
-      resource = request['headers']['resource'].constantize.from_xml(request['payload'])
+      resource = FHIR.from_contents(request['payload']) unless request['payload'].nil?
       method(request['method']).call(request['url'], resource, request['headers'])
     end
   end
