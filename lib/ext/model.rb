@@ -67,6 +67,10 @@ module FHIR
       handle_response client.read_feed(self)
     end
 
+    def vread(version_id)
+      self.class.vread(id, version_id, client)
+    end
+
     def create
       handle_response client.create(self)
     end
