@@ -70,6 +70,8 @@ module FHIR
           url += "/$lookup"
         elsif (opr  && opr[:name]== :concept_map_translate)
           url += "/$translate"
+        elsif (opr  && opr[:name]== :closure_table_maintenance)
+          url += "/$closure"
         end
       end
 

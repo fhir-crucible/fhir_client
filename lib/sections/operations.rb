@@ -77,11 +77,18 @@ module FHIR
         terminology_operation(options, format)
       end
 
-      #
+      # ConceptMap Translation
       def concept_map_translate(params={}, format=@default_format)
         options = { resource: FHIR::ConceptMap, operation: { name: :concept_map_translate } }
         options.deep_merge!(params)
         terminology_operation(options, format)
+      end
+
+      # ConceptMap Closure Table Maintenance
+      def closure_table_maintenance(params={}, format=@default_format)
+        options = { operation: { name: :closure_table_maintenance } }
+        options.deep_merge!(params)
+        terminology_operation(options, format)        
       end
 
       def terminology_operation(params={}, format=@default_format)
