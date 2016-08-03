@@ -203,18 +203,13 @@ module FHIR
     return nil if ![200,201].include? response.code
     res = nil
     begin
-      res = nil
-      if(format.downcase.include?('xml'))
-        res = FHIR::Xml.from_xml(response.body)
-      else
-        res = FHIR::Json.from_json(response.body)
-      end
+      res = FHIR.from_contents(response.body)
+      res.client = self if !res.nil?
       $LOG.warn "Expected #{klass} but got #{res.class}" if res.class!=klass
     rescue Exception => e
       $LOG.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
       nil
     end
-    res.client = self
     res
   end
 

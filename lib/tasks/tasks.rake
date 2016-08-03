@@ -36,12 +36,15 @@ namespace :fhir do
   end
 
   desc 'count all resources for a given server'
-  task :count, [:url] do |t, args|
+  task :count, [:url,:display_zero] do |t, args|
     client = FHIR::Client.new(args.url)
+    display_zero = (args.display_zero == 'true')
     counts = {}
-    fhir_resources.map do | klass |
+    fhir_resources.each do | klass |
       reply = client.read_feed(klass)
-      counts["#{klass.name.demodulize}"] = reply.resource.total unless reply.resource.nil?
+      if !reply.resource.nil? && (reply.resource.total > 0 || display_zero)
+        counts["#{klass.name.demodulize}"] = reply.resource.total
+      end
     end
     printf "  %-30s %5s\n", 'Resource', 'Count'
     printf "  %-30s %5s\n", '--------', '-----'
@@ -54,7 +57,7 @@ namespace :fhir do
   desc 'delete all resources for a given server'
   task :clean, [:url] do |t, args|
     client = FHIR::Client.new(args.url)
-    fhir_resources.map do | klass |
+    fhir_resources.each do | klass |
       reply = client.read_feed(klass)
       while !reply.nil? && !reply.resource.nil? && reply.resource.total > 0
         reply.resource.entry.each do |entry|
@@ -67,7 +70,7 @@ namespace :fhir do
   end
 
   def fhir_resources
-    Mongoid.models.select {|c| c.name.include?('FHIR') && !c.included_modules.find_index(FHIR::Resource).nil?}
+    FHIR::RESOURCES.map {|r| Object::const_get("FHIR::#{r}")}
   end
 
 end
