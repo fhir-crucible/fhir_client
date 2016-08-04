@@ -5,7 +5,7 @@ module FHIR
       type, id = reference.to_s.split("/")
       return unless [type, id].all?(&:present?)
       klass = "FHIR::#{type}".constantize
-      klass.read(client, id)
+      klass.read(id, client)
     end
   end
 end
