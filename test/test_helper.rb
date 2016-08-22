@@ -1,4 +1,4 @@
-require_relative "./simplecov"
+require 'simplecov'
 require_relative '../lib/fhir_client'
 
 require 'pry'
