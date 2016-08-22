@@ -7,6 +7,7 @@ require 'fhir_models'
 require 'rest_client'
 require 'addressable/uri'
 require 'oauth2'
+require 'active_support'
 require 'active_support/core_ext'
 
 root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
