@@ -8,7 +8,7 @@ require 'rest_client'
 require 'addressable/uri'
 require 'oauth2'
 require 'active_support'
-require 'active_support/core_ext'
+require 'active_support/all'
 
 root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
 Dir.glob(File.join(root, 'lib','sections','**','*.rb')).each do |file|
