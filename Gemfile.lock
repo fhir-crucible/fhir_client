@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fhir_client (1.6.1)
+    fhir_client (1.6.2)
       activesupport (>= 3)
       addressable (>= 2.3)
       fhir_models (>= 1.6.1)
