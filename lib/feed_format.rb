@@ -2,8 +2,8 @@ module FHIR
   module Formats
     class FeedFormat
 
-      FEED_XML = "application/xml+fhir"
-      FEED_JSON = "application/json+fhir"
+      FEED_XML = "application/fhir+xml"
+      FEED_JSON = "application/fhir+json"
 
     end
   end

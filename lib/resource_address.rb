@@ -4,7 +4,7 @@ module FHIR
     DEFAULTS = {
       id: nil,
       resource: nil,
-      format: 'application/xml+fhir',
+      format: 'application/fhir+xml'
     }
 
     DEFAULT_CHARSET = 'UTF-8'

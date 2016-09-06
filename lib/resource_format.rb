@@ -2,8 +2,8 @@ module FHIR
   module Formats
     class ResourceFormat
 
-      RESOURCE_XML = "application/xml+fhir"
-      RESOURCE_JSON = "application/json+fhir"
+      RESOURCE_XML = "application/fhir+xml"
+      RESOURCE_JSON = "application/fhir+json"
 
     end
   end
