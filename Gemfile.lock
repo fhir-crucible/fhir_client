@@ -6,7 +6,7 @@ PATH
       addressable (>= 2.3)
       fhir_models (>= 1.6.1)
       oauth2 (~> 1.1)
-      rack (~> 1.6)
+      rack (~> 1.5)
       rest-client (~> 1.8)
       tilt (>= 1.1)
 
@@ -96,6 +96,3 @@ DEPENDENCIES
   pry
   simplecov
   turn
-
-BUNDLED WITH
-   1.12.5
