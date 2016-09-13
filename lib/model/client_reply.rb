@@ -133,7 +133,7 @@ module FHIR
           end
         elsif (present=='optional' && value)
           errors << "#{name}: Malformed value for optional header #{header}: #{value}" if !(@@header_regexes[header] =~ value)
-          binding.pry if !(@@header_regexes[header] =~ value)
+#          binding.pry if !(@@header_regexes[header] =~ value)
         elsif !value.nil?
           errors << "#{name}: Should not have header: #{header}"
         end

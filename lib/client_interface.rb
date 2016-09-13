@@ -289,7 +289,7 @@ module FHIR
     end
 
     def get(path, headers)
-      url = URI(build_url(path)).to_s
+      url = URI(URI.escape(build_url(path))).to_s
       FHIR.logger.info "GETTING: #{url}"
       headers = clean_headers(headers)
       if @use_oauth2_auth
