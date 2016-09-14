@@ -38,6 +38,16 @@ module FHIR
     set_no_auth
   end
 
+  def default_json
+    @default_format = FHIR::Formats::ResourceFormat::RESOURCE_JSON
+    @default_format_bundle = FHIR::Formats::FeedFormat::FEED_JSON
+  end
+
+  def default_xml
+    @default_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
+    @default_format_bundle = FHIR::Formats::FeedFormat::FEED_XML
+  end
+
   # Set the client to use no authentication mechanisms
   def set_no_auth
     FHIR.logger.info "Configuring the client to use no authentication."
@@ -243,10 +253,10 @@ module FHIR
     # Extract the request payload in the specified format, defaults to XML
     def request_payload(resource, headers)
       if headers
-        case headers["format"]
-        when FHIR::Formats::ResourceFormat::RESOURCE_XML
+        format_specified = headers[:format] || headers["format"]
+        if format_specified.downcase.include?('xml')
           resource.to_xml
-        when FHIR::Formats::ResourceFormat::RESOURCE_JSON
+        elsif format_specified.downcase.include?('json')
           resource.to_json
         else
           resource.to_xml
