@@ -58,14 +58,26 @@ namespace :fhir do
   task :clean, [:url] do |t, args|
     client = FHIR::Client.new(args.url)
     fhir_resources.each do | klass |
+      puts "Reading #{klass.name.demodulize}..."
+      skipped = []
       reply = client.read_feed(klass)
       while !reply.nil? && !reply.resource.nil? && reply.resource.total > 0
+        puts "  Cleaning #{reply.resource.entry.length} #{klass.name.demodulize} resources..."
         reply.resource.entry.each do |entry|
-          client.destroy(klass,entry.resource.id) unless entry.resource.nil?
+          unless entry.resource.nil?
+            del_reply = client.destroy(klass,entry.resource.id) 
+            skipped << "#{klass.name.demodulize}/#{entry.resource.id}" if [405,409].include?(del_reply.code)
+          end
         end
-        reply = client.read_feed(klass)
+        if skipped.empty?
+          reply = client.read_feed(klass) 
+        else
+          puts "  *** Unable to delete some #{klass.name.demodulize}s ***"
+          reply = nil
+        end
       end
     end
+    puts "Done cleaning."
     Rake::Task['fhir:count'].invoke(args.url)
   end
 
