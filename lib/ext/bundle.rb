@@ -1,6 +1,5 @@
 module FHIR
   class Bundle
-    include Enumerable
 
     def self_link
       link.select {|n| n.relation == 'self'}.first
