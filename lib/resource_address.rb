@@ -117,11 +117,15 @@ module FHIR
       id = nil
       if !resourceType.nil? && !url.nil?
         token = "#{resourceType}/"
-        start = url.index(token) + token.length
-        t = url[start..-1]
-        stop = (t.index("/") || 0)-1
-        stop = -1 if stop.nil?
-        id = t[0..stop]
+        if url.index(token)
+          start = url.index(token) + token.length
+          t = url[start..-1]
+          stop = (t.index("/") || 0)-1
+          stop = -1 if stop.nil?
+          id = t[0..stop]
+        else
+          id = nil
+        end
       end
       id
     end
