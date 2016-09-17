@@ -19,7 +19,6 @@ module FHIR
     attr_accessor :client
 
     attr_accessor :default_format
-    attr_accessor :default_format_bundle
 
     attr_accessor :cached_conformance
 
@@ -34,18 +33,15 @@ module FHIR
     @baseServiceUrl = baseServiceUrl
     @use_format_param = false
     @default_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
-    @default_format_bundle = FHIR::Formats::FeedFormat::FEED_XML
     set_no_auth
   end
 
   def default_json
     @default_format = FHIR::Formats::ResourceFormat::RESOURCE_JSON
-    @default_format_bundle = FHIR::Formats::FeedFormat::FEED_JSON
   end
 
   def default_xml
     @default_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
-    @default_format_bundle = FHIR::Formats::FeedFormat::FEED_XML
   end
 
   # Set the client to use no authentication mechanisms
@@ -181,14 +177,12 @@ module FHIR
 
     @cached_conformance = nil
     @default_format = nil
-    @default_format_bundle = nil
 
     formats.each do |frmt|
       reply = get 'metadata', fhir_headers({format: frmt})
       if reply.code == 200
         @cached_conformance = parse_reply(FHIR::Conformance, frmt, reply)
         @default_format = frmt
-        @default_format_bundle = frmt
         break
       end
     end

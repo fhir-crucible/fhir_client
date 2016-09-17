@@ -17,7 +17,7 @@ module FHIR
       #
       # Read a resource bundle (an XML ATOM feed)
       #
-      def read_feed(klass, format=@default_format_bundle)
+      def read_feed(klass, format=@default_format)
         options = { resource: klass, format: format }
         reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(klass, format, reply)
@@ -89,7 +89,7 @@ module FHIR
       #
       def partial_update(klass, id, patchset, options={}, format=@default_format)
         options = { resource: klass, id: id, format: format }.merge options
-        
+
         if (format == FHIR::Formats::ResourceFormat::RESOURCE_XML)
           options[:format] = FHIR::Formats::PatchFormat::PATCH_XML
           options[:Accept] = format
