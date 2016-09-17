@@ -173,11 +173,13 @@ module FHIR
   end
 
   def try_conformance_formats(default_format)
-    formats = [ FHIR::Formats::ResourceFormat::RESOURCE_XML,
-      FHIR::Formats::ResourceFormat::RESOURCE_JSON,
-      'application/xml',
-      'application/json']
-    formats.insert(0,default_format)
+    formats = [FHIR::Formats::ResourceFormat::RESOURCE_XML,
+               FHIR::Formats::ResourceFormat::RESOURCE_JSON,
+               FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2,
+               FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2,
+               'application/xml',
+               'application/json']
+    formats.insert(0, default_format)
 
     @cached_conformance = nil
     @default_format = nil
