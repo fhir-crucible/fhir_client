@@ -13,7 +13,7 @@ class BundleTest < Test::Unit::TestCase
     }
     clientReply = FHIR::ClientReply.new('feed-test', response)
 
-    bundle = client.parse_reply(FHIR::Bundle, FHIR::Formats::FeedFormat::FEED_XML, clientReply)
+    bundle = client.parse_reply(FHIR::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
 
     assert !bundle.nil?, "Failed to parse example Bundle."
   end
