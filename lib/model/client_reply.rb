@@ -65,8 +65,17 @@ module FHIR
     end
 
     def version
-      self_link =~ %r{(?<=_history\/)(\w+)}
-      $1
+      version = nil
+      link = self_link
+      if link && link.include?('_history/')
+        begin
+          tokens = link.split('_history/')
+          version = tokens.last.split('/').first
+        rescue Exception => e
+          version = nil
+        end
+      end
+      version
     end
 
     def self_link
