@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.email = "aquina@mitre.org"
   s.homepage = "https://github.com/hl7-fhir/fhir-svn"
   s.authors = ["Andre Quina", "Jason Walonoski", "Janoo Fernandes"]
-  s.version = '1.6.2'
+  s.version = '1.6.3'
 
   s.files = s.files = `git ls-files`.split("\n")
 
