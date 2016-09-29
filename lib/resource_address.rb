@@ -1,15 +1,14 @@
 module FHIR
   class ResourceAddress
-
     DEFAULTS = {
       id: nil,
       resource: nil,
       format: 'application/fhir+xml'
-    }
+    }.freeze
 
-    DEFAULT_CHARSET = 'UTF-8'
+    DEFAULT_CHARSET = 'UTF-8'.freeze
 
-    def fhir_headers(options, use_format_param=false)
+    def fhir_headers(options, use_format_param = false)
       options = DEFAULTS.merge(options)
 
       format = options[:format] || FHIR::Formats::ResourceFormat::RESOURCE_XML
@@ -20,12 +19,12 @@ module FHIR
       }
       # remove the content-type header if the format is 'xml' or 'json' because
       # even those are valid _format parameter options, they are not valid MimeTypes.
-      fhir_headers.delete('Content-Type') if ['xml','json'].include?(format.downcase)
+      fhir_headers.delete('Content-Type') if %w(xml json).include?(format.downcase)
 
-      if(options[:category])
+      if options[:category]
         # options[:category] should be an Array of FHIR::Tag objects
         tags = {
-          'Category' => options[:category].collect { |h| h.to_header }.join(',')
+          'Category' => options[:category].collect(&:to_header).join(',')
         }
         fhir_headers.merge!(tags)
         options.delete(:category)
@@ -44,51 +43,51 @@ module FHIR
       fhir_headers
     end
 
-    def resource_url(options, use_format_param=false)
+    def resource_url(options, use_format_param = false)
       options = DEFAULTS.merge(options)
 
       params = {}
-      url = ""
+      url = ''
       # handle requests for resources by class or string; useful for testing nonexistent resource types
-      url += "/#{ options[:resource].try(:name).try(:demodulize) || options[:resource].split("::").last }" if options[:resource]
+      url += "/#{options[:resource].try(:name).try(:demodulize) || options[:resource].split('::').last}" if options[:resource]
       url += "/#{options[:id]}" if options[:id]
-      url += "/$validate" if options[:validate]
+      url += '/$validate' if options[:validate]
 
-      if(options[:operation])
+      if options[:operation]
         opr = options[:operation]
         p = opr[:parameters]
-        p = p.each{|k,v|p[k]=v[:value]} if p
-        params.merge!(p) if p && opr[:method]=='GET'
+        p = p.each { |k, v| p[k] = v[:value] } if p
+        params.merge!(p) if p && opr[:method] == 'GET'
 
-        if (opr[:name] == :fetch_patient_record)
-          url += "/$everything"
-        elsif (opr[:name] == :value_set_expansion)
-          url += "/$expand"
-        elsif (opr  && opr[:name]== :value_set_based_validation)
-          url += "/$validate-code"
-        elsif (opr  && opr[:name]== :code_system_lookup)
-          url += "/$lookup"
-        elsif (opr  && opr[:name]== :concept_map_translate)
-          url += "/$translate"
-        elsif (opr  && opr[:name]== :closure_table_maintenance)
-          url += "/$closure"
+        if opr[:name] == :fetch_patient_record
+          url += '/$everything'
+        elsif opr[:name] == :value_set_expansion
+          url += '/$expand'
+        elsif opr  && opr[:name] == :value_set_based_validation
+          url += '/$validate-code'
+        elsif opr  && opr[:name] == :code_system_lookup
+          url += '/$lookup'
+        elsif opr  && opr[:name] == :concept_map_translate
+          url += '/$translate'
+        elsif opr  && opr[:name] == :closure_table_maintenance
+          url += '/$closure'
         end
       end
 
-      if (options[:history])
+      if options[:history]
         history = options[:history]
         url += "/_history/#{history[:id]}"
         params[:_count] = history[:count] if history[:count]
         params[:_since] = history[:since].iso8601 if history[:since]
       end
 
-      if(options[:search])
+      if options[:search]
         search_options = options[:search]
         url += '/_search' if search_options[:flag]
         url += "/#{search_options[:compartment]}" if search_options[:compartment]
 
         if search_options[:parameters]
-          search_options[:parameters].each do |key,value|
+          search_options[:parameters].each do |key, value|
             params[key.to_sym] = value
           end
         end
@@ -97,9 +96,7 @@ module FHIR
       # options[:params] is simply appended at the end of a url and is used by testscripts
       url += options[:params] if options[:params]
 
-      if(options[:summary])
-        params[:_summary] = options[:summary]
-      end
+      params[:_summary] = options[:summary] if options[:summary]
 
       if use_format_param && options[:format]
         params[:_format] = options[:format]
@@ -108,19 +105,19 @@ module FHIR
       uri = Addressable::URI.parse(url)
       # params passed in options takes precidence over params calculated in this method
       # for use by testscript primarily
-      uri.query_values = params unless options[:params] && options[:params].include?("?")
+      uri.query_values = params unless options[:params] && options[:params].include?('?')
       uri.normalize.to_str
     end
 
     # Get the resource ID out of the URL (e.g. Bundle.entry.response.location)
-    def self.pull_out_id(resourceType,url)
+    def self.pull_out_id(resourceType, url)
       id = nil
       if !resourceType.nil? && !url.nil?
         token = "#{resourceType}/"
         if url.index(token)
           start = url.index(token) + token.length
           t = url[start..-1]
-          stop = (t.index("/") || 0)-1
+          stop = (t.index('/') || 0) - 1
           stop = -1 if stop.nil?
           id = t[0..stop]
         else
@@ -134,6 +131,5 @@ module FHIR
       path += '/' unless path.last == '/'
       path
     end
-
   end
 end
