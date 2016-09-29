@@ -1,4 +1,5 @@
 require_relative '../test_helper'
+WebMock.allow_net_connect!
 
 class BasicTest < Test::Unit::TestCase
 
