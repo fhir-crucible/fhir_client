@@ -84,7 +84,7 @@ module FHIR
     end
 
     def conditional_update(params)
-      handle_response client.conditional_update(self, self.id, params)
+      handle_response client.conditional_update(self, id, params)
     end
 
     def destroy
@@ -95,7 +95,7 @@ module FHIR
     private
 
     def self.handle_response(response)
-      raise ClientException.new "Server returned #{response.code}.", response if response.code.between?(400,599)
+      raise ClientException.new "Server returned #{response.code}.", response if response.code.between?(400, 599)
       response.resource
     end
 

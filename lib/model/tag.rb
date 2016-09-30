@@ -2,12 +2,12 @@ module FHIR
   class Tag
     # Each Tag is part of an HTTP header named "Category" with three parts: term, scheme, and label.
     # Each Tag can be in an individual "Category" header, or they can all be concatentated (with comma
-    # separation) inside a single "Category" header. 
+    # separation) inside a single "Category" header.
 
     # Term is a URI:
-    #   General tags: 
+    #   General tags:
     #     Bundle / FHIR Documents: "http://hl7.org/fhir/tag/document"
-    #     Bundle / FHIR Messages:  "http://hl7.org/fhir/tag/message" 
+    #     Bundle / FHIR Messages:  "http://hl7.org/fhir/tag/message"
     #   Profile tags: URL that references a profile resource.
     attr_accessor :term
 
@@ -22,7 +22,7 @@ module FHIR
 
     def to_header
       s = "#{term}; scheme=#{scheme}"
-      s += "; label=#{label}" if !label.nil?
+      s += "; label=#{label}" unless label.nil?
       s
     end
 
@@ -35,10 +35,10 @@ module FHIR
       tokens.each do |token|
         if !token.strip.index('scheme').nil?
           token.strip =~ %r{(?<=scheme)(\s*)=(\s*)([\".:_\-\/\w]+)}
-          h.scheme = $3
+          h.scheme = Regexp.last_match(3)
         elsif !token.strip.index('label').nil?
           token.strip =~ %r{(?<=label)(\s*)=(\s*)([\".:_\-\/\w\s]+)}
-          h.label = $3
+          h.label = Regexp.last_match(3)
         end
       end
       h
@@ -52,6 +52,5 @@ module FHIR
       tokens.each { |token| tags << FHIR::Tag.parse_tag(token) }
       tags
     end
-
   end
 end

@@ -1,7 +1,6 @@
 module FHIR
   module Sections
     module Transactions
-
       attr_accessor :transaction_bundle
 
       def begin_transaction
@@ -22,20 +21,20 @@ module FHIR
       # @param method one of ['GET','POST','PUT','DELETE']
       # @param url relative path, such as 'Patient/123'. Do not include the [base]
       # @param resource The resource if a POST or PUT
-      def add_transaction_request(method, url, resource=nil, if_none_exist=nil)
+      def add_transaction_request(method, url, resource = nil, if_none_exist = nil)
         add_batch_request(method, url, resource, if_none_exist)
       end
 
-      def add_batch_request(method, url, resource=nil, if_none_exist=nil)
+      def add_batch_request(method, url, resource = nil, if_none_exist = nil)
         request = FHIR::Bundle::Entry::Request.new
-        if FHIR::Bundle::Entry::Request::METADATA['method']['valid_codes'].values.first.include?(method.upcase)
-          request.local_method = method.upcase 
-        else
-          request.local_method = 'POST'
-        end
-        request.ifNoneExist = if_none_exist if !if_none_exist.nil?
+        request.local_method = if FHIR::Bundle::Entry::Request::METADATA['method']['valid_codes'].values.first.include?(method.upcase)
+                                 method.upcase
+                               else
+                                 'POST'
+                               end
+        request.ifNoneExist = if_none_exist unless if_none_exist.nil?
         if url.nil? && !resource.nil?
-          options = Hash.new
+          options = {}
           options[:resource] = resource.class
           options[:id] = resource.id if request.local_method != 'POST'
           request.url = resource_url(options)
@@ -53,7 +52,7 @@ module FHIR
       end
 
       # syntactic sugar for end_batch
-      def end_transaction(format=@default_format)
+      def end_transaction(format = @default_format)
         end_batch(format)
       end
 
@@ -61,23 +60,21 @@ module FHIR
       # @param format
       # @return FHIR::ClientReply
       #
-      def end_batch(format=@default_format)
+      def end_batch(format = @default_format)
         options = { format: format, 'Prefer' => 'return=representation' }
         reply = post resource_url(options), @transaction_bundle, fhir_headers(options)
         begin
-          if(format.downcase.include?('xml'))
-            reply.resource = FHIR::Xml.from_xml(reply.body)
-          else
-            reply.resource = FHIR::Json.from_json(reply.body)
-          end
-        rescue Exception => e 
+          reply.resource = if format.downcase.include?('xml')
+                             FHIR::Xml.from_xml(reply.body)
+                           else
+                             FHIR::Json.from_json(reply.body)
+                           end
+        rescue Exception => e
           reply.resource = nil
         end
         reply.resource_class = reply.resource.class
         reply
       end
-
     end
   end
 end
-

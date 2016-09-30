@@ -1,7 +1,6 @@
 module FHIR
   class ClientReply
-
-    @@validation_rules = JSON.parse( File.open(File.join(File.expand_path('..',File.dirname(File.absolute_path(__FILE__))),'fhir_api_validation.json'),'r:UTF-8',&:read) )
+    @@validation_rules = JSON.parse(File.open(File.join(File.expand_path('..', File.dirname(File.absolute_path(__FILE__))), 'fhir_api_validation.json'), 'r:UTF-8', &:read))
     @@path_regexes = {
       '[type]' => "(#{FHIR::RESOURCES.join('|')})",
       '[id]' => FHIR::PRIMITIVES['id']['regex'],
@@ -20,9 +19,9 @@ module FHIR
        UT|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|[A-IK-Z])/ix
 
     @@header_regexes = {
-      'Content-Type' => Regexp.new("(#{FHIR::Formats::ResourceFormat::RESOURCE_XML.gsub('+','\\\+')}|#{FHIR::Formats::ResourceFormat::RESOURCE_JSON.gsub('+','\\\+')})(([ ;]+)(charset)([ =]+)(UTF-8|utf-8))?"),
-      'Accept' => Regexp.new("(#{FHIR::Formats::ResourceFormat::RESOURCE_XML.gsub('+','\\\+')}|#{FHIR::Formats::ResourceFormat::RESOURCE_JSON.gsub('+','\\\+')})"),
-      'Prefer' => Regexp.new("(return=minimal|return=representation)"),
+      'Content-Type' => Regexp.new("(#{FHIR::Formats::ResourceFormat::RESOURCE_XML.gsub('+', '\\\+')}|#{FHIR::Formats::ResourceFormat::RESOURCE_JSON.gsub('+', '\\\+')})(([ ;]+)(charset)([ =]+)(UTF-8|utf-8))?"),
+      'Accept' => Regexp.new("(#{FHIR::Formats::ResourceFormat::RESOURCE_XML.gsub('+', '\\\+')}|#{FHIR::Formats::ResourceFormat::RESOURCE_JSON.gsub('+', '\\\+')})"),
+      'Prefer' => Regexp.new('(return=minimal|return=representation)'),
       'ETag' => Regexp.new('(W\/)?"[\dA-Za-z]+"'),
       'If-Modified-Since' => @@rfs1123,
       'If-Match' => Regexp.new('(W\/)?"[\dA-Za-z]+"'),
@@ -39,13 +38,13 @@ module FHIR
     #   :headers => {},
     #   :payload => nil # body of request goes here in POST
     # }
-    attr_accessor :request  
+    attr_accessor :request
     # {
     #   :code => '200',
     #   :headers => {},
     #   :body => '{xml or json here}'
     # }
-    attr_accessor :response 
+    attr_accessor :response
     attr_accessor :resource # a FHIR resource
     attr_accessor :resource_class # class of the :resource
 
@@ -61,7 +60,7 @@ module FHIR
     def id
       return nil if @resource_class.nil?
       (self_link || @request[:url]) =~ %r{(?<=#{@resource_class.name.demodulize}\/)([^\/]+)}
-      $1
+      Regexp.last_match(1)
     end
 
     def version
@@ -100,49 +99,46 @@ module FHIR
     def validate
       errors = []
       @@validation_rules.each do |rule|
-        if rule['verb']==@request[:method].to_s.upcase
-          rule_match = false
-          rule['path'].each do |path|
-            rule_regex = path.gsub('/','(\/)').gsub('?','\?')
-            @@path_regexes.each do |token,regex|
-              rule_regex.gsub!(token,regex)
-            end
-            rule_match = true if(Regexp.new(rule_regex) =~ @request[:path])
+        next unless rule['verb'] == @request[:method].to_s.upcase
+        rule_match = false
+        rule['path'].each do |path|
+          rule_regex = path.gsub('/', '(\/)').gsub('?', '\?')
+          @@path_regexes.each do |token, regex|
+            rule_regex.gsub!(token, regex)
           end
-          if rule_match
-            # check the request headers
-            errors << validate_headers("#{rule['interaction'].upcase} REQUEST",@request[:headers],rule['request']['headers'])
-            # check the request body
-            errors << validate_body("#{rule['interaction'].upcase} REQUEST",@request[:payload],rule['request']['body'])
-            # check the response codes
-            if !rule['response']['status'].include?(@response[:code].to_i)
-              errors << "#{rule['interaction'].upcase} RESPONSE: Invalid response code: #{@response[:code]}" 
-            end
-            if @response[:code].to_i < 400
-              # check the response headers
-              errors << validate_headers("#{rule['interaction'].upcase} RESPONSE",@response[:headers],rule['response']['headers'])
-              # check the response body
-              errors << validate_body("#{rule['interaction'].upcase} RESPONSE",@response[:body],rule['response']['body'])
-            end
-          end
+          rule_match = true if Regexp.new(rule_regex) =~ @request[:path]
         end
+        next unless rule_match
+        # check the request headers
+        errors << validate_headers("#{rule['interaction'].upcase} REQUEST", @request[:headers], rule['request']['headers'])
+        # check the request body
+        errors << validate_body("#{rule['interaction'].upcase} REQUEST", @request[:payload], rule['request']['body'])
+        # check the response codes
+        unless rule['response']['status'].include?(@response[:code].to_i)
+          errors << "#{rule['interaction'].upcase} RESPONSE: Invalid response code: #{@response[:code]}"
+        end
+        next unless @response[:code].to_i < 400
+        # check the response headers
+        errors << validate_headers("#{rule['interaction'].upcase} RESPONSE", @response[:headers], rule['response']['headers'])
+        # check the response body
+        errors << validate_body("#{rule['interaction'].upcase} RESPONSE", @response[:body], rule['response']['body'])
       end
       errors.flatten
     end
 
-    def validate_headers(name,headers,header_rules)
+    def validate_headers(name, headers, header_rules)
       errors = []
-      header_rules.each do |header,present|
+      header_rules.each do |header, present|
         value = headers[header]
-        if present==true
+        if present == true
           if value
-            errors << "#{name}: Malformed value for header #{header}: #{value}" if !(@@header_regexes[header] =~ value)
+            errors << "#{name}: Malformed value for header #{header}: #{value}" unless @@header_regexes[header] =~ value
           else
             errors << "#{name}: Missing header: #{header}"
           end
-        elsif (present=='optional' && value)
-          errors << "#{name}: Malformed value for optional header #{header}: #{value}" if !(@@header_regexes[header] =~ value)
-#          binding.pry if !(@@header_regexes[header] =~ value)
+        elsif present == 'optional' && value
+          errors << "#{name}: Malformed value for optional header #{header}: #{value}" unless @@header_regexes[header] =~ value
+        #          binding.pry if !(@@header_regexes[header] =~ value)
         elsif !value.nil?
           errors << "#{name}: Should not have header: #{header}"
         end
@@ -150,7 +146,7 @@ module FHIR
       errors
     end
 
-    def validate_body(name,body,body_rules)
+    def validate_body(name, body, body_rules)
       errors = []
       if body && body_rules
         if body_rules['types']
@@ -158,16 +154,16 @@ module FHIR
           body_rules['types'].each do |type|
             begin
               content = FHIR.from_contents(body)
-              body_type_match = true if content.resourceType==type
-              body_type_match = true if type=='Resource' && FHIR::RESOURCES.include?(content.resourceType)
+              body_type_match = true if content.resourceType == type
+              body_type_match = true if type == 'Resource' && FHIR::RESOURCES.include?(content.resourceType)
             rescue
             end
           end
-          errors << "#{name}: Body does not match allowed types: #{body_rules['types'].join(', ')}" if !body_type_match              
+          errors << "#{name}: Body does not match allowed types: #{body_rules['types'].join(', ')}" unless body_type_match
         end
         if body_rules['regex']
           regex = Regexp.new(body_rules['regex'])
-          errors << "#{name}: Body does not match regular expression: #{body_rules['regex']}" if !(regex =~ body)
+          errors << "#{name}: Body does not match regular expression: #{body_rules['regex']}" unless regex =~ body
         end
       elsif body && !body_rules
         errors "#{name}: Body not allowed"
@@ -176,6 +172,5 @@ module FHIR
     end
 
     private :validate_headers, :validate_body
-
   end
 end

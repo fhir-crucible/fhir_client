@@ -1,13 +1,12 @@
 module FHIR
   module Sections
     module Feed
-
       FORWARD = :next_link
       BACKWARD = :previous_link
       FIRST = :first_link
       LAST = :last_link
 
-      def next_page(current, page=FORWARD)
+      def next_page(current, page = FORWARD)
         bundle = current.resource
         link = bundle.method(page).call
         return nil unless link
@@ -16,8 +15,6 @@ module FHIR
         reply.resource_class = current.resource_class
         reply
       end
-
-
     end
   end
 end

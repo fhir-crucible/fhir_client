@@ -1,5 +1,4 @@
 namespace :fhir do
-
   desc 'console'
   task :console, [] do |t, args|
     binding.pry
@@ -19,9 +18,9 @@ namespace :fhir do
   #  4. 'client_id' and 'client_secret' variables are the name and secret of the client created in (3)
   #  5. :authorize_url is the authorization endpoint of the OpenID connect server
   #  6. :token_url is the token endpoint of the OpenID connect server
-  #  
+  #
   desc 'OAuth2 Example'
-  task :oauth2, [:url,:client_id,:client_secret] do |t, args|
+  task :oauth2, [:url, :client_id, :client_secret] do |_t, args|
     client = FHIR::Client.new(args.url)
     client_id = args.client_id
     client_secret = args.client_secret
@@ -29,35 +28,35 @@ namespace :fhir do
     if options.empty?
       puts 'This server does not support the expected OAuth2 extensions.'
     else
-      client.set_oauth2_auth(client_id,client_secret,options[:authorize_url],options[:token_url])
+      client.set_oauth2_auth(client_id, client_secret, options[:authorize_url], options[:token_url])
       reply = client.read_feed(FHIR::Patient)
       puts reply.body
     end
   end
 
   desc 'count all resources for a given server'
-  task :count, [:url,:display_zero] do |t, args|
+  task :count, [:url, :display_zero] do |_t, args|
     client = FHIR::Client.new(args.url)
     display_zero = (args.display_zero == 'true')
     counts = {}
-    fhir_resources.each do | klass |
+    fhir_resources.each do |klass|
       reply = client.read_feed(klass)
       if !reply.resource.nil? && (reply.resource.total > 0 || display_zero)
-        counts["#{klass.name.demodulize}"] = reply.resource.total
+        counts[klass.name.demodulize.to_s] = reply.resource.total
       end
     end
     printf "  %-30s %5s\n", 'Resource', 'Count'
     printf "  %-30s %5s\n", '--------', '-----'
-    counts.each do |key,value|
+    counts.each do |key, value|
       # puts "#{key}  #{value}"
       printf "  %-30s %5s\n", key, value
     end
   end
 
   desc 'delete all resources for a given server'
-  task :clean, [:url] do |t, args|
+  task :clean, [:url] do |_t, args|
     client = FHIR::Client.new(args.url)
-    fhir_resources.each do | klass |
+    fhir_resources.each do |klass|
       puts "Reading #{klass.name.demodulize}..."
       skipped = []
       reply = client.read_feed(klass)
@@ -65,24 +64,23 @@ namespace :fhir do
         puts "  Cleaning #{reply.resource.entry.length} #{klass.name.demodulize} resources..."
         reply.resource.entry.each do |entry|
           unless entry.resource.nil?
-            del_reply = client.destroy(klass,entry.resource.id) 
-            skipped << "#{klass.name.demodulize}/#{entry.resource.id}" if [405,409].include?(del_reply.code)
+            del_reply = client.destroy(klass, entry.resource.id)
+            skipped << "#{klass.name.demodulize}/#{entry.resource.id}" if [405, 409].include?(del_reply.code)
           end
         end
         if skipped.empty?
-          reply = client.read_feed(klass) 
+          reply = client.read_feed(klass)
         else
           puts "  *** Unable to delete some #{klass.name.demodulize}s ***"
           reply = nil
         end
       end
     end
-    puts "Done cleaning."
+    puts 'Done cleaning.'
     Rake::Task['fhir:count'].invoke(args.url)
   end
 
   def fhir_resources
-    FHIR::RESOURCES.map {|r| Object::const_get("FHIR::#{r}")}
+    FHIR::RESOURCES.map { |r| Object.const_get("FHIR::#{r}") }
   end
-
 end
