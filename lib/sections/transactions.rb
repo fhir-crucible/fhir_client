@@ -69,7 +69,7 @@ module FHIR
                            else
                              FHIR::Json.from_json(reply.body)
                            end
-        rescue Exception => e
+        rescue
           reply.resource = nil
         end
         reply.resource_class = reply.resource.class

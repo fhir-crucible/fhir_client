@@ -1,5 +1,8 @@
 AllCops:
   DisabledByDefault: true
+  Exclude:
+    - 'test/**/*'
+    - 'lib/tasks/**/*'
 
 #################### Lint ################################
 
@@ -221,14 +224,14 @@ Metrics/BlockNesting:
 
 Metrics/ClassLength:
   Description: 'Avoid classes longer than 250 lines of code.'
-  Enabled: true
+  Enabled: false
   Max: 250
 
 Metrics/CyclomaticComplexity:
   Description: >-
                  A complexity metric that is strongly correlated to the number
                  of test cases needed to validate a method.
-  Enabled: true
+  Enabled: false
 
 Metrics/LineLength:
   Description: 'Limit lines to 80 characters.'
@@ -238,12 +241,12 @@ Metrics/LineLength:
 Metrics/MethodLength:
   Description: 'Avoid methods longer than 30 lines of code.'
   StyleGuide: 'https://github.com/bbatsov/ruby-style-guide#short-methods'
-  Enabled: true
+  Enabled: false
   Max: 30
 
 Metrics/ModuleLength:
   Description: 'Avoid modules longer than 250 lines of code.'
-  Enabled: true
+  Enabled: false
   Max: 250
 
 Metrics/ParameterLists:

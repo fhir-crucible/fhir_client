@@ -11,25 +11,24 @@ module FHIR
       # http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything
       # Fetches resources for a given patient record, scoped by a start and end time, and returns a Bundle of results
       def fetch_patient_record(id = nil, startTime = nil, endTime = nil, method = 'GET', format = @default_format)
-        fetch_record(id, startTime, endTime, method, FHIR::Patient, format)
+        fetch_record(id, [startTime, endTime], method, FHIR::Patient, format)
       end
 
       def fetch_encounter_record(id = nil, method = 'GET', format = @default_format)
-        fetch_record(id, nil, nil, method, FHIR::Encounter, format)
+        fetch_record(id, [nil, nil], method, FHIR::Encounter, format)
       end
 
-      def fetch_record(id = nil, startTime = nil, endTime = nil, method = 'GET', klass = FHIR::Patient, format = @default_format)
+      def fetch_record(id = nil, time = [nil, nil], method = 'GET', klass = FHIR::Patient, format = @default_format)
         options = { resource: klass, format: format, operation: { name: :fetch_patient_record, method: method } }
         options.deep_merge!(id: id) unless id.nil?
         options[:operation][:parameters] = {} if options[:operation][:parameters].nil?
-        options[:operation][:parameters][:start] = { type: 'Date', value: startTime } unless startTime.nil?
-        options[:operation][:parameters][:end] = { type: 'Date', value: endTime } unless endTime.nil?
+        options[:operation][:parameters][:start] = { type: 'Date', value: time.first } unless time.first.nil?
+        options[:operation][:parameters][:end] = { type: 'Date', value: time.last } unless time.last.nil?
 
         if options[:operation][:method] == 'GET'
           reply = get resource_url(options), fhir_headers(options)
         else
           # create Parameters body
-          body = nil
           if options[:operation] && options[:operation][:parameters]
             p = FHIR::Parameters.new
             options[:operation][:parameters].each do |key, value|
@@ -37,7 +36,6 @@ module FHIR
               parameter.method("value#{value[:type]}=").call(value[:value])
               p.parameter << parameter
             end
-            body = p.to_xml
           end
           reply = post resource_url(options), p, fhir_headers(options)
         end
@@ -99,7 +97,6 @@ module FHIR
           reply = get resource_url(options), fhir_headers(options)
         else
           # create Parameters body
-          body = nil
           if options[:operation] && options[:operation][:parameters]
             p = FHIR::Parameters.new
             options[:operation][:parameters].each do |key, value|
@@ -107,7 +104,6 @@ module FHIR
               parameter.method("value#{value[:type]}=").call(value[:value])
               p.parameter << parameter
             end
-            body = p.to_xml
           end
           reply = post resource_url(options), p, fhir_headers(options)
         end

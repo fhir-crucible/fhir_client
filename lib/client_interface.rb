@@ -148,7 +148,7 @@ module FHIR
             end
           end
         end
-      rescue Exception => e
+      rescue
         FHIR.logger.error 'Failed to locate SMART-on-FHIR OAuth2 Security Extensions.'
       end
       options.delete_if { |_k, v| v.nil? }
@@ -160,7 +160,7 @@ module FHIR
     # @return
     def conformanceStatement(format = FHIR::Formats::ResourceFormat::RESOURCE_XML)
       if @cached_conformance.nil? || format != @default_format
-        format = try_conformance_formats(format)
+        try_conformance_formats(format)
       end
       @cached_conformance
     end
@@ -208,7 +208,7 @@ module FHIR
         res = FHIR.from_contents(response.body)
         res.client = self unless res.nil?
         FHIR.logger.warn "Expected #{klass} but got #{res.class}" if res.class != klass
-      rescue Exception => e
+      rescue => e
         FHIR.logger.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
         nil
       end
@@ -298,7 +298,7 @@ module FHIR
         # @client.refresh!
         begin
           response = @client.get(url, headers: headers)
-        rescue Exception => e
+        rescue => e
           response = e.response if e.response
         end
         req = {
@@ -319,7 +319,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         begin
           response = @client.get(url, headers)
-        rescue Exception => e
+        rescue => e
           response = e.response if e.response
         end
 
@@ -345,7 +345,7 @@ module FHIR
         # @client.refresh!
         begin
           response = @client.post(url, headers: headers, body: payload)
-        rescue Exception => e
+        rescue => e
           response = e.response if e.response
         end
         req = {
@@ -364,13 +364,13 @@ module FHIR
         @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
-        @client.post(url, payload, headers) do |response, request, result|
-          FHIR.logger.info "POST - Request: #{request.to_json}, Response: #{response.force_encoding('UTF-8')}"
+        @client.post(url, payload, headers) do |resp, request, result|
+          FHIR.logger.info "POST - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
           request.args[:path] = url.gsub(@baseServiceUrl, '')
           res = {
             code: result.code,
             headers: scrubbed_response_headers(result.each_key {}),
-            body: response
+            body: resp
           }
           @reply = FHIR::ClientReply.new(request.args, res)
         end
@@ -386,7 +386,7 @@ module FHIR
         # @client.refresh!
         begin
           response = @client.put(url, headers: headers, body: payload)
-        rescue Exception => e
+        rescue => e
           response = e.response if e.response
         end
         req = {
@@ -405,13 +405,13 @@ module FHIR
         @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
-        @client.put(url, payload, headers) do |response, request, result|
-          FHIR.logger.info "PUT - Request: #{request.to_json}, Response: #{response.force_encoding('UTF-8')}"
+        @client.put(url, payload, headers) do |resp, request, result|
+          FHIR.logger.info "PUT - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
           request.args[:path] = url.gsub(@baseServiceUrl, '')
           res = {
             code: result.code,
             headers: scrubbed_response_headers(result.each_key {}),
-            body: response
+            body: resp
           }
           @reply = FHIR::ClientReply.new(request.args, res)
         end
@@ -427,7 +427,7 @@ module FHIR
         # @client.refresh!
         begin
           response = @client.patch(url, headers: headers, body: payload)
-        rescue Exception => e
+        rescue => e
           response = e.response if e.response
         end
         req = {
@@ -447,13 +447,13 @@ module FHIR
       else
         headers.merge!(@security_headers) if @use_basic_auth
         # url = 'http://requestb.in/o8juy3o8'
-        @client.patch(url, payload, headers) do |response, request, result|
-          FHIR.logger.info "PATCH - Request: #{request.to_json}, Response: #{response.force_encoding('UTF-8')}"
+        @client.patch(url, payload, headers) do |resp, request, result|
+          FHIR.logger.info "PATCH - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
           request.args[:path] = url.gsub(@baseServiceUrl, '')
           res = {
             code: result.code,
             headers: scrubbed_response_headers(result.each_key {}),
-            body: response
+            body: resp
           }
           @reply = FHIR::ClientReply.new(request.args, res)
         end
@@ -468,7 +468,7 @@ module FHIR
         # @client.refresh!
         begin
           response = @client.delete(url, headers: headers)
-        rescue Exception => e
+        rescue => e
           response = e.response if e.response
         end
         req = {
@@ -487,13 +487,13 @@ module FHIR
         @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
-        @client.delete(url, headers) do |response, request, result|
-          FHIR.logger.info "DELETE - Request: #{request.to_json}, Response: #{response.force_encoding('UTF-8')}"
+        @client.delete(url, headers) do |resp, request, result|
+          FHIR.logger.info "DELETE - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
           request.args[:path] = url.gsub(@baseServiceUrl, '')
           res = {
             code: result.code,
             headers: scrubbed_response_headers(result.each_key {}),
-            body: response
+            body: resp
           }
           @reply = FHIR::ClientReply.new(request.args, res)
         end

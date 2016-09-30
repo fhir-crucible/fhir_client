@@ -13,3 +13,6 @@ notifications:
     recipients:
       - healthcare-ci@googlegroups.com
     on_failure: change
+addons:
+    code_climate:
+        repo_token: ac1640edaefa720557e56bfaba4e09808559d7d61812f96d58ea4aa5f4669738

@@ -2,6 +2,7 @@ require 'rake'
 require 'rake/testtask'
 require 'fileutils'
 require 'pry'
+require 'rubocop/rake_task'
 
 require_relative 'lib/fhir_client'
 
@@ -18,8 +19,13 @@ Rake::TestTask.new(:test_unit) do |t|
   t.warning = false
 end
 
-task :test => [:test_unit] do
-  system("open coverage/index.html")
+desc 'Run rubocop'
+task :rubocop do
+  RuboCop::RakeTask.new
 end
 
-task :default => [:test]
+task test: [:test_unit, :rubocop] do
+  system('open coverage/index.html')
+end
+
+task default: [:test]

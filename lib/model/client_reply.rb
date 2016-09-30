@@ -70,7 +70,7 @@ module FHIR
         begin
           tokens = link.split('_history/')
           version = tokens.last.split('/').first
-        rescue Exception => e
+        rescue
           version = nil
         end
       end
@@ -151,13 +151,14 @@ module FHIR
       if body && body_rules
         if body_rules['types']
           body_type_match = false
-          body_rules['types'].each do |type|
-            begin
-              content = FHIR.from_contents(body)
+          begin
+            content = FHIR.from_contents(body)
+            body_rules['types'].each do |type|
               body_type_match = true if content.resourceType == type
               body_type_match = true if type == 'Resource' && FHIR::RESOURCES.include?(content.resourceType)
-            rescue
             end
+          rescue
+            FHIR.logger.warn "ClientReply was unable to validate response body: #{body}"
           end
           errors << "#{name}: Body does not match allowed types: #{body_rules['types'].join(', ')}" unless body_type_match
         end
