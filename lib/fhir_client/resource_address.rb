@@ -110,10 +110,10 @@ module FHIR
     end
 
     # Get the resource ID out of the URL (e.g. Bundle.entry.response.location)
-    def self.pull_out_id(resourceType, url)
+    def self.pull_out_id(resource_type, url)
       id = nil
-      if !resourceType.nil? && !url.nil?
-        token = "#{resourceType}/"
+      if !resource_type.nil? && !url.nil?
+        token = "#{resource_type}/"
         if url.index(token)
           start = url.index(token) + token.length
           t = url[start..-1]

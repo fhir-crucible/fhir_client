@@ -1,26 +1,23 @@
-# Top level include file that brings in all the necessary code
-require 'bundler/setup'
-require 'yaml'
-require 'nokogiri'
+require 'fhir_client/version'
+
+# require 'yaml'  # not sure what (if anything) this is needed for
+
 require 'fhir_models'
-require 'rest_client'
-require 'addressable/uri'
-require 'oauth2'
-require 'active_support'
 require 'active_support/all'
 
-root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
-Dir.glob(File.join(root, 'lib', 'sections', '**', '*.rb')).each do |file|
-  require file
-end
-Dir.glob(File.join(root, 'lib', 'ext', '**', '*.rb')).each do |file|
-  require file
+Dir.chdir 'lib' do
+  Dir['fhir_client/sections/*.rb'].each do |file|
+    require file
+  end
+  Dir['fhir_client/ext/*.rb'].each do |file|
+    require file
+  end
 end
 
-require_relative File.join('.', 'client_interface.rb')
-require_relative File.join('.', 'resource_address.rb')
-require_relative File.join('.', 'resource_format.rb')
-require_relative File.join('.', 'patch_format.rb')
-require_relative File.join('.', 'model', 'client_reply.rb')
-require_relative File.join('.', 'model', 'tag.rb')
-require_relative File.join('.', 'client_exception.rb')
+require_relative 'fhir_client/client'
+require_relative 'fhir_client/resource_address'
+require_relative 'fhir_client/resource_format'
+require_relative 'fhir_client/patch_format'
+require_relative 'fhir_client/model/client_reply'
+require_relative 'fhir_client/model/tag'
+require_relative 'fhir_client/client_exception'

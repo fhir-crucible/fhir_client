@@ -1,7 +1,7 @@
 namespace :fhir do
   desc 'console'
-  task :console, [] do |t, args|
-    binding.pry
+  task :console, [] do
+    sh 'bin/console'
   end
 
   #
