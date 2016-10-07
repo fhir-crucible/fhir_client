@@ -1,12 +1,10 @@
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'codeclimate-test-reporter'
 CodeClimate::TestReporter.start
 
 require 'simplecov'
-require_relative '../lib/fhir_client'
-
 require 'pry'
-require 'minitest/autorun'
-require 'webmock/test_unit'
-require 'bundler/setup'
 require 'test/unit'
-require 'turn'
+require 'webmock/test_unit'
+
+require 'fhir_client'

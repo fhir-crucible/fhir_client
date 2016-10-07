@@ -15,13 +15,13 @@ module FHIR
       # Retrieve the update history for a resource with given id since last update time.
       # Last update may be null TODO - ensure this is the case.
       #
-      # @param lastUpdate
+      # @param last_update
       # @param resourceClass
       # @param id
       # @return
       #
-      # public <T extends Resource> AtomFeed history(Calendar lastUpdate, Class<T> resourceClass, String id);
-      # public <T extends Resource> AtomFeed history(DateAndTime lastUpdate, Class<T> resourceClass, String id);
+      # public <T extends Resource> AtomFeed history(Calendar last_update, Class<T> resourceClass, String id);
+      # public <T extends Resource> AtomFeed history(DateAndTime last_update, Class<T> resourceClass, String id);
 
       def history(options)
         reply = get resource_url(options), fhir_headers(options).except(:history)
@@ -36,11 +36,11 @@ module FHIR
       #
       # @param resourceClass
       # @param id
-      # @param lastUpdate
+      # @param last_update
       # @return
       #
-      def resource_instance_history_as_of(klass, id, lastUpdate)
-        history(resource: klass, id: id, history: { since: lastUpdate })
+      def resource_instance_history_as_of(klass, id, last_update)
+        history(resource: klass, id: id, history: { since: last_update })
       end
 
       def resource_instance_history(klass, id)
@@ -51,8 +51,8 @@ module FHIR
         history(resource: klass, history: {})
       end
 
-      def resource_history_as_of(klass, lastUpdate)
-        history(resource: klass, history: { since: lastUpdate })
+      def resource_history_as_of(klass, last_update)
+        history(resource: klass, history: { since: last_update })
       end
 
       #
@@ -66,11 +66,11 @@ module FHIR
       # Retrieve the update history for all resource types since a specific last update date/time.
       #
       # Note:
-      # @param lastUpdate
+      # @param last_update
       # @return
       #
-      def all_history_as_of(lastUpdate)
-        history(history: { since: lastUpdate })
+      def all_history_as_of(last_update)
+        history(history: { since: last_update })
       end
     end
   end

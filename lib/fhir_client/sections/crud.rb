@@ -55,7 +55,7 @@ module FHIR
       #
       # Update an existing resource by its id or create it if it is a new resource, not present on the server
       #
-      def conditional_update(resource, id, searchParams, format = @default_format)
+      def conditional_update(resource, id, search_params, format = @default_format)
         options = {
           search: {
             flag: false,
@@ -63,7 +63,7 @@ module FHIR
             parameters: {}
           }
         }
-        searchParams.each do |key, value|
+        search_params.each do |key, value|
           options[:search][:parameters][key] = value
         end
         base_update(resource, id, options, format)
@@ -124,9 +124,9 @@ module FHIR
       #
       # Conditionally create a new resource with a server assigned id.
       #
-      def conditional_create(resource, ifNoneExistParameters, format = @default_format)
+      def conditional_create(resource, if_none_exist_parameters, format = @default_format)
         query = ''
-        ifNoneExistParameters.each do |key, value|
+        if_none_exist_parameters.each do |key, value|
           query += "#{key}=#{value}&"
         end
         query = query[0..-2] # strip off the trailing ampersand

@@ -1,3 +1,8 @@
+require 'rest_client'
+require 'nokogiri'
+require 'addressable/uri'
+require 'oauth2'
+
 module FHIR
   class Client
     include FHIR::Sections::History
@@ -23,14 +28,15 @@ module FHIR
     # Call method to initialize FHIR client. This method must be invoked
     # with a valid base server URL prior to using the client.
     #
-    # @param baseServiceUrl Base service URL for FHIR Service.
+    # @param base_service_url Base service URL for FHIR Service.
+    # @param default_format Default Format Mime type
     # @return
     #
-    def initialize(baseServiceUrl)
-      FHIR.logger.info "Initializing client with #{@baseServiceUrl}"
-      @baseServiceUrl = baseServiceUrl
+    def initialize(base_service_url, default_format: FHIR::Formats::ResourceFormat::RESOURCE_XML)
+      @base_service_url = base_service_url
+      FHIR.logger.info "Initializing client with #{@base_service_url}"
       @use_format_param = false
-      @default_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
+      @default_format = default_format
       set_no_auth
     end
 
@@ -75,17 +81,17 @@ module FHIR
     # Set the client to use OpenID Connect OAuth2 Authentication
     # client -- client id
     # secret -- client secret
-    # authorizePath -- absolute path of authorization endpoint
-    # tokenPath -- absolute path of token endpoint
-    def set_oauth2_auth(client, secret, authorizePath, tokenPath)
+    # authorize_path -- absolute path of authorization endpoint
+    # token_path -- absolute path of token endpoint
+    def set_oauth2_auth(client, secret, authorize_path, token_path)
       FHIR.logger.info 'Configuring the client to use OpenID Connect OAuth2 authentication.'
       @use_oauth2_auth = true
       @use_basic_auth = false
       @security_headers = {}
       options = {
-        site: @baseServiceUrl,
-        authorize_url: authorizePath,
-        token_url: tokenPath,
+        site: @base_service_url,
+        authorize_url: authorize_path,
+        token_url: token_path,
         raise_errors: true
       }
       client = OAuth2::Client.new(client, secret, options)
@@ -128,7 +134,7 @@ module FHIR
       authorize_extension = 'authorize'
       token_extension = 'token'
       begin
-        conformance = conformanceStatement
+        conformance = conformance_statement
         conformance.rest.each do |rest|
           rest.security.service.each do |service|
             service.coding.each do |coding|
@@ -158,7 +164,7 @@ module FHIR
 
     # Method returns a conformance statement for the system queried.
     # @return
-    def conformanceStatement(format = FHIR::Formats::ResourceFormat::RESOURCE_XML)
+    def conformance_statement(format = FHIR::Formats::ResourceFormat::RESOURCE_XML)
       if @cached_conformance.nil? || format != @default_format
         try_conformance_formats(format)
       end
@@ -193,7 +199,7 @@ module FHIR
     end
 
     def full_resource_url(options)
-      @baseServiceUrl + resource_url(options)
+      @base_service_url + resource_url(options)
     end
 
     def fhir_headers(options = {})
@@ -216,7 +222,7 @@ module FHIR
     end
 
     def strip_base(path)
-      path.gsub(@baseServiceUrl, '')
+      path.gsub(@base_service_url, '')
     end
 
     def reissue_request(request)
@@ -232,13 +238,13 @@ module FHIR
 
     def base_path(path)
       if path.start_with?('/')
-        if @baseServiceUrl.end_with?('/')
-          @baseServiceUrl.chop
+        if @base_service_url.end_with?('/')
+          @base_service_url.chop
         else
-          @baseServiceUrl
+          @base_service_url
         end
       else
-        @baseServiceUrl + '/'
+        @base_service_url + '/'
       end
     end
 
@@ -304,7 +310,7 @@ module FHIR
         req = {
           method: :get,
           url: url,
-          path: url.gsub(@baseServiceUrl, ''),
+          path: url.gsub(@base_service_url, ''),
           headers: headers,
           payload: nil
         }
@@ -324,7 +330,7 @@ module FHIR
         end
 
         FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: #{response.body.force_encoding('UTF-8')}"
-        response.request.args[:path] = response.request.args[:url].gsub(@baseServiceUrl, '')
+        response.request.args[:path] = response.request.args[:url].gsub(@base_service_url, '')
         headers = response.headers.each_with_object({}) { |(k, v), h| h[k.to_s.tr('_', '-')] = v.to_s; h }
         res = {
           code: response.code,
@@ -351,7 +357,7 @@ module FHIR
         req = {
           method: :post,
           url: url,
-          path: url.gsub(@baseServiceUrl, ''),
+          path: url.gsub(@base_service_url, ''),
           headers: headers,
           payload: payload
         }
@@ -366,7 +372,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.post(url, payload, headers) do |resp, request, result|
           FHIR.logger.info "POST - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
-          request.args[:path] = url.gsub(@baseServiceUrl, '')
+          request.args[:path] = url.gsub(@base_service_url, '')
           res = {
             code: result.code,
             headers: scrubbed_response_headers(result.each_key {}),
@@ -392,7 +398,7 @@ module FHIR
         req = {
           method: :put,
           url: url,
-          path: url.gsub(@baseServiceUrl, ''),
+          path: url.gsub(@base_service_url, ''),
           headers: headers,
           payload: payload
         }
@@ -407,7 +413,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.put(url, payload, headers) do |resp, request, result|
           FHIR.logger.info "PUT - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
-          request.args[:path] = url.gsub(@baseServiceUrl, '')
+          request.args[:path] = url.gsub(@base_service_url, '')
           res = {
             code: result.code,
             headers: scrubbed_response_headers(result.each_key {}),
@@ -433,7 +439,7 @@ module FHIR
         req = {
           method: :patch,
           url: url,
-          path: url.gsub(@baseServiceUrl, ''),
+          path: url.gsub(@base_service_url, ''),
           headers: headers,
           payload: payload
         }
@@ -449,7 +455,7 @@ module FHIR
         # url = 'http://requestb.in/o8juy3o8'
         @client.patch(url, payload, headers) do |resp, request, result|
           FHIR.logger.info "PATCH - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
-          request.args[:path] = url.gsub(@baseServiceUrl, '')
+          request.args[:path] = url.gsub(@base_service_url, '')
           res = {
             code: result.code,
             headers: scrubbed_response_headers(result.each_key {}),
@@ -474,7 +480,7 @@ module FHIR
         req = {
           method: :delete,
           url: url,
-          path: url.gsub(@baseServiceUrl, ''),
+          path: url.gsub(@base_service_url, ''),
           headers: headers,
           payload: nil
         }
@@ -489,7 +495,7 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         @client.delete(url, headers) do |resp, request, result|
           FHIR.logger.info "DELETE - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
-          request.args[:path] = url.gsub(@baseServiceUrl, '')
+          request.args[:path] = url.gsub(@base_service_url, '')
           res = {
             code: result.code,
             headers: scrubbed_response_headers(result.each_key {}),
@@ -506,7 +512,7 @@ module FHIR
       FHIR.logger.info "HEADING: #{url}"
       RestClient.head(url, headers) do |response, request, result|
         FHIR.logger.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding('UTF-8')}"
-        request.args[:path] = url.gsub(@baseServiceUrl, '')
+        request.args[:path] = url.gsub(@base_service_url, '')
         res = {
           code: result.code,
           headers: scrubbed_response_headers(result.each_key {}),

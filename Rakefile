@@ -1,19 +1,14 @@
-require 'rake'
+require 'bundler/gem_tasks'
 require 'rake/testtask'
-require 'fileutils'
-require 'pry'
 require 'rubocop/rake_task'
 
-require_relative 'lib/fhir_client'
-
-# Pull in any rake task defined in lib/tasks
-Dir['lib/tasks/**/*.rake'].sort.each do |ext|
+Dir['lib/fhir_client/tasks/**/*.rake'].sort.each do |ext|
   load ext
 end
 
-desc "Run basic tests"
-Rake::TestTask.new(:test_unit) do |t|
-  t.libs << "test"
+Rake::TestTask.new(:test) do |t|
+  t.libs << 'test'
+  t.libs << 'lib'
   t.test_files = FileList['test/**/*_test.rb']
   t.verbose = true
   t.warning = false
@@ -24,7 +19,7 @@ task :rubocop do
   RuboCop::RakeTask.new
 end
 
-task test: [:test_unit, :rubocop] do
+task test: [:rubocop] do
   system('open coverage/index.html')
 end
 
