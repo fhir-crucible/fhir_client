@@ -1,5 +1,5 @@
 module FHIR
   class Client
-    VERSION = '1.6.4'
+    VERSION = '1.6.6'
   end
 end
