@@ -8,3 +8,4 @@ require 'test/unit'
 require 'webmock/test_unit'
 
 require 'fhir_client'
+FHIR.logger.level = Logger::ERROR

@@ -1,3 +1,6 @@
+require 'fhir_client'
+FHIR.logger.level = Logger::ERROR
+
 namespace :fhir do
   desc 'console'
   task :console, [] do

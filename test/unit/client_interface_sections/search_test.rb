@@ -6,7 +6,7 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
   end
 
   def test_url_encoding_only_happens_once
-    stub_request(:get, /feed-test/)
+    stub_request(:get, /feed-test/).to_return(body: '{"resourceType":"Bundle"}')
     reply = client.search(
       FHIR::Appointment,
       {
