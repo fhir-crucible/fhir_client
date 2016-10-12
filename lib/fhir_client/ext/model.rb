@@ -1,15 +1,15 @@
 module FHIR
   class Model
     class << self
-      cattr_accessor :client
+      cattr_accessor :client, instance_accessor: false
     end
 
     def client
-      @client || self.class.client
+      @@client || self.class.client
     end
 
     def client=(client)
-      @client = client
+      @@client = client
 
       # Ensure the client-setting cascades to all child models
       instance_values.each do |_key, values|
