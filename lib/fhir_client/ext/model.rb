@@ -5,7 +5,7 @@ module FHIR
     end
 
     def client
-      @@client || self.class.client
+      @@client
     end
 
     def client=(client)
@@ -21,44 +21,44 @@ module FHIR
       end
     end
 
-    def self.read(id, client = self.client)
+    def self.read(id, client = @@client)
       handle_response client.read(self, id)
     end
 
-    def self.read_with_summary(id, summary, client = self.client)
+    def self.read_with_summary(id, summary, client = @@client)
       handle_response client.read(self, id, client.default_format, summary)
     end
 
-    def self.vread(id, version_id, client = self.client)
+    def self.vread(id, version_id, client = @@client)
       handle_response client.vread(self, id, version_id)
     end
 
-    def self.resource_history(client = self.client)
+    def self.resource_history(client = @@client)
       handle_response client.resource_history(self)
     end
 
-    def self.resource_history_as_of(last_update)
+    def self.resource_history_as_of(last_update, client = @@client)
       handle_response client.resource_history_as_of(self, last_update)
     end
 
-    def self.resource_instance_history(id, client = self.client)
+    def self.resource_instance_history(id, client = @@client)
       handle_response client.resource_instance_history(self, id)
     end
 
-    def self.resource_instance_history_as_of(id, last_update, client = self.client)
+    def self.resource_instance_history_as_of(id, last_update, client = @@client)
       handle_response client.resource_instance_history_as_of(self, id, last_update)
     end
 
-    def self.search(params = {}, client = self.client)
+    def self.search(params = {}, client = @@client)
       handle_response client.search(self, search: { parameters: params })
     end
 
-    def self.create(model, client = self.client)
+    def self.create(model, client = @@client)
       model = new(model) unless model.is_a?(self)
       handle_response client.create(model)
     end
 
-    def self.conditional_create(model, params, client = self.client)
+    def self.conditional_create(model, params, client = @@client)
       model = new(model) unless model.is_a?(self)
       handle_response client.conditional_create(model, params)
     end
