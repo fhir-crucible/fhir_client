@@ -40,6 +40,7 @@ namespace :fhir do
   desc 'count all resources for a given server'
   task :count, [:url, :display_zero] do |_t, args|
     client = FHIR::Client.new(args.url)
+    client.try_conformance_formats(FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     display_zero = (args.display_zero == 'true')
     counts = {}
     fhir_resources.each do |klass|
@@ -59,6 +60,7 @@ namespace :fhir do
   desc 'delete all resources for a given server'
   task :clean, [:url] do |_t, args|
     client = FHIR::Client.new(args.url)
+    client.try_conformance_formats(FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     fhir_resources.each do |klass|
       puts "Reading #{klass.name.demodulize}..."
       skipped = []
