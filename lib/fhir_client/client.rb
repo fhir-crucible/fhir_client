@@ -162,9 +162,14 @@ module FHIR
       options
     end
 
+    # Method returns a capability statement for the system queried.
+    def capability_statement(format = @default_format)
+      conformance_statement(format)
+    end
+
     # Method returns a conformance statement for the system queried.
     # @return
-    def conformance_statement(format = FHIR::Formats::ResourceFormat::RESOURCE_XML)
+    def conformance_statement(format = @default_format)
       if @cached_conformance.nil? || format != @default_format
         try_conformance_formats(format)
       end
