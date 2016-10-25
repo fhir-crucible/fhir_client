@@ -330,6 +330,22 @@ module FHIR
         headers.merge!(@security_headers) if @use_basic_auth
         begin
           response = @client.get(url, headers)
+        rescue RestClient::SSLCertificateNotVerified => sslerr
+          FHIR.logger.error "SSL Error: #{url}"
+          req = {
+            method: :get,
+            url: url,
+            path: url.gsub(@base_service_url, ''),
+            headers: headers,
+            payload: nil
+          }
+          res = {
+            code: nil,
+            headers: nil,
+            body: sslerr.message
+          }
+          @reply = FHIR::ClientReply.new(req, res)
+          return @reply
         rescue => e
           response = e.response if e.response
         end
