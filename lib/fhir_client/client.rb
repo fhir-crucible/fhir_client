@@ -324,7 +324,11 @@ module FHIR
           headers: response.headers,
           body: response.body
         }
-        FHIR.logger.info "GET - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+        if url.end_with?('/metadata')
+          FHIR.logger.info "GET - Request: #{req}, Response: [too large]"
+        else
+          FHIR.logger.info "GET - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+        end
         @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
@@ -349,8 +353,11 @@ module FHIR
         rescue => e
           response = e.response if e.response
         end
-
-        FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: #{response.body.force_encoding('UTF-8')}"
+        if url.end_with?('/metadata')
+          FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: [too large]"
+        else
+          FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: #{response.body.force_encoding('UTF-8')}"
+        end
         response.request.args[:path] = response.request.args[:url].gsub(@base_service_url, '')
         headers = response.headers.each_with_object({}) { |(k, v), h| h[k.to_s.tr('_', '-')] = v.to_s; h }
         res = {
