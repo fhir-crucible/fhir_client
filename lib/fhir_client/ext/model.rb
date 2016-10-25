@@ -63,7 +63,7 @@ module FHIR
       handle_response client.conditional_create(model, params)
     end
 
-    def self.all
+    def self.all(client = @@client)
       handle_response client.read_feed(self)
     end
 
