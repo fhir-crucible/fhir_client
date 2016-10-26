@@ -399,7 +399,7 @@ module FHIR
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.post(url, payload, headers) do |resp, request, result|
-          FHIR.logger.info "POST - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
+          FHIR.logger.info "POST - Request: #{request.to_json}\nResponse:\nResponse Headers: #{scrubbed_response_headers(result.each_key {})} \nResponse Body: #{resp.force_encoding('UTF-8')}"
           request.args[:path] = url.gsub(@base_service_url, '')
           res = {
             code: result.code,
@@ -480,16 +480,30 @@ module FHIR
         @reply = FHIR::ClientReply.new(req, res)
       else
         headers.merge!(@security_headers) if @use_basic_auth
-        # url = 'http://requestb.in/o8juy3o8'
-        @client.patch(url, payload, headers) do |resp, request, result|
-          FHIR.logger.info "PATCH - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
-          request.args[:path] = url.gsub(@base_service_url, '')
-          res = {
-            code: result.code,
-            headers: scrubbed_response_headers(result.each_key {}),
-            body: resp
+        begin
+          @client.patch(url, payload, headers) do |resp, request, result|
+            FHIR.logger.info "PATCH - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
+            request.args[:path] = url.gsub(@base_service_url, '')
+            res = {
+              code: result.code,
+              headers: scrubbed_response_headers(result.each_key {}),
+              body: resp
+            }
+            @reply = FHIR::ClientReply.new(request.args, res)
+          end
+        rescue => e
+          req = {
+            method: :patch,
+            url: url,
+            path: url.gsub(@base_service_url, ''),
+            headers: headers,
+            payload: payload
           }
-          @reply = FHIR::ClientReply.new(request.args, res)
+          res = {
+            body: e.message
+          }
+          FHIR.logger.error "PATCH Error: #{e.message}"
+          @reply = FHIR::ClientReply.new(req, res)
         end
       end
     end
