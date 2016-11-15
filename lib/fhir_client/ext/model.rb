@@ -1,8 +1,6 @@
 module FHIR
   class Model
-    class << self
-      cattr_accessor :client, instance_accessor: false
-    end
+    cattr_accessor :client, instance_accessor: false
 
     def client
       @@client
