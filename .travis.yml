@@ -7,7 +7,9 @@ rvm:
 before_install:
   - gem install bundler
 services: mongodb
-script: bundle exec rake test
+script:
+  - bundle exec rake test
+  - bundle exec codeclimate-test-reporter
 notifications:
   email:
     recipients:
