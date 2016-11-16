@@ -139,23 +139,23 @@ module FHIR
           rest.security.service.each do |service|
             service.coding.each do |coding|
               next unless coding.code == 'SMART-on-FHIR'
-              rest.security.extension.where(url: oauth_extension).first.extension.each do |ext|
+              rest.security.extension.find{|x| x.url == oauth_extension}.extension.each do |ext|
                 case ext.url
                 when authorize_extension
-                  options[:authorize_url] = ext.value.value
+                  options[:authorize_url] = ext.value
                 when "#{oauth_extension}\##{authorize_extension}"
-                  options[:authorize_url] = ext.value.value
+                  options[:authorize_url] = ext.value
                 when token_extension
-                  options[:token_url] = ext.value.value
+                  options[:token_url] = ext.value
                 when "#{oauth_extension}\##{token_extension}"
-                  options[:token_url] = ext.value.value
+                  options[:token_url] = ext.value
                 end
               end
             end
           end
         end
-      rescue
-        FHIR.logger.error 'Failed to locate SMART-on-FHIR OAuth2 Security Extensions.'
+      rescue => e
+        FHIR.logger.error "Failed to locate SMART-on-FHIR OAuth2 Security Extensions: #{e.message}"
       end
       options.delete_if { |_k, v| v.nil? }
       options.clear if options.keys.size != 2
