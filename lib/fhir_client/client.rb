@@ -23,7 +23,7 @@ module FHIR
 
     attr_accessor :default_format
 
-    attr_accessor :cached_conformance
+    attr_accessor :cached_capability_statement
 
     # Call method to initialize FHIR client. This method must be invoked
     # with a valid base server URL prior to using the client.
@@ -98,9 +98,9 @@ module FHIR
       @client = client.client_credentials.get_token
     end
 
-    # Get the OAuth2 server and endpoints from the conformance statement
+    # Get the OAuth2 server and endpoints from the capability statement
     # (the server should not require OAuth2 or other special security to access
-    # the conformance statement).
+    # the capability statement).
     # <rest>
     #   <mode value="server"/>
     #   <documentation value="All the functionality defined in FHIR"/>
@@ -134,8 +134,7 @@ module FHIR
       authorize_extension = 'authorize'
       token_extension = 'token'
       begin
-        conformance = conformance_statement
-        conformance.rest.each do |rest|
+        capability_statement.rest.each do |rest|
           rest.security.service.each do |service|
             service.coding.each do |coding|
               next unless coding.code == 'SMART-on-FHIR'
@@ -170,10 +169,10 @@ module FHIR
     # Method returns a conformance statement for the system queried.
     # @return
     def conformance_statement(format = @default_format)
-      if @cached_conformance.nil? || format != @default_format
+      if @cached_capability_statement.nil? || format != @default_format
         try_conformance_formats(format)
       end
-      @cached_conformance
+      @cached_capability_statement
     end
 
     def try_conformance_formats(default_format)
@@ -185,13 +184,13 @@ module FHIR
                  'application/json']
       formats.insert(0, default_format)
 
-      @cached_conformance = nil
+      @cached_capability_statement = nil
       @default_format = nil
 
       formats.each do |frmt|
         reply = get 'metadata', fhir_headers(format: frmt)
         next unless reply.code == 200
-        @cached_conformance = parse_reply(FHIR::Conformance, frmt, reply)
+        @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
         @default_format = frmt
         break
       end
