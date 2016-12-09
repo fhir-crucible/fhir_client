@@ -134,8 +134,7 @@ module FHIR
       authorize_extension = 'authorize'
       token_extension = 'token'
       begin
-        capabilities = capability_statement
-        capabilities.rest.each do |rest|
+        capability_statement.rest.each do |rest|
           rest.security.service.each do |service|
             service.coding.each do |coding|
               next unless coding.code == 'SMART-on-FHIR'
