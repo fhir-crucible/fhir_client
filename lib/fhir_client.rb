@@ -9,6 +9,7 @@ Dir.glob(File.join(root, 'fhir_client', 'ext', '**', '*.rb')).each do |file|
   require file
 end
 
+require_relative 'fhir_client/gem_ext'
 require_relative 'fhir_client/client'
 require_relative 'fhir_client/resource_address'
 require_relative 'fhir_client/resource_format'
