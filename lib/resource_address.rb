@@ -73,7 +73,8 @@ module FHIR
 
       if (options[:history])
         history = options[:history]
-        url += "/_history/#{history[:id]}"
+        url += '/_history'
+        url += "/#{history[:id]}" if history.key?(:id)
         params[:_count] = history[:count] if history[:count]
         params[:_since] = history[:since].iso8601 if history[:since]
       end
