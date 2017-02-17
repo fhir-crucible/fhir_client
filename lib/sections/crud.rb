@@ -88,8 +88,10 @@ module FHIR
       # Delete the resource with the given ID.
       #
       def destroy(klass, id=nil, options={})
-        options = { resource: klass, id: id, format: nil }.merge options
-        reply = delete resource_url(options), fhir_headers(options)
+        options = { resource: klass, id: id, format: @default_format }.merge options
+        headers = fhir_headers(options)
+        headers.delete('Content-Type')
+        reply = delete resource_url(options), headers
         reply.resource_class = klass
         reply
       end
