@@ -1,6 +1,5 @@
 module FHIR
   class ClientReply
-    @@validation_rules = JSON.parse(File.open(File.join(File.expand_path('..', File.dirname(File.absolute_path(__FILE__))), 'fhir_api_validation.json'), 'r:UTF-8', &:read))
     @@path_regexes = {
       '[type]' => "(#{FHIR::RESOURCES.join('|')})",
       '[id]' => FHIR::PRIMITIVES['id']['regex'],
@@ -97,8 +96,11 @@ module FHIR
     end
 
     def validate
+      rules = File.open(File.join(File.expand_path('..', File.dirname(File.absolute_path(__FILE__))), 'fhir_api_validation.json'), 'r:UTF-8', &:read)
+      validation_rules = JSON.parse(rules)
+
       errors = []
-      @@validation_rules.each do |rule|
+      validation_rules.each do |rule|
         next unless rule['verb'] == @request[:method].to_s.upcase
         rule_match = false
         rule['path'].each do |path|
