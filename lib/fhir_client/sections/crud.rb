@@ -147,12 +147,12 @@ module FHIR
         options[:format] = format
         reply = post resource_url(options), resource, fhir_headers(options)
         if [200, 201].include? reply.code
-          type = reply.response[:headers][:content_type]
+          type = reply.response[:headers].select{|x| x.downcase=='content-type'}['content-type']
           if !type.nil?
             reply.resource = if type.include?('xml') && !reply.body.empty?
-                               resource.class.from_xml(reply.body)
+                               FHIR::Xml.from_xml(reply.body)
                              elsif type.include?('json') && !reply.body.empty?
-                               resource.class.from_fhir_json(reply.body)
+                               FHIR::Json.from_json(reply.body)
                              else
                                resource # just send back the submitted resource
                              end
