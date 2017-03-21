@@ -78,7 +78,7 @@ module FHIR
         options[:format] = format
         options[:id] = id
         reply = put resource_url(options), resource, fhir_headers(options)
-        reply.resource = parse_reply(resource.class, format, reply)
+        reply.resource = parse_reply(resource.class, format, reply) if reply.body.present?
         reply.resource_class = resource.class
         reply
       end
