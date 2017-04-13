@@ -147,7 +147,7 @@ module FHIR
         options[:format] = format
         reply = post resource_url(options), resource, fhir_headers(options)
         if [200, 201].include? reply.code
-          type = reply.response[:headers].select{|x| x.downcase=='content-type'}['content-type']
+          type = reply.response[:headers].detect{|x, _y| x.downcase=='content-type'}.try(:last)
           if !type.nil?
             reply.resource = if type.include?('xml') && !reply.body.empty?
                                FHIR::Xml.from_xml(reply.body)
