@@ -131,7 +131,7 @@ module FHIR
     def validate_headers(name, headers, header_rules)
       errors = []
       header_rules.each do |header, present|
-        value = headers[header]
+        value = headers.detect{|x, _y| x.downcase==header.downcase}.try(:last)
         if present == true
           if value
             errors << "#{name}: Malformed value for header #{header}: #{value}" unless @@header_regexes[header] =~ value
