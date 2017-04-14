@@ -350,7 +350,13 @@ module FHIR
           @reply = FHIR::ClientReply.new(req, res)
           return @reply
         rescue => e
-          response = e.response if e.response
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
+          response = e.response
         end
         if url.end_with?('/metadata')
           FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: [too large]"
