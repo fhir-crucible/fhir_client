@@ -18,5 +18,10 @@ class BasicTest < Test::Unit::TestCase
       client.read(FHIR::Patient, 123)
       assert_requested stub
     end
+    client.use_oauth2_auth = true
+    assert_raise RestClient::RequestTimeout do
+      client.read(FHIR::Patient, 123)
+      assert_requested stub
+    end
   end
 end

@@ -309,6 +309,12 @@ module FHIR
         begin
           response = @client.get(url, headers: headers)
         rescue => e
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
           response = e.response if e.response
         end
         req = {
