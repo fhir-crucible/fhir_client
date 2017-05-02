@@ -52,6 +52,7 @@ module FHIR
       url += "/#{options[:resource].try(:name).try(:demodulize) || options[:resource].split('::').last}" if options[:resource]
       url += "/#{options[:id]}" if options[:id]
       url += '/$validate' if options[:validate]
+      url += '/$match' if options[:match]
 
       if options[:operation]
         opr = options[:operation]

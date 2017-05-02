@@ -7,7 +7,6 @@ module FHIR
   class Client
     include FHIR::Sections::History
     include FHIR::Sections::Crud
-    include FHIR::Sections::Validate
     include FHIR::Sections::Tags
     include FHIR::Sections::Feed
     include FHIR::Sections::Search
