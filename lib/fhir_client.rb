@@ -1,4 +1,5 @@
 require 'fhir_models'
+require 'fhir_dstu2_models'
 require 'active_support/all'
 
 root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))

@@ -89,10 +89,10 @@ module FHIR
       def partial_update(klass, id, patchset, options = {}, format = @default_format)
         options = { resource: klass, id: id, format: format }.merge options
 
-        if format == FHIR::Formats::ResourceFormat::RESOURCE_XML
+        if [FHIR::Formats::ResourceFormat::RESOURCE_XML, FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2].include?(format)
           options[:format] = FHIR::Formats::PatchFormat::PATCH_XML
           options[:Accept] = format
-        elsif format == FHIR::Formats::ResourceFormat::RESOURCE_JSON
+        elsif [FHIR::Formats::ResourceFormat::RESOURCE_JSON, FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2].include?(format)
           options[:format] = FHIR::Formats::PatchFormat::PATCH_JSON
           options[:Accept] = format
         end
@@ -150,9 +150,17 @@ module FHIR
           type = reply.response[:headers].detect{|x, _y| x.downcase=='content-type'}.try(:last)
           if !type.nil?
             reply.resource = if type.include?('xml') && !reply.body.empty?
-                               FHIR::Xml.from_xml(reply.body)
+                               if @fhir_version == :stu3
+                                 FHIR::Xml.from_xml(reply.body)
+                               else
+                                 FHIR::DSTU2::Xml.from_xml(reply.body)
+                               end
                              elsif type.include?('json') && !reply.body.empty?
-                               FHIR::Json.from_json(reply.body)
+                               if @fhir_version == :stu3
+                                 FHIR::Json.from_json(reply.body)
+                               else
+                                 FHIR::DSTU2::Json.from_json(reply.body)
+                               end
                              else
                                resource # just send back the submitted resource
                              end

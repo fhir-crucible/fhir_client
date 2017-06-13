@@ -21,7 +21,7 @@ module FHIR
     attr_accessor :client
 
     attr_accessor :default_format
-
+    attr_accessor :fhir_version
     attr_accessor :cached_capability_statement
 
     # Call method to initialize FHIR client. This method must be invoked
@@ -36,6 +36,7 @@ module FHIR
       FHIR.logger.info "Initializing client with #{@base_service_url}"
       @use_format_param = false
       @default_format = default_format
+      @fhir_version = :stu3
       set_no_auth
     end
 
@@ -45,6 +46,27 @@ module FHIR
 
     def default_xml
       @default_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
+    end
+
+    def use_stu3
+      @fhir_version = :stu3
+    end
+
+    def use_dstu2
+      @fhir_version = :dstu2
+    end
+
+    def detect_version
+      cap = capability_statement
+      if cap.is_a?(FHIR::CapabilityStatement)
+        @fhir_version = :stu3
+      elsif cap.is_a?(FHIR::DSTU2::Conformance)
+        @fhir_version = :dstu2
+      else
+        @fhir_version = :stu3
+      end
+      FHIR.logger.info("Detecting server FHIR version as #{@fhir_version} via metadata")
+      @fhir_version
     end
 
     # Set the client to use no authentication mechanisms
@@ -189,7 +211,18 @@ module FHIR
       formats.each do |frmt|
         reply = get 'metadata', fhir_headers(format: frmt)
         next unless reply.code == 200
-        @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
+        begin
+          @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
+        rescue
+          @cached_capability_statement = nil
+        end
+        unless @cached_capability_statement
+          begin
+            @cached_capability_statement = parse_reply(FHIR::DSTU2::Conformance, frmt, reply)
+          rescue
+            @cached_capability_statement = nil
+          end
+        end
         @default_format = frmt
         break
       end
@@ -214,7 +247,11 @@ module FHIR
       return nil unless [200, 201].include? response.code
       res = nil
       begin
-        res = FHIR.from_contents(response.body)
+        res = if(@fhir_version == :dstu2 || klass.ancestors.include?(FHIR::DSTU2::Model))
+                FHIR::DSTU2.from_contents(response.body)
+              else
+                FHIR.from_contents(response.body)
+              end
         res.client = self unless res.nil?
         FHIR.logger.warn "Expected #{klass} but got #{res.class}" if res.class != klass
       rescue => e
@@ -232,7 +269,13 @@ module FHIR
       if [:get, :delete, :head].include?(request['method'])
         method(request['method']).call(request['url'], request['headers'])
       elsif [:post, :put].include?(request['method'])
-        resource = FHIR.from_contents(request['payload']) unless request['payload'].nil?
+        unless request['payload'].nil?
+          resource = if @fhir_version == :stu3
+                       FHIR.from_contents(request['payload'])
+                     else
+                       FHIR::DSTU2.from_contents(request['payload'])
+                     end
+        end
         method(request['method']).call(request['url'], resource, request['headers'])
       end
     end
