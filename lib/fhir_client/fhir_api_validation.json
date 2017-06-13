@@ -200,7 +200,7 @@
         "ETag": false,
         "Last-Modified": false
       },
-      "body": { "types": ["CapabilityStatement","ConformanceStatement"] }
+      "body": { "types": ["CapabilityStatement","Conformance"] }
     }
   },{      
     "interaction": "transaction",
