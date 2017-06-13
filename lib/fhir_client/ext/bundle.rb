@@ -1,5 +1,5 @@
 module FHIR
-  class Bundle
+  module BundleExtras
     def self_link
       link.select { |n| n.relation == 'self' }.first
     end
@@ -34,9 +34,22 @@ module FHIR
     end
 
     def next_bundle
-      # TODO: test this
       return nil unless client && next_link.try(:url)
       @next_bundle ||= client.parse_reply(self.class, client.default_format, client.raw_read_url(next_link.url))
+    end
+  end
+end
+
+module FHIR
+  class Bundle
+    include FHIR::BundleExtras
+  end
+end
+
+module FHIR
+  module DSTU2
+    class Bundle
+      include FHIR::BundleExtras
     end
   end
 end
