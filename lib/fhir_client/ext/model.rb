@@ -61,6 +61,10 @@ module FHIR
       handle_response client.conditional_create(model, params)
     end
 
+    def self.partial_update(id, patchset, options = {})
+      handle_response client.partial_update(self, id, patchset, options = {})
+    end
+
     def self.all(client = @@client)
       handle_response client.read_feed(self)
     end
