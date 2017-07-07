@@ -52,4 +52,23 @@ class MultiversionTest < Test::Unit::TestCase
     assert FHIR::DSTU2::Patient.read('foo').is_a?(FHIR::DSTU2::Patient)
   end
 
+  def test_dstu2_reply_fhir_version
+    stub_request(:get, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({ 'id': 'foo' }).to_json)
+    client = FHIR::Client.new('dstu2')
+    client.default_json
+    client.use_dstu2
+    FHIR::DSTU2::Model.client = client
+    patient = FHIR::DSTU2::Patient.read('foo')
+    assert_equal :dstu2, client.reply.fhir_version
+  end
+
+  def test_stu3_reply_fhir_version
+    stub_request(:get, /stu3/).to_return(body: FHIR::Patient.new({ 'id': 'foo' }).to_json)
+    client = FHIR::Client.new('stu3')
+    client.default_json
+    FHIR::Model.client = client
+    patient = FHIR::Patient.read('foo')
+    assert_equal :stu3, client.reply.fhir_version
+  end
+
 end
