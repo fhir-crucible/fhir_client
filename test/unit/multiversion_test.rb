@@ -24,6 +24,7 @@ class MultiversionTest < Test::Unit::TestCase
     stub_request(:get, /stu3/).to_return(body: FHIR::Patient.new.to_json)
     client = FHIR::Client.new('stu3')
     client.default_json
+    assert_equal :stu3, client.fhir_version
     assert client.read(FHIR::Patient, 'foo').resource.is_a?(FHIR::Patient)
   end
 
@@ -32,6 +33,7 @@ class MultiversionTest < Test::Unit::TestCase
     client = FHIR::Client.new('dstu2')
     client.default_json
     client.use_dstu2
+    assert_equal :dstu2, client.fhir_version
     assert client.read(FHIR::DSTU2::Patient, 'foo').resource.is_a?(FHIR::DSTU2::Patient)
   end
 
@@ -71,4 +73,75 @@ class MultiversionTest < Test::Unit::TestCase
     assert_equal :stu3, client.reply.fhir_version
   end
 
+  def test_stu3_accept_mime_type_json
+    stub_request(:get, /stu3/).to_return(body: FHIR::Patient.new({'id': 'foo'}).to_json)
+    client = FHIR::Client.new('stu3')
+    client.default_json
+    assert_equal :stu3, client.fhir_version
+    assert_equal 'application/fhir+json', client.read(FHIR::Patient, 'foo').request[:headers]['Accept']
+  end
+
+  def test_stu3_content_type_mime_type_json
+    stub_request(:post, /stu3/).to_return(body: FHIR::Patient.new({'id': 'foo'}).to_json)
+    client = FHIR::Client.new('stu3')
+    client.default_json
+    assert_equal :stu3, client.fhir_version
+    assert client.create(FHIR::Patient.new({'id': 'foo'})).request[:headers]['Content-Type'].include?('application/fhir+json')
+  end
+
+  def test_dstu2_accept_mime_type_json
+    stub_request(:get, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({'id': 'foo'}).to_json)
+    client = FHIR::Client.new('dstu2')
+    client.default_json
+    client.use_dstu2
+    assert_equal :dstu2, client.fhir_version
+    # dstu2 fhir type was changed in stu3
+    assert_equal 'application/json+fhir', client.read(FHIR::DSTU2::Patient, 'foo').request[:headers]['Accept']
+  end
+
+  def test_dstu2_content_type_mime_type_json
+    stub_request(:post, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({'id': 'foo'}).to_json)
+    client = FHIR::Client.new('dstu2')
+    client.default_json
+    client.use_dstu2
+    assert_equal :dstu2, client.fhir_version
+    # dstu2 fhir type was changed in stu3
+    assert client.create(FHIR::DSTU2::Patient.new({'id': 'foo'})).request[:headers]['Content-Type'].include?('application/json+fhir')
+  end
+
+  def test_stu3_accept_mime_type_xml
+    stub_request(:get, /stu3/).to_return(body: FHIR::Patient.new({'id': 'foo'}).to_xml)
+    client = FHIR::Client.new('stu3')
+    client.default_xml
+    assert_equal :stu3, client.fhir_version
+    assert_equal 'application/fhir+xml', client.read(FHIR::Patient, 'foo').request[:headers]['Accept']
+  end
+
+  def test_stu3_content_type_mime_type_xml
+    stub_request(:post, /stu3/).to_return(body: FHIR::Patient.new({'id': 'foo'}).to_xml)
+    client = FHIR::Client.new('stu3')
+    client.default_xml
+    assert_equal :stu3, client.fhir_version
+    assert client.create(FHIR::Patient.new({'id': 'foo'})).request[:headers]['Content-Type'].include?('application/fhir+xml')
+  end
+
+  def test_dstu2_accept_mime_type_xml
+    stub_request(:get, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({'id': 'foo'}).to_xml)
+    client = FHIR::Client.new('dstu2')
+    client.default_xml
+    client.use_dstu2
+    assert_equal :dstu2, client.fhir_version
+    # dstu2 fhir type was changed in stu3
+    assert_equal 'application/xml+fhir', client.read(FHIR::DSTU2::Patient, 'foo').request[:headers]['Accept']
+  end
+
+  def test_dstu2_content_type_mime_type_xml
+    stub_request(:post, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({'id': 'foo'}).to_xml)
+    client = FHIR::Client.new('dstu2')
+    client.default_xml
+    client.use_dstu2
+    assert_equal :dstu2, client.fhir_version
+    # dstu2 fhir type was changed in stu3
+    assert client.create(FHIR::DSTU2::Patient.new({'id': 'foo'})).request[:headers]['Content-Type'].include?('application/xml+fhir')
+  end
 end
