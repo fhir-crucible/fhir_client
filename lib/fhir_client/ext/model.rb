@@ -50,7 +50,8 @@ module FHIR
 
       private
       def handle_response(response)
-        self.class.handle_response(response)
+        raise ClientException.new "Server returned #{response.code}.", response if response.code.between?(400, 599)
+        response.resource
       end
     end
 

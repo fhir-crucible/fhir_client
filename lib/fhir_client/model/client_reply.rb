@@ -48,10 +48,11 @@ module FHIR
     attr_accessor :resource_class # class of the :resource
     attr_accessor :fhir_version
 
-    def initialize(request, response)
+    def initialize(request, response, client)
       @request = request
       @response = response
       @fhir_version = :stu3
+      @fhir_version = client.fhir_version
     end
 
     def code

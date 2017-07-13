@@ -10,7 +10,7 @@ class BundleTest < Test::Unit::TestCase
       headers: {},
       body: bundle_xml
     }
-    clientReply = FHIR::ClientReply.new('feed-test', response)
+    clientReply = FHIR::ClientReply.new('feed-test', response, client)
 
     bundle = client.parse_reply(FHIR::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
 

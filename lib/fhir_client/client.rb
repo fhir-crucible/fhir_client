@@ -41,19 +41,37 @@ module FHIR
     end
 
     def default_json
-      @default_format = FHIR::Formats::ResourceFormat::RESOURCE_JSON
+      @default_format = if @fhir_version == :stu3
+                          FHIR::Formats::ResourceFormat::RESOURCE_JSON
+                        else
+                          FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2
+                        end
     end
 
     def default_xml
-      @default_format = FHIR::Formats::ResourceFormat::RESOURCE_XML
+      @default_format = if @fhir_version == :stu3
+                          FHIR::Formats::ResourceFormat::RESOURCE_XML
+                        else
+                          FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2
+                        end
     end
 
     def use_stu3
       @fhir_version = :stu3
+      @default_format = if @default_format.include?('xml')
+                          FHIR::Formats::ResourceFormat::RESOURCE_XML
+                        else
+                          FHIR::Formats::ResourceFormat::RESOURCE_JSON
+                        end
     end
 
     def use_dstu2
       @fhir_version = :dstu2
+      @default_format = if @default_format.include?('xml')
+                          FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2
+                        else
+                          FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2
+                        end
     end
 
     def detect_version
@@ -370,7 +388,7 @@ module FHIR
         else
           FHIR.logger.info "GET - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
         end
-        @reply = FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         begin
@@ -389,7 +407,7 @@ module FHIR
             headers: nil,
             body: sslerr.message
           }
-          @reply = FHIR::ClientReply.new(req, res)
+          @reply = FHIR::ClientReply.new(req, res, self)
           return @reply
         rescue => e
           response = e.response if e.response
@@ -407,7 +425,7 @@ module FHIR
           body: response.body
         }
 
-        @reply = FHIR::ClientReply.new(response.request.args, res)
+        @reply = FHIR::ClientReply.new(response.request.args, res, self)
       end
     end
 
@@ -436,7 +454,7 @@ module FHIR
           body: response.body
         }
         FHIR.logger.info "POST - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        @reply = FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.post(url, payload, headers) do |resp, request, result|
@@ -447,7 +465,7 @@ module FHIR
             headers: scrubbed_response_headers(result.each_key {}),
             body: resp
           }
-          @reply = FHIR::ClientReply.new(request.args, res)
+          @reply = FHIR::ClientReply.new(request.args, res, self)
         end
       end
     end
@@ -477,7 +495,7 @@ module FHIR
           body: response.body
         }
         FHIR.logger.info "PUT - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        @reply = FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.put(url, payload, headers) do |resp, request, result|
@@ -488,7 +506,7 @@ module FHIR
             headers: scrubbed_response_headers(result.each_key {}),
             body: resp
           }
-          @reply = FHIR::ClientReply.new(request.args, res)
+          @reply = FHIR::ClientReply.new(request.args, res, self)
         end
       end
     end
@@ -518,7 +536,7 @@ module FHIR
           body: response.body
         }
         FHIR.logger.info "PATCH - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        @reply = FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         begin
@@ -530,7 +548,7 @@ module FHIR
               headers: scrubbed_response_headers(result.each_key {}),
               body: resp
             }
-            @reply = FHIR::ClientReply.new(request.args, res)
+            @reply = FHIR::ClientReply.new(request.args, res, self)
           end
         rescue => e
           req = {
@@ -544,7 +562,7 @@ module FHIR
             body: e.message
           }
           FHIR.logger.error "PATCH Error: #{e.message}"
-          @reply = FHIR::ClientReply.new(req, res)
+          @reply = FHIR::ClientReply.new(req, res, self)
         end
       end
     end
@@ -573,7 +591,7 @@ module FHIR
           body: response.body
         }
         FHIR.logger.info "DELETE - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        @reply = FHIR::ClientReply.new(req, res)
+        @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.delete(url, headers) do |resp, request, result|
@@ -584,7 +602,7 @@ module FHIR
             headers: scrubbed_response_headers(result.each_key {}),
             body: resp
           }
-          @reply = FHIR::ClientReply.new(request.args, res)
+          @reply = FHIR::ClientReply.new(request.args, res, self)
         end
       end
     end
@@ -601,7 +619,7 @@ module FHIR
           headers: scrubbed_response_headers(result.each_key {}),
           body: response
         }
-        @reply = FHIR::ClientReply.new(request.args, res)
+        @reply = FHIR::ClientReply.new(request.args, res, self)
       end
     end
 
