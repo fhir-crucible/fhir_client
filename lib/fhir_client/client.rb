@@ -74,6 +74,14 @@ module FHIR
                         end
     end
 
+    def versioned_resource_class(klass)
+      if @fhir_version == :stu3
+        FHIR.const_get(klass)
+      else
+        FHIR::DSTU2.const_get(klass)
+      end
+    end
+
     def detect_version
       cap = capability_statement
       if cap.is_a?(FHIR::CapabilityStatement)
