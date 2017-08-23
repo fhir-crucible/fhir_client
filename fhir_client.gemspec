@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'fhir_client'
   spec.version       = FHIR::Client::VERSION
   spec.authors       = ['Andre Quina', 'Jason Walonoski', 'Janoo Fernandes']
-  spec.email         = ['aquina@mitre.org']
+  spec.email         = ['jwalonoski@mitre.org']
 
   spec.summary       = %q{A Gem for handling FHIR client requests in ruby}
   spec.description   = %q{A Gem for handling FHIR client requests in ruby}
@@ -22,11 +22,11 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'activesupport', '>= 3'
   spec.add_dependency 'addressable', '>= 2.3'
-  spec.add_dependency 'fhir_models', '>= 1.8.0'
+  spec.add_dependency 'fhir_models', '>= 3.0.0'
   spec.add_dependency 'nokogiri'
   spec.add_dependency 'oauth2', '~> 1.1'
   spec.add_dependency 'rack', '>= 1.5'
-  spec.add_dependency 'rest-client', '~> 1.8'
+  spec.add_dependency 'rest-client', '~> 2.0'
   spec.add_dependency 'tilt', '>= 1.1'
 
   spec.add_development_dependency 'bundler', '~> 1.13'

@@ -9,17 +9,17 @@
   <total value="3"/>
   <link>
     <relation value="next"/>
-    <url value="https://example.com/base/MedicationOrder?patient=347&amp;searchId=ff15fd40-ff71-4b48-b366-09c
+    <url value="https://example.com/base/MedicationRequest?patient=347&amp;searchId=ff15fd40-ff71-4b48-b366-09c
       706bed9d0&amp;page=2"/>
     </link>
     <link>
       <relation value="self"/>
-      <url value="https://example.com/base/MedicationOrder?patient=347"/>
+      <url value="https://example.com/base/MedicationRequest?patient=347"/>
     </link>
     <entry>
       <status value="update"/>
       <resource>
-        <MedicationOrder>
+        <MedicationRequest>
           <id value="3123"/>
           <meta>
             <versionId value="1"/>
@@ -73,7 +73,7 @@
             </quantity>
           </dispenseRequest>
 
-        </MedicationOrder>
+        </MedicationRequest>
       </resource>
     </entry>
   </Bundle>
