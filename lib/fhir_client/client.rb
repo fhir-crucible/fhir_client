@@ -308,6 +308,12 @@ module FHIR
         begin
           response = @client.get(url, headers: headers)
         rescue => e
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
           response = e.response if e.response
         end
         req = {
@@ -349,7 +355,13 @@ module FHIR
           @reply = FHIR::ClientReply.new(req, res)
           return @reply
         rescue => e
-          response = e.response if e.response
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
+          response = e.response
         end
         if url.end_with?('/metadata')
           FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: [too large]"
@@ -378,6 +390,12 @@ module FHIR
         begin
           response = @client.post(url, headers: headers, body: payload)
         rescue => e
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "POST - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
           response = e.response if e.response
         end
         req = {
@@ -419,6 +437,12 @@ module FHIR
         begin
           response = @client.put(url, headers: headers, body: payload)
         rescue => e
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "PUT - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
           response = e.response if e.response
         end
         req = {
@@ -460,6 +484,12 @@ module FHIR
         begin
           response = @client.patch(url, headers: headers, body: payload)
         rescue => e
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "PATCH - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
           response = e.response if e.response
         end
         req = {
@@ -490,6 +520,12 @@ module FHIR
             @reply = FHIR::ClientReply.new(request.args, res)
           end
         rescue => e
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "PATCH - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
           req = {
             method: :patch,
             url: url,
@@ -500,6 +536,7 @@ module FHIR
           res = {
             body: e.message
           }
+          FHIR.logger.info "PATCH - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
           FHIR.logger.error "PATCH Error: #{e.message}"
           @reply = FHIR::ClientReply.new(req, res)
         end
@@ -515,6 +552,12 @@ module FHIR
         begin
           response = @client.delete(url, headers: headers)
         rescue => e
+          unless e.response
+            # Re-raise the client error if there's no response. Otherwise, logging
+            # and other things break below!
+            FHIR.logger.error "DELETE - Request: #{url} failed! No response from server: #{e}"
+            raise # Re-raise the same error we caught.
+          end
           response = e.response if e.response
         end
         req = {
