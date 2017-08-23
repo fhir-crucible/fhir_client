@@ -419,6 +419,11 @@ module FHIR
           return @reply
         rescue => e
           response = e.response if e.response
+          FHIR.logger.error "GET - Request: #{url}, Error: #{e.message}"
+          unless response
+            @reply = nil
+            return @reply
+          end
         end
         if url.end_with?('/metadata')
           FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: [too large]"
