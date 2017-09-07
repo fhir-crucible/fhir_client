@@ -249,8 +249,10 @@ module FHIR
             @cached_capability_statement = nil
           end
         end
-        @default_format = frmt
-        break
+        if @cached_capability_statement
+          @default_format = frmt
+          break
+        end
       end
       @default_format = default_format if @default_format.nil?
       @default_format
@@ -274,15 +276,23 @@ module FHIR
       res = nil
       begin
         res = if(@fhir_version == :dstu2 || klass.ancestors.include?(FHIR::DSTU2::Model))
-                FHIR::DSTU2.from_contents(response.body)
+                if(format.include?('xml'))
+                  FHIR::DSTU2::Xml.from_xml(response.body)
+                else
+                  FHIR::DSTU2::Json.from_json(response.body)
+                end
               else
-                FHIR.from_contents(response.body)
+                if(format.include?('xml'))
+                  FHIR::Xml.from_xml(response.body)
+                else
+                  FHIR::Json.from_json(response.body)
+                end
               end
         res.client = self unless res.nil?
         FHIR.logger.warn "Expected #{klass} but got #{res.class}" if res.class != klass
       rescue => e
-        FHIR.logger.error "Failed to parse #{format} as resource #{klass}: #{e.message} %n #{e.backtrace.join("\n")} #{response}"
-        nil
+        FHIR.logger.error "Failed to parse #{format} as resource #{klass}: #{e.message}"
+        res = nil
       end
       res
     end
