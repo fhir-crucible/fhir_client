@@ -28,13 +28,19 @@ module FHIR
     end
 
     def each(&block)
-      iteration = @entry.map(&:resource).each(&block)
-      iteration += next_bundle.each(&block) if next_bundle
-      iteration
+      iterator = @entry.map(&:resource).each(&block)
+      if next_bundle
+        next_iterator = next_bundle.each(&block)
+        Enumerator.new do |y|
+          iterator.each { |r| y << r }
+          next_iterator.each { |r| y << r }
+        end
+      else
+        iterator
+      end
     end
 
     def next_bundle
-      # TODO: test this
       return nil unless client && next_link.try(:url)
       @next_bundle ||= client.parse_reply(self.class, client.default_format, client.raw_read_url(next_link.url))
     end

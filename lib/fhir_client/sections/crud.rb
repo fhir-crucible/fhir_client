@@ -36,13 +36,11 @@ module FHIR
       end
 
       def raw_read(options)
-        reply = get resource_url(options), fhir_headers(options)
-        reply.body
+        get resource_url(options), fhir_headers(options)
       end
 
-      def raw_read_url(url)
-        reply = get url, fhir_headers({})
-        reply.body
+      def raw_read_url(url, format = @default_format)
+        get url, fhir_headers(format: format)
       end
 
       #
