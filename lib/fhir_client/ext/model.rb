@@ -98,12 +98,12 @@ module FHIR
       end
     end
 
-    private
-
     def self.handle_response(response)
       raise ClientException.new "Server returned #{response.code}.", response if response.code.between?(400, 599)
       response.resource
     end
+
+    private_class_method :handle_response
 
     def handle_response(response)
       self.class.handle_response(response)
