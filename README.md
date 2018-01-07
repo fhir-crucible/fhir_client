@@ -40,7 +40,7 @@ patient = FHIR::Patient.read('example')
 
 # update a patient
 patient.gender = 'female'
-patient.update # saves the patient 
+patient.update # saves the patient
 
 # create a patient
 patient = FHIR::Patient.create(name: {given: 'John', family: 'Doe'})
@@ -66,6 +66,11 @@ patient = client.read(FHIR::Patient, "example", FHIR::Formats::FeedFormat::FEED_
 # create a patient
 patient = FHIR::Patient.new
 patient_id = client.create(patient).id
+
+# create a patient with specific headers
+patient = FHIR::Patient.new
+options = { :Prefer => "return=representation" }
+patient_id = patient.base_create(options)
 
 # update the patient
 patient.gender = 'female'

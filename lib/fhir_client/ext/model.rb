@@ -77,6 +77,10 @@ module FHIR
       handle_response client.conditional_create(self, params)
     end
 
+    def base_create(options, format = @@client.default_format)
+      handle_response client.base_create(self, options, format)
+    end
+
     def update
       handle_response client.update(self, id)
     end
