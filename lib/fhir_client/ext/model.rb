@@ -51,9 +51,9 @@ module FHIR
       handle_response client.search(self, search: { parameters: params })
     end
 
-    def self.create(model, options = {}, client = @@client)
+    def self.create(model, client = @@client)
       model = new(model) unless model.is_a?(self)
-      handle_response client.create(model, options)
+      handle_response client.create(model)
     end
 
     def self.conditional_create(model, params, client = @@client)
@@ -69,8 +69,8 @@ module FHIR
       self.class.vread(id, version_id, client)
     end
 
-    def create
-      handle_response client.create(self)
+    def create(options = {})
+      handle_response client.create(self, options)
     end
 
     def conditional_create(params)
