@@ -117,8 +117,8 @@ module FHIR
       # Create a new resource with a server assigned id. Return the newly created
       # resource with the id the server assigned.
       #
-      def create(resource, format = @default_format)
-        base_create(resource, nil, format)
+      def create(resource, options = {}, format = @default_format)
+        base_create(resource, options, format)
       end
 
       #
