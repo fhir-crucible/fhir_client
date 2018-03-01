@@ -24,8 +24,9 @@ module FHIR
       # public <T extends Resource> AtomFeed history(DateAndTime last_update, Class<T> resourceClass, String id);
 
       def history(options)
+        options = {format: @default_format}.merge(options)
         reply = get resource_url(options), fhir_headers(options).except(:history)
-        reply.resource = parse_reply(options[:resource], @default_format, reply)
+        reply.resource = parse_reply(options[:resource], options[:format], reply)
         reply.resource_class = options[:resource]
         reply
       end
