@@ -2,7 +2,7 @@ require_relative '../test_helper'
 
 class BasicTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new("feed-test")
+    @client ||= FHIR::Client.new("basic-test")
   end
 
   def test_client_initialization
@@ -18,14 +18,14 @@ class BasicTest < Test::Unit::TestCase
     [false, true].each do |use_auth|
       client.use_oauth2_auth = use_auth
       %i[get delete head].each do |method|
-        stub = stub_request(method, /feed-test/).to_timeout
+        stub = stub_request(method, /basic-test/).to_timeout
         assert_raise(RestClient::RequestTimeout, RestClient::Exceptions::OpenTimeout) do
           client.send(method, stubbed_path, format_headers)
           assert_requested stub
         end
       end
       %i[post put patch].each do |method|
-        stub = stub_request(method, /feed-test/).to_timeout
+        stub = stub_request(method, /basic-test/).to_timeout
         assert_raise(RestClient::RequestTimeout, RestClient::Exceptions::OpenTimeout) do
           client.send(method, stubbed_path, FHIR::Patient.new, format_headers)
           assert_requested stub
