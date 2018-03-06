@@ -4,7 +4,7 @@ FHIR.logger.level = Logger::ERROR
 namespace :fhir do
   desc 'console'
   task :console, [] do
-    sh 'bin/console'
+    exec('ruby bin/console')
   end
 
   #
