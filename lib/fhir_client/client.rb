@@ -271,7 +271,7 @@ module FHIR
     end
 
     def parse_reply(klass, format, response)
-      FHIR.logger.info "Parsing response with {klass: #{klass}, format: #{format}, code: #{response.code}}."
+      FHIR.logger.debug "Parsing response with {klass: #{klass}, format: #{format}, code: #{response.code}}."
       return nil unless [200, 201].include? response.code
       res = nil
       begin
@@ -408,9 +408,9 @@ module FHIR
           body: response.body
         }
         if url.end_with?('/metadata')
-          FHIR.logger.info "GET - Request: #{req}, Response: [too large]"
+          FHIR.logger.debug "GET - Request: #{req}, Response: [too large]"
         else
-          FHIR.logger.info "GET - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+          FHIR.logger.debug "GET - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
         end
         @reply = FHIR::ClientReply.new(req, res, self)
       else
@@ -443,9 +443,9 @@ module FHIR
           response = e.response
         end
         if url.end_with?('/metadata')
-          FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: [too large]"
+          FHIR.logger.debug "GET - Request: #{response.request.to_json}, Response: [too large]"
         else
-          FHIR.logger.info "GET - Request: #{response.request.to_json}, Response: #{response.body.force_encoding('UTF-8')}"
+          FHIR.logger.debug "GET - Request: #{response.request.to_json}, Response: #{response.body.force_encoding('UTF-8')}"
         end
         response.request.args[:path] = response.request.args[:url].gsub(@base_service_url, '')
         headers = response.headers.each_with_object({}) { |(k, v), h| h[k.to_s.tr('_', '-')] = v.to_s; h }
@@ -489,12 +489,12 @@ module FHIR
           headers: response.headers,
           body: response.body
         }
-        FHIR.logger.info "POST - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+        FHIR.logger.debug "POST - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
         @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.post(url, payload, headers) do |resp, request, result|
-          FHIR.logger.info "POST - Request: #{request.to_json}\nResponse:\nResponse Headers: #{scrubbed_response_headers(result.each_key {})} \nResponse Body: #{resp.force_encoding('UTF-8')}"
+          FHIR.logger.debug "POST - Request: #{request.to_json}\nResponse:\nResponse Headers: #{scrubbed_response_headers(result.each_key {})} \nResponse Body: #{resp.force_encoding('UTF-8')}"
           request.args[:path] = url.gsub(@base_service_url, '')
           res = {
             code: result.code,
@@ -536,12 +536,12 @@ module FHIR
           headers: response.headers,
           body: response.body
         }
-        FHIR.logger.info "PUT - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+        FHIR.logger.debug "PUT - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
         @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.put(url, payload, headers) do |resp, request, result|
-          FHIR.logger.info "PUT - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
+          FHIR.logger.debug "PUT - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
           request.args[:path] = url.gsub(@base_service_url, '')
           res = {
             code: result.code,
@@ -583,13 +583,13 @@ module FHIR
           headers: response.headers,
           body: response.body
         }
-        FHIR.logger.info "PATCH - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+        FHIR.logger.debug "PATCH - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
         @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         begin
           @client.patch(url, payload, headers) do |resp, request, result|
-            FHIR.logger.info "PATCH - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
+            FHIR.logger.debug "PATCH - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
             request.args[:path] = url.gsub(@base_service_url, '')
             res = {
               code: result.code,
@@ -615,7 +615,7 @@ module FHIR
           res = {
             body: e.message
           }
-          FHIR.logger.info "PATCH - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+          FHIR.logger.debug "PATCH - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
           FHIR.logger.error "PATCH Error: #{e.message}"
           @reply = FHIR::ClientReply.new(req, res, self)
         end
@@ -651,12 +651,12 @@ module FHIR
           headers: response.headers,
           body: response.body
         }
-        FHIR.logger.info "DELETE - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+        FHIR.logger.debug "DELETE - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
         @reply = FHIR::ClientReply.new(req, res, self)
       else
         headers.merge!(@security_headers) if @use_basic_auth
         @client.delete(url, headers) do |resp, request, result|
-          FHIR.logger.info "DELETE - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
+          FHIR.logger.debug "DELETE - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
           request.args[:path] = url.gsub(@base_service_url, '')
           res = {
             code: result.code,
@@ -673,7 +673,7 @@ module FHIR
       url = URI(build_url(path)).to_s
       FHIR.logger.info "HEADING: #{url}"
       RestClient.head(url, headers) do |response, request, result|
-        FHIR.logger.info "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding('UTF-8')}"
+        FHIR.logger.debug "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding('UTF-8')}"
         request.args[:path] = url.gsub(@base_service_url, '')
         res = {
           code: result.code,

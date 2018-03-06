@@ -45,6 +45,9 @@ patient.update # saves the patient
 # create a patient
 patient = FHIR::Patient.create(name: {given: 'John', family: 'Doe'})
 
+#create a patient with specific headers
+patient = FHIR::Patient.new(name: {given: 'John', family: 'Doe'}).create({Prefer: "return=representation"})
+
 # search patients
 results = FHIR::Patient.search(given: 'John', family: 'Doe')
 results.count # results in an enumeration
