@@ -47,7 +47,10 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
     patient = FHIR::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
 
     stub_request(:get, /create-test/).to_return(status: 200, body: patient.to_json, headers: {'Content-Type'=>'application/fhir+json', 'ETag'=>'W/"foo"', 'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
-    reply = client.read(FHIR::Patient,'foo')
+    temp = client
+    temp.use_stu3
+    temp.default_json
+    reply = temp.read(FHIR::Patient,'foo')
     assert reply.resource.is_a?(FHIR::Patient)
     assert reply.resource_class == FHIR::Patient
     assert reply.id == 'foo'

@@ -4,14 +4,14 @@ module FHIR
       attr_accessor :transaction_bundle
 
       def begin_transaction
-        @transaction_bundle = FHIR::Bundle.new
+        @transaction_bundle = versioned_resource_class('Bundle').new
         @transaction_bundle.type = 'transaction'
         @transaction_bundle.entry ||= []
         @transaction_bundle
       end
 
       def begin_batch
-        @transaction_bundle = FHIR::Bundle.new
+        @transaction_bundle = versioned_resource_class('Bundle').new
         @transaction_bundle.type = 'batch'
         @transaction_bundle.entry ||= []
         @transaction_bundle
@@ -26,8 +26,8 @@ module FHIR
       end
 
       def add_batch_request(method, url, resource = nil, if_none_exist = nil)
-        request = FHIR::Bundle::Entry::Request.new
-        request.local_method = if FHIR::Bundle::Entry::Request::METADATA['method']['valid_codes'].values.first.include?(method.upcase)
+        request = versioned_resource_class('Bundle::Entry::Request').new
+        request.local_method = if versioned_resource_class('Bundle::Entry::Request::METADATA')['method']['valid_codes'].values.first.include?(method.upcase)
                                  method.upcase
                                else
                                  'POST'
@@ -43,7 +43,7 @@ module FHIR
           request.url = url
         end
 
-        entry = FHIR::Bundle::Entry.new
+        entry = versioned_resource_class('Bundle::Entry').new
         entry.resource = resource
         entry.request = request
 
@@ -65,9 +65,9 @@ module FHIR
         reply = post resource_url(options), @transaction_bundle, fhir_headers(options)
         begin
           reply.resource = if format.downcase.include?('xml')
-                             FHIR::Xml.from_xml(reply.body)
+                             versioned_resource_class('Xml').from_xml(reply.body)
                            else
-                             FHIR::Json.from_json(reply.body)
+                             versioned_resource_class('Json').from_json(reply.body)
                            end
         rescue
           reply.resource = nil

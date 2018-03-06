@@ -46,10 +46,13 @@ module FHIR
     attr_accessor :response
     attr_accessor :resource # a FHIR resource
     attr_accessor :resource_class # class of the :resource
+    attr_accessor :fhir_version
 
-    def initialize(request, response)
+    def initialize(request, response, client)
       @request = request
       @response = response
+      @fhir_version = :stu3
+      @fhir_version = client.fhir_version
     end
 
     def code
@@ -154,10 +157,14 @@ module FHIR
         if body_rules['types']
           body_type_match = false
           begin
-            content = FHIR.from_contents(body)
+            content = if @fhir_version == :stu3
+                        FHIR.from_contents(body)
+                      else
+                        FHIR::DSTU2.from_contents(body)
+                      end
             body_rules['types'].each do |type|
               body_type_match = true if content.resourceType == type
-              body_type_match = true if type == 'Resource' && FHIR::RESOURCES.include?(content.resourceType)
+              body_type_match = true if type == 'Resource' && validate_resource(content.resourceType)
             end
           rescue
             FHIR.logger.warn "ClientReply was unable to validate response body: #{body}"
@@ -174,6 +181,15 @@ module FHIR
       errors
     end
 
-    private :validate_headers, :validate_body
+    def validate_resource(resource_type)
+      if @fhir_version == :stu3
+        return true if FHIR::RESOURCES.include?(resource_type)
+      else
+        return true if FHIR::DSTU2::RESOURCES.include?(resource_type)
+      end
+      false
+    end
+
+    private :validate_headers, :validate_body, :validate_resource
   end
 end
