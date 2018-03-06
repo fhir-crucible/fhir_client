@@ -40,6 +40,8 @@ module FHIR
 
       fhir_headers.merge!(options) unless options.empty?
       fhir_headers[:operation] = options[:operation][:name] if options[:operation] && options[:operation][:name]
+      fhir_headers.delete('id')
+      fhir_headers.delete('resource')
       fhir_headers
     end
 
