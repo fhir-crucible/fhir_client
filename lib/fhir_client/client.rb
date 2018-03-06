@@ -12,6 +12,7 @@ module FHIR
     include FHIR::Sections::Search
     include FHIR::Sections::Operations
     include FHIR::Sections::Transactions
+    include FHIR::Sections::BulkData
 
     attr_accessor :reply
     attr_accessor :use_format_param
