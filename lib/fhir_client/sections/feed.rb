@@ -10,7 +10,7 @@ module FHIR
         bundle = current.resource
         link = bundle.method(page).call
         return nil unless link
-        reply = get strip_base(link.url), fhir_headers
+        reply = get strip_base(link.url), fhir_headers(format: @default_format)
         reply.resource = parse_reply(current.resource_class, @default_format, reply)
         reply.resource_class = current.resource_class
         reply
