@@ -22,9 +22,9 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'activesupport', '>= 3'
   spec.add_dependency 'addressable', '>= 2.3'
-  spec.add_dependency 'fhir_models', '>= 3.0.2'
-  spec.add_dependency 'fhir_dstu2_models', '>= 1.0.3'
-  spec.add_dependency 'nokogiri'
+  spec.add_dependency 'fhir_models', '>= 3.0.3'
+  spec.add_dependency 'fhir_dstu2_models', '>= 1.0.4'
+  spec.add_dependency 'nokogiri', '>= 1.8.2'
   spec.add_dependency 'oauth2', '~> 1.1'
   spec.add_dependency 'rack', '>= 1.5'
   spec.add_dependency 'rest-client', '~> 2.0'
