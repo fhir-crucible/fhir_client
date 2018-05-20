@@ -21,3 +21,6 @@ Layout:
 
 Performance/Casecmp:
   Enabled: false
+
+Naming:
+  Enabled: false

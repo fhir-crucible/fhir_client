@@ -685,7 +685,7 @@ module FHIR
     end
 
     def build_url(path)
-      if path =~ /^\w+:\/\//
+      if /^\w+:\/\//.match? path
         path
       else
         "#{base_path(path)}#{path}"
