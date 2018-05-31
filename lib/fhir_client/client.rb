@@ -2,7 +2,6 @@ require 'rest_client'
 require 'nokogiri'
 require 'addressable/uri'
 require 'oauth2'
-require 'pry'
 module FHIR
   class Client
     include FHIR::Sections::History
