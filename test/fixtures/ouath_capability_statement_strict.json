@@ -1,0 +1,84 @@
+{
+  "resourceType": "CapabilityStatement",
+  "text": {
+    "status": "generated",
+    "div": "<div>Generated Capability Statement -- see structured representation.</div>"
+  },
+  "version": "1.7.0.10073",
+  "name": "SMART on FHIR Capability Statement",
+  "publisher": "SMART on FHIR",
+  "description": "Describes capabilities of this SMART on FHIR server",
+  "status": "draft",
+  "date": "2015-09-23T04:49:25.469-00:00",
+  "fhirVersion": "1.7.0",
+  "kind": "instance",
+  "acceptUnknown": "no",
+  "format": [
+    "xml",
+    "json"
+  ],
+  "contact": [
+    {
+      "telecom": [
+        {
+          "system": "url",
+          "value": "https://fhir-api.smarthealthit.org"
+        }
+      ]
+    }
+  ],
+  "rest": [
+    {
+      "mode": "server",
+      "documentation": "All the functionality defined in FHIR",
+      "security": {
+        "extension": [
+        {
+          "extension": [
+          {
+            "url": "register",
+            "valueUri": "https://authorize.smarthealthit.org/register"
+          },
+          {
+            "url": "authorize",
+            "valueUri": "https://authorize.smarthealthit.org/authorize"
+            },
+            {
+              "url": "token",
+              "valueUri": "https://authorize.smarthealthit.org/token"
+            }
+            ],
+            "url": "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris"
+          }
+        ],
+        "service": [
+          {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/restful-security-service",
+                "code": "SMART-on-FHIR"
+              }
+            ],
+            "text": "OAuth version 2 (see oauth.net)."
+          }
+        ],
+        "description": "SMART on FHIR uses OAuth2 for authorization"
+      },
+      "resource": [],
+      "operation": [
+        {
+          "name": "transaction",
+          "definition": {
+            "reference": "UnknownServerPath/transaction"
+          }
+        },
+        {
+		  "name": "history-system",
+          "definition": {
+            "reference": "UnknownServerPath/history-system"
+          }
+        }
+      ]
+    }
+  ]
+}
