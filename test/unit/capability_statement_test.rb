@@ -18,7 +18,7 @@ class CapabilityStatementTest < Test::Unit::TestCase
 
   def test_can_configure_oauth_from_capability_statement
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
-    capabilitystatement = File.read(File.join(root, 'fixtures', 'ouath_capability_statement.json'))
+    capabilitystatement = File.read(File.join(root, 'fixtures', 'oauth_capability_statement.json'))
     stub_request(:get, /capability-test/).to_return(body: capabilitystatement)
     statement = client.conformance_statement
     assert statement.is_a?(FHIR::CapabilityStatement)
@@ -36,7 +36,7 @@ class CapabilityStatementTest < Test::Unit::TestCase
 
   def test_can_configure_oauth_from_capability_statement_strict
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
-    capabilitystatement = File.read(File.join(root, 'fixtures', 'ouath_capability_statement_strict.json'))
+    capabilitystatement = File.read(File.join(root, 'fixtures', 'oauth_capability_statement_strict.json'))
     stub_request(:get, /capability-test/).to_return(body: capabilitystatement)
     statement = client.conformance_statement
     assert statement.is_a?(FHIR::CapabilityStatement)
