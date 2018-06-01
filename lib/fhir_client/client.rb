@@ -148,13 +148,13 @@ module FHIR
     # client -- client id
     # secret -- client secret
     # options -- hash of options
-    #   access_token: Your current access_token, must have atleast an access_token or a refresh_token
-    #   refresh_token: a token that is used to referesh the access token when it
-    #                  expires, or if one does not exist but can be obtained from
-    #                  the refresh toekn
+    #   access_token: Current access_token
+    #   refresh_token: a token that is used to obtaine an new access_token when it
+    #                  expires or does not currently exist
     #   authorize_path -- absolute path of authorization endpoint
     #   token_path -- absolute path of token endpoint
-    #  Addtional options can be passed in as supported byt the OAuth2::AcessToken class
+    #   auto_configure -- whether or not to configure the oauth endpoints from the servers capability statement
+    #  Addtional options can be passed in as supported by the OAuth2::AcessToken class
     def set_auth_from_token(client, secret, options)
       FHIR.logger.info 'Configuring the client to use OAuth2 access token authentication.'
 
