@@ -149,7 +149,7 @@ module FHIR
     # secret -- client secret
     # options -- hash of options
     #   access_token: Current access_token
-    #   refresh_token: a token that is used to obtaine an new access_token when it
+    #   refresh_token: a token that is used to obtain an new access_token when it
     #                  expires or does not currently exist
     #   authorize_path -- absolute path of authorization endpoint
     #   token_path -- absolute path of token endpoint

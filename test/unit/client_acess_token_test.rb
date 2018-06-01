@@ -8,7 +8,7 @@ class ClientAccessTokenTest < Test::Unit::TestCase
 
   def test_can_configure_client_with_access_token_authentication
     # stub out a request for a resource, once configured with the access token
-    # the auth methed would be a bearer token with the provided access token
+    # the auth methed should be a bearer token with the provided access token
     # the stub only works on calls that have the correct authentication header
     stub_request(:get, /Patient\/example/).
                         with(headers:{"Authorization"=>"Bearer some token"}).
@@ -28,7 +28,7 @@ class ClientAccessTokenTest < Test::Unit::TestCase
     stub_request(:post, /auth\/token/).to_return(body: new_token, headers: {"Content-Type" => "application/json"} )
 
     # stub out a request for a resource, once configured with the access token
-    # the auth methed would be a bearer token with the access token retrieved
+    # the auth method should be a bearer token with the access token retrieved
     # from the previous call to get a new access token
     # the stub only works on calls that have the correct authentication header
 
@@ -46,8 +46,8 @@ class ClientAccessTokenTest < Test::Unit::TestCase
     assert_equal "{}", client.read(FHIR::Patient, "example").response[:body]
   end
 
-  # Need to provider at a minimum an access_token or a refresh_token, it can be
-  # both but need atleast one of them, otherwise there is nothing to configure
+  # Need to provide at a minimum an access_token or a refresh_token, it can be
+  # both but need at least one of them, otherwise there is nothing to configure
   # against
   def test_must_supply_either_an_access_token_or_a_refresh_token
     begin
@@ -59,7 +59,7 @@ class ClientAccessTokenTest < Test::Unit::TestCase
   end
 
   # Make sure that we can auto configure the auth and token endpoints from a
-  # capability statement.  
+  # capability statement.
   def test_can_configure_access_token_with_auto_configure
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     capabilitystatement = File.read(File.join(root, 'fixtures', 'oauth_capability_statement.json'))
