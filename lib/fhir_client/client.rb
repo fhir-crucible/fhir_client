@@ -182,11 +182,11 @@ module FHIR
             rest.security.service.each do |service|
               service.coding.each do |coding|
                 next unless coding.code == 'SMART-on-FHIR'
-                 options.merge! get_oauth2_metadata_from_service_defintion(rest)
+                 options.merge! get_oauth2_metadata_from_service_definition(rest)
               end
             end
           else
-            options.merge! get_oauth2_metadata_from_service_defintion(rest)
+            options.merge! get_oauth2_metadata_from_service_definition(rest)
           end
         end
       rescue => e
@@ -197,7 +197,7 @@ module FHIR
       options
     end
 
-    def get_oauth2_metadata_from_service_defintion(rest)
+    def get_oauth2_metadata_from_service_definition(rest)
       oauth_extension = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
       authorize_extension = 'authorize'
       token_extension = 'token'
