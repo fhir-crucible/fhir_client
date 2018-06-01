@@ -8,6 +8,6 @@ gemspec
 
 group :test do
   gem 'codeclimate-test-reporter', require: nil
-  gem 'rubocop', '~> 0.49.0', require: false
+  gem 'rubocop', '~> 0.56.0', require: false
   gem 'awesome_print', require: 'ap'
 end
