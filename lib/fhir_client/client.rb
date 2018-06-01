@@ -2,7 +2,6 @@ require 'rest_client'
 require 'nokogiri'
 require 'addressable/uri'
 require 'oauth2'
-
 module FHIR
   class Client
     include FHIR::Sections::History
@@ -172,32 +171,22 @@ module FHIR
     #   </service>
     #   <description value="SMART on FHIR uses OAuth2 for authorization"/>
     # </security>
-    def get_oauth2_metadata_from_conformance
+    def get_oauth2_metadata_from_conformance(strict=true)
       options = {
         authorize_url: nil,
         token_url: nil
       }
-      oauth_extension = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
-      authorize_extension = 'authorize'
-      token_extension = 'token'
       begin
         capability_statement.rest.each do |rest|
-          rest.security.service.each do |service|
-            service.coding.each do |coding|
-              next unless coding.code == 'SMART-on-FHIR'
-              rest.security.extension.find{|x| x.url == oauth_extension}.extension.each do |ext|
-                case ext.url
-                when authorize_extension
-                  options[:authorize_url] = ext.value
-                when "#{oauth_extension}\##{authorize_extension}"
-                  options[:authorize_url] = ext.value
-                when token_extension
-                  options[:token_url] = ext.value
-                when "#{oauth_extension}\##{token_extension}"
-                  options[:token_url] = ext.value
-                end
+          if strict
+            rest.security.service.each do |service|
+              service.coding.each do |coding|
+                next unless coding.code == 'SMART-on-FHIR'
+                 options.merge! get_oauth2_metadata_from_service_definition(rest)
               end
             end
+          else
+            options.merge! get_oauth2_metadata_from_service_definition(rest)
           end
         end
       rescue => e
@@ -205,6 +194,29 @@ module FHIR
       end
       options.delete_if { |_k, v| v.nil? }
       options.clear if options.keys.size != 2
+      options
+    end
+
+    def get_oauth2_metadata_from_service_definition(rest)
+      oauth_extension = 'http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris'
+      authorize_extension = 'authorize'
+      token_extension = 'token'
+      options = {
+        authorize_url: nil,
+        token_url: nil
+      }
+      rest.security.extension.find{|x| x.url == oauth_extension}.extension.each do |ext|
+        case ext.url
+        when authorize_extension
+          options[:authorize_url] = ext.value
+        when "#{oauth_extension}\##{authorize_extension}"
+          options[:authorize_url] = ext.value
+        when token_extension
+          options[:token_url] = ext.value
+        when "#{oauth_extension}\##{token_extension}"
+          options[:token_url] = ext.value
+        end
+      end
       options
     end
 
