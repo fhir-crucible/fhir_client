@@ -154,7 +154,7 @@ module FHIR
     #   authorize_path -- absolute path of authorization endpoint
     #   token_path -- absolute path of token endpoint
     #   auto_configure -- whether or not to configure the oauth endpoints from the servers capability statement
-    #  Addtional options can be passed in as supported by the OAuth2::AcessToken class
+    #  Addtional options can be passed in as supported by the OAuth2::AccessToken class
     def set_auth_from_token(client, secret, options)
       FHIR.logger.info 'Configuring the client to use OAuth2 access token authentication.'
 
