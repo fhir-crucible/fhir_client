@@ -22,6 +22,7 @@ module FHIR
     attr_accessor :default_format
     attr_accessor :fhir_version
     attr_accessor :cached_capability_statement
+    attr_accessor :additional_headers
 
     # Call method to initialize FHIR client. This method must be invoked
     # with a valid base server URL prior to using the client.
@@ -279,6 +280,8 @@ module FHIR
     end
 
     def fhir_headers(options = {})
+      options.merge!(additional_headers) unless additional_headers.nil?
+
       FHIR::ResourceAddress.new.fhir_headers(options, @use_format_param)
     end
 
