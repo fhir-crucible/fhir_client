@@ -56,7 +56,7 @@ module FHIR
     end
 
     module ClassMethods
- 
+
       def client
         FHIR::Model.client
       end
@@ -105,6 +105,10 @@ module FHIR
       def conditional_create(model, params, client = self.client)
         model = new(model) unless model.is_a?(self)
         handle_response client.conditional_create(model, params)
+      end
+
+      def partial_update(id, patchset, options = {})
+        handle_response client.partial_update(self, id, patchset, options)
       end
 
       def all(client = self.client)
