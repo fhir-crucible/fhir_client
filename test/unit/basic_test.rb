@@ -9,6 +9,20 @@ class BasicTest < Test::Unit::TestCase
     assert !client.use_format_param, 'Using _format instead of [Accept] headers.'
   end
 
+  def test_set_basic_auth_auth
+    client.set_basic_auth('client', 'secret')
+
+    assert client.security_headers == {"Authorization"=>"Basic Y2xpZW50OnNlY3JldA==\n"}
+    assert client.client == RestClient
+  end
+
+  def test_bearer_token_auth
+    client.set_bearer_token('secret_token')
+
+    assert client.security_headers == {"Authorization"=>"Bearer secret_token"}
+    assert client.client == RestClient
+  end
+
   def test_client_logs_without_response
     # This used to provide a NoMethodError:
     # undefined method `request' for nil:NilClass
