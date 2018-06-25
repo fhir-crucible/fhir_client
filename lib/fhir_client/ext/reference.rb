@@ -8,7 +8,6 @@ module FHIR
       /history/.match reference.to_s
     end
 
-
     def reference_id
       if contained?
         reference.to_s[1..-1]
@@ -28,7 +27,6 @@ module FHIR
          reference.to_s.split('/').last
       end
     end
-
 
     def read
       return if contained? || type.blank? || (id.blank? && reference.blank?)
