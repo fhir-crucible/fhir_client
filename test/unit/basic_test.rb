@@ -52,21 +52,6 @@ class BasicTest < Test::Unit::TestCase
     assert client.client.client.site == "http://custom-test.com/fhir/"
   end
 
-  # def set_oauth2_auth(client, secret, authorize_path, token_path, site = nil)
-  #     FHIR.logger.info 'Configuring the client to use OpenID Connect OAuth2 authentication.'
-  #     @use_oauth2_auth = true
-  #     @use_basic_auth = false
-  #     @security_headers = {}
-  #     options = {
-  #       site: site || @base_service_url,
-  #       authorize_url: authorize_path,
-  #       token_url: token_path,
-  #       raise_errors: true
-  #     }
-  #     client = OAuth2::Client.new(client, secret, options)
-  #     @client = client.client_credentials.get_token
-  #   end
-
   def test_client_logs_without_response
     # This used to provide a NoMethodError:
     # undefined method `request' for nil:NilClass
