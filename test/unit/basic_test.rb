@@ -2,7 +2,7 @@ require_relative '../test_helper'
 
 class BasicTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new("basic-test")
+    @client ||= FHIR::Client.new("http://basic-test.com/fhir/")
   end
 
   def test_client_initialization
@@ -12,6 +12,8 @@ class BasicTest < Test::Unit::TestCase
   def test_set_basic_auth_auth
     client.set_basic_auth('client', 'secret')
 
+    assert client.use_oauth2_auth == false
+    assert client.use_basic_auth == true
     assert client.security_headers == {"Authorization"=>"Basic Y2xpZW50OnNlY3JldA==\n"}
     assert client.client == RestClient
   end
@@ -19,8 +21,35 @@ class BasicTest < Test::Unit::TestCase
   def test_bearer_token_auth
     client.set_bearer_token('secret_token')
 
+    assert client.use_oauth2_auth == false
+    assert client.use_basic_auth == true
     assert client.security_headers == {"Authorization"=>"Bearer secret_token"}
     assert client.client == RestClient
+
+  end
+
+  def test_oauth2_token_auth
+    stub_request(:post, /token_path/).to_return(status: 200, body: '{"access_token" : "valid_token"}', headers: {'Content-Type' => 'application/json'})
+
+    client.set_oauth2_auth("client", "secret", "authorize_path", "token_path")
+
+    assert client.use_oauth2_auth == true
+    assert client.use_basic_auth == false
+    assert client.security_headers == {}
+
+    assert client.client.client.site == "http://basic-test.com/fhir/"
+  end
+
+  def test_oauth2_token_auth_custom
+    stub_request(:post, /token_path/).to_return(status: 200, body: '{"access_token" : "valid_token"}', headers: {'Content-Type' => 'application/json'})
+
+    client.set_oauth2_auth("client", "secret", "authorize_path", "token_path", "http://custom-test.com/fhir/")
+
+    assert client.use_oauth2_auth == true
+    assert client.use_basic_auth == false
+    assert client.security_headers == {}
+
+    assert client.client.client.site == "http://custom-test.com/fhir/"
   end
 
   def test_client_logs_without_response

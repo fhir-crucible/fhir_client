@@ -175,7 +175,7 @@ options = client.get_oauth2_metadata_from_conformance
 if options.empty?
   puts 'This server does not support the expected OAuth2 extensions.'
 else
-  client.set_oauth2_auth(client_id,client_secret,options[:site],options[:authorize_url],options[:token_url])
+  client.set_oauth2_auth(client_id, client_secret, options[:authorize_url] ,options[:token_url], options[:site])
   reply = client.read_feed(FHIR::Patient)
   puts reply.body
 end
