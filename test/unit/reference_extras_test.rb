@@ -60,4 +60,14 @@ class ReferencesExtrasTest < Test::Unit::TestCase
     assert res.is_a?(FHIR::Patient)
   end
 
+  def test_vread_reference
+    stub_request(:get, /extras/).to_return(body: FHIR::Patient.new.to_json)
+    client = FHIR::Client.new('extras')
+    client.default_json
+    FHIR::Model.client = client
+    ref = FHIR::Reference.new({'reference': 'Patient/foo/_history/6'})
+    res = ref.vread
+    assert res.is_a?(FHIR::Patient)
+  end
+
 end
