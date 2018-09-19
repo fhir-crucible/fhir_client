@@ -23,6 +23,7 @@ module FHIR
     attr_accessor :fhir_version
     attr_accessor :cached_capability_statement
     attr_accessor :additional_headers
+    attr_accessor :proxy_url
 
     # Call method to initialize FHIR client. This method must be invoked
     # with a valid base server URL prior to using the client.
@@ -102,6 +103,8 @@ module FHIR
       @use_basic_auth = false
       @security_headers = {}
       @client = RestClient
+      @client.proxy = proxy_url unless proxy_url.nil?
+      @client
     end
 
     # Set the client to use HTTP Basic Authentication
@@ -113,6 +116,8 @@ module FHIR
       @use_oauth2_auth = false
       @use_basic_auth = true
       @client = RestClient
+      @client.proxy = proxy_url unless proxy_url.nil?
+      @client
     end
 
     # Set the client to use Bearer Token Authentication
@@ -123,6 +128,8 @@ module FHIR
       @use_oauth2_auth = false
       @use_basic_auth = true
       @client = RestClient
+      @client.proxy = proxy_url unless proxy_url.nil?
+      @client
     end
 
     # Set the client to use OpenID Connect OAuth2 Authentication
@@ -142,6 +149,7 @@ module FHIR
         raise_errors: true
       }
       client = OAuth2::Client.new(client, secret, options)
+      client.connection.proxy(proxy_url) unless proxy_url.nil?
       @client = client.client_credentials.get_token
     end
 
