@@ -53,12 +53,12 @@ class ReferencesExtrasTest < Test::Unit::TestCase
   end
 
   def test_absolute
-    r = FHIR::Reference.new({'reference': 'http://hapi.fhir.org/baseDstu3/Patient/foo'})
+    r = FHIR::Reference.new({'reference': 'https://my-server.com/fhir/Patient/foo'})
     assert r.absolute?
   end
 
   def test_absolute_dstu2
-    r = FHIR::DSTU2::Reference.new({'reference': 'http://hapi.fhir.org.baseDstu2/Patient/foo'})
+    r = FHIR::DSTU2::Reference.new({'reference': 'https://my-server.com/fhir/Patient/foo'})
     assert r.absolute?
   end
 
