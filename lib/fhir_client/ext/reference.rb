@@ -1,43 +1,77 @@
 module FHIR
   module ReferenceExtras
+    def parts
+      return if contained?
+      if has_version?
+        *base_uri, type, id, _, version = reference.to_s.split '/'
+      else
+        *base_uri, type, id = reference.to_s.split '/'
+      end
+      {
+        base_uri: (base_uri.empty?) ? nil : base_uri.join('/'),
+        type: type,
+        id: id,
+        version: version
+      }
+    end
+
     def contained?
       reference.to_s.start_with?('#')
     end
 
+    def absolute?
+      /^https?:\/\//.match reference.to_s
+    end
+
+    def relative?
+      !(reference.blank? || contained? || absolute?)
+    end
+
     def has_version?
-      /history/.match reference.to_s
+      /_history/.match reference.to_s
     end
 
     def reference_id
       if contained?
         reference.to_s[1..-1]
-      elsif has_version?
-        reference.to_s.split('/').second
       else
-        reference.to_s.split('/').last
+        parts[:id]
       end
     end
 
     def type
-      reference.to_s.split('/').first unless contained?
+      return if contained?
+      parts[:type]
     end
 
     def version_id
-      if has_version?
-         reference.to_s.split('/').last
-      end
+      return if contained?
+      parts[:version]
+    end
+
+    def base_uri
+      return if !absolute? || contained?
+      parts[:base_uri]
     end
 
     def read
-      return if contained? || type.blank? || (id.blank? && reference.blank?)
-      rid = id || reference_id
-      resource_class.read(rid, client)
+      return if !(relative? || absolute?)
+      if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
+        read_client = client
+      else
+        read_client = FHIR::Client.new base_uri, default_format: client.default_format
+      end
+      resource_class.read(reference_id, read_client)
     end
 
     def vread
-      return if contained? || type.blank? || (id.blank? && reference.blank?) || version_id.blank?
-      rid = id || reference_id
-      resource_class.vread(rid, version_id, client)
+      return if !(relative? || absolute?) || version_id.blank?
+      if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
+        read_client = client
+      else
+        read_client = FHIR::Client.new base_uri, default_format: client.default_format
+      end
+      resource_class.vread(reference_id, version_id, read_client)
     end
 
   end
