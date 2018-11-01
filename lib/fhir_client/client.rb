@@ -23,7 +23,7 @@ module FHIR
     attr_accessor :fhir_version
     attr_accessor :cached_capability_statement
     attr_accessor :additional_headers
-    attr_accessor :proxy_url
+    attr_accessor :proxy
 
     # Call method to initialize FHIR client. This method must be invoked
     # with a valid base server URL prior to using the client.
