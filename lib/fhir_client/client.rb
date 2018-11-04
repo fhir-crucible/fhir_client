@@ -103,7 +103,7 @@ module FHIR
       @use_basic_auth = false
       @security_headers = {}
       @client = RestClient
-      @client.proxy = proxy_url unless proxy_url.nil?
+      @client.proxy = proxy unless proxy.nil?
       @client
     end
 
@@ -116,7 +116,7 @@ module FHIR
       @use_oauth2_auth = false
       @use_basic_auth = true
       @client = RestClient
-      @client.proxy = proxy_url unless proxy_url.nil?
+      @client.proxy = proxy unless proxy.nil?
       @client
     end
 
@@ -128,7 +128,7 @@ module FHIR
       @use_oauth2_auth = false
       @use_basic_auth = true
       @client = RestClient
-      @client.proxy = proxy_url unless proxy_url.nil?
+      @client.proxy = proxy unless proxy.nil?
       @client
     end
 
@@ -149,7 +149,7 @@ module FHIR
         raise_errors: true
       }
       client = OAuth2::Client.new(client, secret, options)
-      client.connection.proxy(proxy_url) unless proxy_url.nil?
+      client.connection.proxy(proxy) unless proxy.nil?
       @client = client.client_credentials.get_token
     end
 
