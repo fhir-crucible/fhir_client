@@ -50,7 +50,7 @@ module FHIR
 
       private
       def handle_response(response)
-        raise ClientException.new "Server returned #{response.code}.", response if response.code.between?(400, 599)
+        raise client.exception_class.new "Server returned #{response.code}.", response if response.code.between?(400, 599)
         response.resource
       end
     end
@@ -66,59 +66,59 @@ module FHIR
       end
 
       def read(id, client = self.client)
-        handle_response client.read(self, id)
+        handle_response client.exception_class, client.read(self, id)
       end
 
       def read_with_summary(id, summary, client = self.client)
-        handle_response client.read(self, id, client.default_format, summary)
+        handle_response client.exception_class, client.read(self, id, client.default_format, summary)
       end
 
       def vread(id, version_id, client = self.client)
-        handle_response client.vread(self, id, version_id)
+        handle_response client.exception_class, client.vread(self, id, version_id)
       end
 
       def resource_history(client = self.client)
-        handle_response client.resource_history(self)
+        handle_response client.exception_class, client.resource_history(self)
       end
 
       def resource_history_as_of(last_update, client = self.client)
-        handle_response client.resource_history_as_of(self, last_update)
+        handle_response client.exception_class, client.resource_history_as_of(self, last_update)
       end
 
       def resource_instance_history(id, client = self.client)
-        handle_response client.resource_instance_history(self, id)
+        handle_response client.exception_class, client.resource_instance_history(self, id)
       end
 
       def resource_instance_history_as_of(id, last_update, client = self.client)
-        handle_response client.resource_instance_history_as_of(self, id, last_update)
+        handle_response client.exception_class, client.resource_instance_history_as_of(self, id, last_update)
       end
 
       def search(params = {}, client = self.client)
-        handle_response client.search(self, search: { parameters: params })
+        handle_response client.exception_class, client.search(self, search: { parameters: params })
       end
 
       def create(model, client = self.client)
         model = new(model) unless model.is_a?(self)
-        handle_response client.create(model)
+        handle_response client.exception_class, client.create(model)
       end
 
       def conditional_create(model, params, client = self.client)
         model = new(model) unless model.is_a?(self)
-        handle_response client.conditional_create(model, params)
+        handle_response client.exception_class, client.conditional_create(model, params)
       end
 
       def partial_update(id, patchset, options = {})
-        handle_response client.partial_update(self, id, patchset, options)
+        handle_response client.exception_class, client.partial_update(self, id, patchset, options)
       end
 
       def all(client = self.client)
-        handle_response client.read_feed(self)
+        handle_response client.exception_class, client.read_feed(self)
       end
 
       private
 
-      def handle_response(response)
-        raise ClientException.new "Server returned #{response.code}.", response if response.code.between?(400, 599)
+      def handle_response(exception_class, response)
+        raise exception_class.new "Server returned #{response.code}.", response if response.code.between?(400, 599)
         response.resource
       end
     end
