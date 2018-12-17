@@ -54,7 +54,7 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
     assert reply.resource.is_a?(FHIR::Patient)
     assert reply.resource_class == FHIR::Patient
     assert reply.id == 'foo'
-    assert !reply.is_valid? # technically, the READ Request should not have a Content-Type, it should use an Accept
+    assert reply.is_valid?
   end
 
 end

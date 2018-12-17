@@ -10,23 +10,23 @@ module FHIR
       # Fetch Patient Record	[base]/Patient/$everything | [base]/Patient/[id]/$everything
       # http://hl7.org/implement/standards/FHIR-Develop/patient-operations.html#everything
       # Fetches resources for a given patient record, scoped by a start and end time, and returns a Bundle of results
-      def fetch_patient_record(id = nil, startTime = nil, endTime = nil, method = 'GET', format = @default_format)
+      def fetch_patient_record(id = nil, startTime = nil, endTime = nil, method = 'GET', format = false)
         fetch_record(id, [startTime, endTime], method, versioned_resource_class('Patient'), format)
       end
 
-      def fetch_encounter_record(id = nil, method = 'GET', format = @default_format)
+      def fetch_encounter_record(id = nil, method = 'GET', format = false)
         fetch_record(id, [nil, nil], method, versioned_resource_class('Encounter'), format)
       end
 
-      def fetch_record(id = nil, time = [nil, nil], method = 'GET', klass = versioned_resource_class('Patient'), format = @default_format)
-        options = { resource: klass, format: format, operation: { name: :fetch_patient_record, method: method } }
+      def fetch_record(id = nil, time = [nil, nil], method = 'GET', klass = versioned_resource_class('Patient'), format = false)
+        options = { resource: klass, format: format || @default_format, operation: { name: :fetch_patient_record, method: method } }
         options.deep_merge!(id: id) unless id.nil?
         options[:operation][:parameters] = {} if options[:operation][:parameters].nil?
         options[:operation][:parameters][:start] = { type: 'Date', value: time.first } unless time.first.nil?
         options[:operation][:parameters][:end] = { type: 'Date', value: time.last } unless time.last.nil?
 
         if options[:operation][:method] == 'GET'
-          reply = get resource_url(options), fhir_headers(options)
+          reply = get resource_url(options), fhir_headers
         else
           # create Parameters body
           if options[:operation] && options[:operation][:parameters]
@@ -37,10 +37,10 @@ module FHIR
               p.parameter << parameter
             end
           end
-          reply = post resource_url(options), p, fhir_headers(options)
+          reply = post resource_url(options), p, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
         end
 
-        reply.resource = parse_reply(versioned_resource_class('Bundle'), format, reply)
+        reply.resource = parse_reply(versioned_resource_class('Bundle'), format || @default_format, reply)
         reply.resource_class = options[:resource]
         reply
       end
@@ -99,7 +99,7 @@ module FHIR
         options.deep_merge!(params)
 
         if options[:operation][:method] == 'GET'
-          reply = get resource_url(options), fhir_headers(options)
+          reply = get resource_url(options), {content_type: "#{format || @default_format}; charset=utf-8"}
         else
           # create Parameters body
           if options[:operation] && options[:operation][:parameters]
@@ -110,7 +110,7 @@ module FHIR
               p.parameter << parameter
             end
           end
-          reply = post resource_url(options), p, fhir_headers(options)
+          reply = post resource_url(options), p, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
         end
 
         reply.resource = parse_reply(options[:resource], format, reply)
@@ -124,7 +124,7 @@ module FHIR
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'onlyCertainMatches', 'Boolean', options[:onlyCertainMatches]) unless options[:onlyCertainMatches].nil?
         add_parameter(params, 'count', 'Integer', options[:matchCount]) if options[:matchCount].is_a?(Integer)
-        post resource_url(options), params, fhir_headers(options)
+        post resource_url(options), params, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
       end
 
       #
@@ -142,7 +142,7 @@ module FHIR
         params = versioned_resource_class('Parameters').new
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'profile', 'Uri', options[:profile_uri]) unless options[:profile_uri].nil?
-        post resource_url(options), params, fhir_headers(options)
+        post resource_url(options), params, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
       end
 
       def validate_existing(resource, id, options = {}, format = @default_format)
@@ -150,7 +150,7 @@ module FHIR
         params = versioned_resource_class('Parameters').new
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'profile', 'Uri', options[:profile_uri]) unless options[:profile_uri].nil?
-        post resource_url(options), params, fhir_headers(options)
+        post resource_url(options), params, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
       end
 
       private

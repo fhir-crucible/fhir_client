@@ -13,7 +13,7 @@ class ClientInterfaceHistoryTest < Test::Unit::TestCase
     temp.default_json
 
     reply = temp.all_history
-    assert_equal FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2, reply.request[:headers]['format']
+    assert_match ACCEPT_REGEX_JSON_DSTU2, reply.request[:headers]['Accept']
   end
 
   def test_history_uses_default_xml_dstu2
@@ -24,7 +24,7 @@ class ClientInterfaceHistoryTest < Test::Unit::TestCase
     temp.default_xml
 
     reply = temp.all_history
-    assert_equal FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2, reply.request[:headers]['format']
+    assert_match ACCEPT_REGEX_XML_DSTU2, reply.request[:headers]['Accept']
   end
 
   def test_history_uses_default_json_stu3
@@ -35,7 +35,7 @@ class ClientInterfaceHistoryTest < Test::Unit::TestCase
     temp.default_json
 
     reply = temp.all_history
-    assert_equal FHIR::Formats::ResourceFormat::RESOURCE_JSON, reply.request[:headers]['format']
+    assert_match ACCEPT_REGEX_JSON, reply.request[:headers]['Accept']
   end
 
   def test_history_uses_default_xml_stu3
@@ -46,7 +46,7 @@ class ClientInterfaceHistoryTest < Test::Unit::TestCase
     temp.default_xml
 
     reply = temp.all_history
-    assert_equal FHIR::Formats::ResourceFormat::RESOURCE_XML, reply.request[:headers]['format']
+    assert_match ACCEPT_REGEX_XML, reply.request[:headers]['Accept']
   end
 
 end

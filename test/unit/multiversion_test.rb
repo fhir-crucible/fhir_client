@@ -78,7 +78,7 @@ class MultiversionTest < Test::Unit::TestCase
     client = FHIR::Client.new('stu3')
     client.default_json
     assert_equal :stu3, client.fhir_version
-    assert_equal 'application/fhir+json', client.read(FHIR::Patient, 'foo').request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_JSON, client.read(FHIR::Patient, 'foo').request[:headers]['Accept']
   end
 
   def test_stu3_content_type_mime_type_json
@@ -96,7 +96,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.use_dstu2
     assert_equal :dstu2, client.fhir_version
     # dstu2 fhir type was changed in stu3
-    assert_equal 'application/json+fhir', client.read(FHIR::DSTU2::Patient, 'foo').request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_JSON_DSTU2, client.read(FHIR::DSTU2::Patient, 'foo').request[:headers]['Accept']
   end
 
   def test_dstu2_content_type_mime_type_json
@@ -114,7 +114,7 @@ class MultiversionTest < Test::Unit::TestCase
     client = FHIR::Client.new('stu3')
     client.default_xml
     assert_equal :stu3, client.fhir_version
-    assert_equal 'application/fhir+xml', client.read(FHIR::Patient, 'foo').request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML, client.read(FHIR::Patient, 'foo').request[:headers]['Accept']
   end
 
   def test_stu3_content_type_mime_type_xml
@@ -132,7 +132,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.use_dstu2
     assert_equal :dstu2, client.fhir_version
     # dstu2 fhir type was changed in stu3
-    assert_equal 'application/xml+fhir', client.read(FHIR::DSTU2::Patient, 'foo').request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML_DSTU2, client.read(FHIR::DSTU2::Patient, 'foo').request[:headers]['Accept']
   end
 
   def test_dstu2_content_type_mime_type_xml
@@ -155,7 +155,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.add_transaction_request('POST', nil, FHIR::DSTU2::Observation.new({'id': 'foo'}))
     reply = client.end_transaction
     assert_equal :dstu2, reply.fhir_version
-    assert_equal 'application/xml+fhir', reply.request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML_DSTU2, reply.request[:headers]['Accept']
     assert reply.resource.is_a?(FHIR::DSTU2::Bundle)
   end
 
@@ -168,7 +168,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.add_transaction_request('POST', nil, FHIR::Observation.new({'id': 'foo'}))
     reply = client.end_transaction
     assert_equal :stu3, reply.fhir_version
-    assert_equal 'application/fhir+xml', reply.request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML, reply.request[:headers]['Accept']
     assert reply.resource.is_a?(FHIR::Bundle)
   end
 
@@ -182,7 +182,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.use_dstu2
     reply = client.fetch_patient_record('example-patient')
     assert_equal :dstu2, reply.fhir_version
-    assert_equal 'application/xml+fhir', reply.request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML_DSTU2, reply.request[:headers]['Accept']
     assert reply.resource.is_a?(FHIR::DSTU2::Bundle)
     assert reply.resource.entry.last.resource.is_a?(FHIR::DSTU2::Patient)
   end
@@ -196,7 +196,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.default_xml
     reply = client.fetch_patient_record('example-patient')
     assert_equal :stu3, reply.fhir_version
-    assert_equal 'application/fhir+xml', reply.request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML, reply.request[:headers]['Accept']
     assert reply.resource.is_a?(FHIR::Bundle)
     assert reply.resource.entry.last.resource.is_a?(FHIR::Patient)
   end
@@ -211,7 +211,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.use_dstu2
     reply = client.fetch_encounter_record('example-encounter')
     assert_equal :dstu2, reply.fhir_version
-    assert_equal 'application/xml+fhir', reply.request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML_DSTU2, reply.request[:headers]['Accept']
     assert reply.resource.is_a?(FHIR::DSTU2::Bundle)
     assert reply.resource.entry.last.resource.is_a?(FHIR::DSTU2::Encounter)
   end
@@ -225,7 +225,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.default_xml
     reply = client.fetch_encounter_record('example-encounter')
     assert_equal :stu3, reply.fhir_version
-    assert_equal 'application/fhir+xml', reply.request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML, reply.request[:headers]['Accept']
     assert reply.resource.is_a?(FHIR::Bundle)
     assert reply.resource.entry.last.resource.is_a?(FHIR::Encounter)
   end
@@ -246,7 +246,7 @@ class MultiversionTest < Test::Unit::TestCase
     }
     reply = client.code_system_lookup(options)
     assert_equal :dstu2, reply.fhir_version
-    assert_equal 'application/xml+fhir', reply.request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML_DSTU2, reply.request[:headers]['Accept']
     assert reply.resource.is_a?(FHIR::DSTU2::Parameters)
   end
 
@@ -265,7 +265,7 @@ class MultiversionTest < Test::Unit::TestCase
     }
     reply = client.code_system_lookup(options)
     assert_equal :stu3, reply.fhir_version
-    assert_equal 'application/fhir+xml', reply.request[:headers]['Accept']
+    assert_match ACCEPT_REGEX_XML, reply.request[:headers]['Accept']
     assert reply.resource.is_a?(FHIR::Parameters)
   end
 
