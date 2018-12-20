@@ -21,14 +21,23 @@ module FHIR
     # http://httpd.apache.org/docs/trunk/new_features_2_4.html
     # http://nginx.org/en/docs/http/ngx_http_core_module.html#underscores_in_headers
     def self.normalize_headers(to_be_normalized, to_symbol = true, capitalized = false)
-      normalized = to_be_normalized.inject({}) do |result, (key, value)|
+      to_be_normalized.inject({}) do |result, (key, value)|
         key = key.to_s.downcase.split(/-|_/)
         key.map!(&:capitalize) if capitalized
         key = to_symbol ? key.join('_').to_sym : key.join('-')
         result[key] = value.to_s
         result
       end
-      normalized
+    end
+
+    def self.convert_symbol_headers headers
+      headers.inject({}) do |result, (key, value)|
+        if key.is_a? Symbol
+          key = key.to_s.split(/_/).map(&:capitalize).join('-')
+        end
+        result[key] = value.to_s
+        result
+      end
     end
 
     # Returns normalized HTTP Headers
@@ -56,9 +65,15 @@ module FHIR
       fhir_headers[:accept_charset] =  DEFAULT_CHARSET if use_accept_charset
 
       # https://www.hl7.org/fhir/DSTU2/http.html#mime-type
-      fhir_headers[:accept] = "#{format};charset=#{DEFAULT_CHARSET}" if use_accept_header
+      # could add option for ;charset=#{DEFAULT_CHARSET} in accept header
+      fhir_headers[:accept] = "#{format}" if use_accept_header
 
-      headers = normalize_headers(headers) unless headers.empty?
+      # maybe in a future update normalize everything to symbols
+      # Headers should be case insensitive anyways...
+      #headers = normalize_headers(headers) unless headers.empty?
+      #
+      fhir_headers = convert_symbol_headers(fhir_headers)
+      headers = convert_symbol_headers(headers)
 
       # supplied headers will always be used, e.g. if @use_accept_header is false
       # ,but an accept header is explicitly supplied then it will be used (or override the existing)

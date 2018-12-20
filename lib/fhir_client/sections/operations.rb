@@ -37,7 +37,8 @@ module FHIR
               p.parameter << parameter
             end
           end
-          reply = post resource_url(options), p, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
+          reply = post resource_url(options), p, fhir_headers({content_type: "#{format || @default_format}",
+                                                               accept: "#{format || @default_format}"})
         end
 
         reply.resource = parse_reply(versioned_resource_class('Bundle'), format || @default_format, reply)
@@ -99,7 +100,7 @@ module FHIR
         options.deep_merge!(params)
 
         if options[:operation][:method] == 'GET'
-          reply = get resource_url(options), {content_type: "#{format || @default_format}; charset=utf-8"}
+          reply = get resource_url(options), {accept: "#{format || @default_format}"}
         else
           # create Parameters body
           if options[:operation] && options[:operation][:parameters]
@@ -110,7 +111,8 @@ module FHIR
               p.parameter << parameter
             end
           end
-          reply = post resource_url(options), p, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
+          reply = post resource_url(options), p, fhir_headers({content_type: "#{format || @default_format}",
+                                                               accept: "#{format || @default_format}"})
         end
 
         reply.resource = parse_reply(options[:resource], format, reply)
@@ -124,7 +126,8 @@ module FHIR
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'onlyCertainMatches', 'Boolean', options[:onlyCertainMatches]) unless options[:onlyCertainMatches].nil?
         add_parameter(params, 'count', 'Integer', options[:matchCount]) if options[:matchCount].is_a?(Integer)
-        post resource_url(options), params, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
+        post resource_url(options), params, fhir_headers({content_type: "#{format || @default_format}",
+                                                          accept: "#{format || @default_format}"})
       end
 
       #
@@ -142,7 +145,8 @@ module FHIR
         params = versioned_resource_class('Parameters').new
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'profile', 'Uri', options[:profile_uri]) unless options[:profile_uri].nil?
-        post resource_url(options), params, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
+        post resource_url(options), params, fhir_headers({content_type: "#{format || @default_format}",
+                                                          accept: "#{format || @default_format}"})
       end
 
       def validate_existing(resource, id, options = {}, format = @default_format)
@@ -150,7 +154,8 @@ module FHIR
         params = versioned_resource_class('Parameters').new
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'profile', 'Uri', options[:profile_uri]) unless options[:profile_uri].nil?
-        post resource_url(options), params, fhir_headers(content_type: "#{format || @default_format}; charset=utf-8")
+        post resource_url(options), params, fhir_headers({content_type: "#{format || @default_format}",
+                                                          accept: "#{format || @default_format}"})
       end
 
       private

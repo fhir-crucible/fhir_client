@@ -26,6 +26,7 @@ module FHIR
 
     attr_accessor :use_accept_header
     attr_accessor :use_accept_charset
+    attr_accessor :use_return_preference
 
     # Call method to initialize FHIR client. This method must be invoked
     # with a valid base server URL prior to using the client.
@@ -93,12 +94,6 @@ module FHIR
     def use_representation_preference
       @use_return_preference = true
       @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
-    end
-
-    #
-    # Instructs the client to not use the Prefer Header
-    def use_no_preference
-      @use_return_preference = false
     end
 
     def versioned_resource_class(klass)
@@ -275,7 +270,7 @@ module FHIR
       @default_format = nil
 
       formats.each do |frmt|
-        reply = get 'metadata', fhir_headers({accept: "#{frmt}; charset=utf-8"})
+        reply = get 'metadata', fhir_headers({accept: "#{frmt}"})
         next unless reply.code == 200
         begin
           @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
@@ -375,18 +370,18 @@ module FHIR
     # Extract the request payload in the specified format, defaults to XML
     def request_payload(resource, headers)
       if headers
-        format_specified = headers[:content_type]
+        format_specified = headers['Content-Type']
         if format_specified.nil?
-          resource.to_json
+          resource.to_xml
         elsif format_specified.downcase.include?('xml')
           resource.to_xml
         elsif format_specified.downcase.include?('json')
           resource.to_json
         else
-          resource.to_json
+          resource.to_xml
         end
       else
-        resource.to_json
+        resource.to_xml
       end
     end
 
@@ -412,7 +407,7 @@ module FHIR
 
     def clean_headers(headers)
       headers.delete_if { |k, v| (k.nil? || v.nil?) }
-      FHIR::ResourceAddress.normalize_headers(headers)
+      FHIR::ResourceAddress.convert_symbol_headers(headers)
     end
 
     def scrubbed_response_headers(result)
@@ -601,7 +596,7 @@ module FHIR
       url = URI(build_url(path)).to_s
       FHIR.logger.info "PATCHING: #{url}"
       headers = clean_headers(headers)
-      payload = request_patch_payload(patchset, headers['format'])
+      payload = request_patch_payload(patchset, headers['Content-Type'])
       if @use_oauth2_auth
         # @client.refresh!
         begin

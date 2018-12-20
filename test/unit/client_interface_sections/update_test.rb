@@ -3,9 +3,13 @@ require_relative '../../test_helper'
 class ClientInterfaceUpdateTest < Test::Unit::TestCase
   def client
     @client ||= FHIR::Client.new('update-test')
+    @client.use_dstu2
+    @client.default_json
+    @client
   end
 
   def test_class_partial_update
+    FHIR::Model.client = client
     patient = FHIR::Patient.new({'id' => 'foo', 'active'=>true})
     patchset = [
         {

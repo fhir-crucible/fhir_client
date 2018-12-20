@@ -1,7 +1,6 @@
 module FHIR
   module Sections
     module Crud
-
       #
       # Read the current state of a resource.
       #
@@ -9,7 +8,7 @@ module FHIR
         options = { resource: klass, id: id, format: format || @default_format}.merge(options)
         options[:summary] = summary if summary
         headers = {}
-        headers[:accept] =  "#{format}; charset=utf-8" if format
+        headers[:accept] =  "#{format}" if format
         reply = get resource_url(options), fhir_headers(headers)
         reply.resource = parse_reply(klass, format || @default_format, reply)
         reply.resource_class = klass
@@ -58,7 +57,7 @@ module FHIR
       def read_feed(klass, format = false)
         options = { resource: klass, format: format || @default_format}
         headers = {}
-        headers[:accept] =  "#{format}; charset=utf-8" if format
+        headers[:accept] =  "#{format}" if format
         reply = get resource_url(options), fhir_headers(headers)
         reply.resource = parse_reply(klass, format || @default_format, reply)
         reply.resource_class = klass
@@ -71,7 +70,7 @@ module FHIR
       def vread(klass, id, version_id, format = false)
         options = { resource: klass, id: id, format: format || @default_format, history: { id: version_id } }
         headers = {}
-        headers[:accept] =  "#{format}; charset=utf-8" if format
+        headers[:accept] =  "#{format}" if format
         reply = get resource_url(options), fhir_headers(headers)
         reply.resource = parse_reply(klass, format || @default_format, reply)
         reply.resource_class = klass
@@ -84,7 +83,7 @@ module FHIR
 
       def raw_read_url(url, format = false)
         headers = {}
-        headers[:accept] =  "#{format}; charset=utf-8" if format
+        headers[:accept] =  "#{format}" if format
         get url, fhir_headers(headers)
       end
 
@@ -123,8 +122,8 @@ module FHIR
         options = { resource: resource.class, id: id, format: format}
         headers = {if_match: "W/#{version_id}"}
         headers[:prefer] = @return_preference if @use_return_preference
-        headers[:accept] =  "#{format}; charset=utf-8" if format
-        headers[:content_type] =  "#{format || @default_format}; charset=utf-8"
+        headers[:accept] =  "#{format}" if format
+        headers[:content_type] =  "#{format || @default_format}"
         reply = put resource_url(options), fhir_headers(headers)
         reply.resource = parse_reply(klass, format || @default_format, reply)
         reply.resource_class = klass
@@ -140,7 +139,8 @@ module FHIR
         options[:format] = format || @default_format
         options[:id] = id
         headers = {}
-        headers[:content_type] =  "#{format || @default_format}; charset=utf-8"
+        headers[:content_type] =  "#{format || @default_format}"
+        headers[:accept] = "#{format || @default_format}"
         headers[:prefer] = @return_preference if @use_return_preference
         reply = put resource_url(options), resource, fhir_headers(headers)
         reply.resource = parse_reply(resource.class, format || @default_format, reply) if reply.body.present?
@@ -152,15 +152,16 @@ module FHIR
       # Partial update using a patchset (PATCH)
       #
       def partial_update(klass, id, patchset, options = {}, format = false)
-        options = { resource: klass, id: id, format: format || @default_format}.merge options
         headers = {}
-        headers[:accept] =  "#{format}; charset=utf-8" if format
+        headers[:accept] =  "#{format}" if format
+        format ||= @default_format
+        options = { resource: klass, id: id, format: format}.merge options
         if [FHIR::Formats::ResourceFormat::RESOURCE_XML, FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2].include?(format)
           options[:format] = FHIR::Formats::PatchFormat::PATCH_XML
-          headers[:content_type] =  "#{FHIR::Formats::PatchFormat::PATCH_XML}; charset=utf-8"
+          headers[:content_type] =  "#{FHIR::Formats::PatchFormat::PATCH_XML}"
         elsif [FHIR::Formats::ResourceFormat::RESOURCE_JSON, FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2].include?(format)
           options[:format] = FHIR::Formats::PatchFormat::PATCH_JSON
-          headers[:content_type] =  "#{FHIR::Formats::PatchFormat::PATCH_JSON}; charset=utf-8"
+          headers[:content_type] =  "#{FHIR::Formats::PatchFormat::PATCH_JSON}"
         end
         headers[:prefer] = @return_preference if @use_return_preference
 
@@ -209,7 +210,8 @@ module FHIR
         options = {} if options.nil?
         options[:resource] = resource.class
         options[:format] = format || @default_format
-        headers = {content_type: "#{format || @default_format}; charset=utf-8"}
+        headers = {content_type: "#{format || @default_format}"}
+        headers[:accept] = "#{format || @default_format}"
         headers[:prefer] = @return_preference if @use_return_preference
         headers.merge!(additional_header)
         reply = post resource_url(options), resource, fhir_headers(headers)

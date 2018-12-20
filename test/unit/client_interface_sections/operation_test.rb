@@ -20,7 +20,6 @@ class ClientInterfaceOperationTest < Test::Unit::TestCase
     assert request_params.parameter.any?{|p| p.name == 'resource' && p.resource.try(:class) == FHIR::Patient}
     assert request_params.parameter.any?{|p| p.name == 'count' && p.valueInteger == 5}
     assert request_params.parameter.any?{|p| p.name == 'onlyCertainMatches' && p.valueBoolean == false}
-
   end
 
 end

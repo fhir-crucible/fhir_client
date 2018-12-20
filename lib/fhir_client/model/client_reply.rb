@@ -48,21 +48,11 @@ module FHIR
     attr_accessor :resource_class # class of the :resource
     attr_accessor :fhir_version
 
-    def initialize(request, response, client, string_headers = true)
+    def initialize(request, response, client)
       @request = request
       @response = response
       @fhir_version = :stu3
       @fhir_version = client.fhir_version
-      # for backwards compatibility
-      provide_string_headers if string_headers
-    end
-
-    # Internally the standard symbol key versions of the header is used
-    #
-    def provide_string_headers
-      [@request[:headers], @response[:headers]].each do |headers|
-        headers.merge!(FHIR::ResourceAddress.normalize_headers(headers, false, true))
-      end if @request.is_a? Hash
     end
 
     def code

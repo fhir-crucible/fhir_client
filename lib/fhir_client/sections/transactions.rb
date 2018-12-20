@@ -62,9 +62,8 @@ module FHIR
       #
       def end_batch(format = nil)
         headers = {prefer: FHIR::Formats::ReturnPreferences::REPRESENTATION}
-        headers[:accept] =  "#{format}; charset=utf-8" if format
         format = @default_format unless format
-        headers[:content_type] =  "#{format}; charset=utf-8"
+        headers[:content_type] =  "#{format}"
         options = { format: format}
         reply = post resource_url(options), @transaction_bundle, fhir_headers(headers)
         begin
