@@ -302,8 +302,6 @@ module FHIR
     end
 
     def fhir_headers(options = {})
-      #options.merge!(additional_headers) unless additional_headers.nil?
-
       FHIR::ResourceAddress.fhir_headers(options, additional_headers, @default_format, @use_accept_header, @use_accept_charset)
     end
 

@@ -7,7 +7,7 @@ module FHIR
     }.freeze
 
     DEFAULT_CHARSET = 'utf-8'.freeze
-    DEFAULT_CONTENT_TYPE = 'application/fhir+xml' # time to default to json?
+    DEFAULT_CONTENT_TYPE = 'application/fhir+xml'.freeze # time to default to json?
 
     #
     # Normalize submitted header key value pairs
@@ -46,7 +46,7 @@ module FHIR
     # e.g. the keys :accept, "accept", and "Accept" all represent the Accept HTTP Header
     # @param [Hash] options key value pairs for the http headerx
     # @return [Hash] The normalized FHIR Headers
-    def self.fhir_headers(headers = nil, additional_headers = {}, format = DEFAULT_CONTENT_TYPE, use_accept_header = true, use_accept_charset = true)
+    def self.fhir_headers(headers = {}, additional_headers = {}, format = DEFAULT_CONTENT_TYPE, use_accept_header = true, use_accept_charset = true)
       # normalizes header names to be case-insensitive
       # See relevant HTTP RFCs:
       # https://tools.ietf.org/html/rfc2616#section-4.2

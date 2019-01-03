@@ -60,9 +60,8 @@ module FHIR
       # @param format
       # @return FHIR::ClientReply
       #
-      def end_batch(format = nil)
+      def end_batch(format = @default_format)
         headers = {prefer: FHIR::Formats::ReturnPreferences::REPRESENTATION}
-        format = @default_format unless format
         headers[:content_type] =  "#{format}"
         options = { format: format}
         reply = post resource_url(options), @transaction_bundle, fhir_headers(headers)
