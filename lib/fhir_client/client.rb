@@ -24,6 +24,7 @@ module FHIR
     attr_accessor :cached_capability_statement
     attr_accessor :additional_headers
     attr_accessor :proxy
+    attr_accessor :exception_class
 
     # Call method to initialize FHIR client. This method must be invoked
     # with a valid base server URL prior to using the client.
@@ -36,6 +37,7 @@ module FHIR
       @base_service_url = base_service_url
       FHIR.logger.info "Initializing client with #{@base_service_url}"
       @use_format_param = false
+      @exception_class = ClientException
       @default_format = default_format
       @fhir_version = :stu3
       @proxy = proxy
