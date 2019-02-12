@@ -23,6 +23,8 @@ module FHIR
     attr_accessor :fhir_version
     attr_accessor :cached_capability_statement
     attr_accessor :additional_headers
+    attr_accessor :proxy
+    attr_accessor :exception_class
 
     attr_accessor :use_accept_header
     attr_accessor :use_accept_charset
@@ -35,7 +37,7 @@ module FHIR
     # @param default_format Default Format Mime type
     # @return
     #
-    def initialize(base_service_url, default_format: FHIR::Formats::ResourceFormat::RESOURCE_XML)
+    def initialize(base_service_url, default_format: FHIR::Formats::ResourceFormat::RESOURCE_XML, proxy: nil)
       @base_service_url = base_service_url
       FHIR.logger.info "Initializing client with #{@base_service_url}"
       @use_format_param = false
@@ -45,6 +47,9 @@ module FHIR
       @fhir_version = :stu3
       @use_return_preference = false
       @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
+      @exception_class = ClientException
+      @proxy = proxy
+
       set_no_auth
     end
 
@@ -124,6 +129,8 @@ module FHIR
       @use_basic_auth = false
       @security_headers = {}
       @client = RestClient
+      @client.proxy = proxy unless proxy.nil?
+      @client
     end
 
     # Set the client to use HTTP Basic Authentication
@@ -135,6 +142,8 @@ module FHIR
       @use_oauth2_auth = false
       @use_basic_auth = true
       @client = RestClient
+      @client.proxy = proxy unless proxy.nil?
+      @client
     end
 
     # Set the client to use Bearer Token Authentication
@@ -145,6 +154,8 @@ module FHIR
       @use_oauth2_auth = false
       @use_basic_auth = true
       @client = RestClient
+      @client.proxy = proxy unless proxy.nil?
+      @client
     end
 
     # Set the client to use OpenID Connect OAuth2 Authentication
@@ -164,6 +175,7 @@ module FHIR
         raise_errors: true
       }
       client = OAuth2::Client.new(client, secret, options)
+      client.connection.proxy(proxy) unless proxy.nil?
       @client = client.client_credentials.get_token
     end
 

@@ -59,7 +59,7 @@ module FHIR
       if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
         read_client = client
       else
-        read_client = FHIR::Client.new base_uri, default_format: client.default_format
+        read_client = FHIR::Client.new base_uri, default_format: client.default_format, proxy: client.proxy
       end
       resource_class.read(reference_id, read_client)
     end
@@ -69,7 +69,7 @@ module FHIR
       if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
         read_client = client
       else
-        read_client = FHIR::Client.new base_uri, default_format: client.default_format
+        read_client = FHIR::Client.new base_uri, default_format: client.default_format, proxy: client.proxy
       end
       resource_class.vread(reference_id, version_id, read_client)
     end

@@ -84,6 +84,15 @@ patient = FHIR::DSTU2::Patient.read('example')
 patient = client.read(FHIR::DSTU2::Patient, 'example').resource
 ```
 
+### Configuration
+
+You can specify additional properties for the `client`:
+
+```ruby
+client.additional_headers = {Prefer: 'return=representation'}
+client.proxy = 'https://your-proxy.com/'
+```
+
 ### CRUD Examples
 ```ruby
 # read an existing patient with id "example"
