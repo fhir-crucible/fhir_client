@@ -61,8 +61,10 @@ module FHIR
       # @return FHIR::ClientReply
       #
       def end_batch(format = @default_format)
-        options = { format: format, 'Prefer' => 'return=representation' }
-        reply = post resource_url(options), @transaction_bundle, fhir_headers(options)
+        headers = {prefer: FHIR::Formats::ReturnPreferences::REPRESENTATION}
+        headers[:content_type] =  "#{format}"
+        options = { format: format}
+        reply = post resource_url(options), @transaction_bundle, fhir_headers(headers)
         begin
           reply.resource = if format.downcase.include?('xml')
                              versioned_resource_class('Xml').from_xml(reply.body)

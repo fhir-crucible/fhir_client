@@ -25,7 +25,7 @@ module FHIR
 
       def history(options)
         options = {format: @default_format}.merge(options)
-        reply = get resource_url(options), fhir_headers(options).except(:history)
+        reply = get resource_url(options), fhir_headers
         reply.resource = parse_reply(options[:resource], options[:format], reply)
         reply.resource_class = options[:resource]
         reply

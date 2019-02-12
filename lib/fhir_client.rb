@@ -13,6 +13,7 @@ end
 require_relative 'fhir_client/client'
 require_relative 'fhir_client/resource_address'
 require_relative 'fhir_client/resource_format'
+require_relative 'fhir_client/return_preferences'
 require_relative 'fhir_client/patch_format'
 require_relative 'fhir_client/client_exception'
 require_relative 'fhir_client/version'

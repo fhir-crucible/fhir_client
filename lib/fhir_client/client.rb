@@ -26,6 +26,10 @@ module FHIR
     attr_accessor :proxy
     attr_accessor :exception_class
 
+    attr_accessor :use_accept_header
+    attr_accessor :use_accept_charset
+    attr_accessor :use_return_preference
+
     # Call method to initialize FHIR client. This method must be invoked
     # with a valid base server URL prior to using the client.
     #
@@ -37,10 +41,15 @@ module FHIR
       @base_service_url = base_service_url
       FHIR.logger.info "Initializing client with #{@base_service_url}"
       @use_format_param = false
-      @exception_class = ClientException
+      @use_accept_header = true
+      @use_accept_charset = true
       @default_format = default_format
       @fhir_version = :stu3
+      @use_return_preference = false
+      @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
+      @exception_class = ClientException
       @proxy = proxy
+
       set_no_auth
     end
 
@@ -76,6 +85,20 @@ module FHIR
                         else
                           FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2
                         end
+    end
+
+    #
+    # Instructs the client to specify the minimal Prefer Header where applicable
+    def use_minimal_preference
+      @use_return_preference = true
+      @return_preference = FHIR::Formats::ReturnPreferences::MINIMAL
+    end
+
+    #
+    # Instructs the client to specify the representation Prefer Header where applicable
+    def use_representation_preference
+      @use_return_preference = true
+      @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
     end
 
     def versioned_resource_class(klass)
@@ -259,7 +282,7 @@ module FHIR
       @default_format = nil
 
       formats.each do |frmt|
-        reply = get 'metadata', fhir_headers(format: frmt)
+        reply = get 'metadata', fhir_headers({accept: "#{frmt}"})
         next unless reply.code == 200
         begin
           @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
@@ -283,7 +306,7 @@ module FHIR
     end
 
     def resource_url(options)
-      FHIR::ResourceAddress.new.resource_url(options, @use_format_param)
+      FHIR::ResourceAddress.resource_url(options, @use_format_param)
     end
 
     def full_resource_url(options)
@@ -291,9 +314,7 @@ module FHIR
     end
 
     def fhir_headers(options = {})
-      options.merge!(additional_headers) unless additional_headers.nil?
-
-      FHIR::ResourceAddress.new.fhir_headers(options, @use_format_param)
+      FHIR::ResourceAddress.fhir_headers(options, additional_headers, @default_format, @use_accept_header, @use_accept_charset)
     end
 
     def parse_reply(klass, format, response)
@@ -359,8 +380,10 @@ module FHIR
     # Extract the request payload in the specified format, defaults to XML
     def request_payload(resource, headers)
       if headers
-        format_specified = headers[:format] || headers['format']
-        if format_specified.downcase.include?('xml')
+        format_specified = headers['Content-Type']
+        if format_specified.nil?
+          resource.to_xml
+        elsif format_specified.downcase.include?('xml')
           resource.to_xml
         elsif format_specified.downcase.include?('json')
           resource.to_json
@@ -394,7 +417,7 @@ module FHIR
 
     def clean_headers(headers)
       headers.delete_if { |k, v| (k.nil? || v.nil?) }
-      headers.each_with_object({}) { |(k, v), h| h[k.to_s] = v.to_s; h }
+      FHIR::ResourceAddress.convert_symbol_headers(headers)
     end
 
     def scrubbed_response_headers(result)
@@ -404,10 +427,10 @@ module FHIR
       end
     end
 
-    def get(path, headers)
+    def get(path, headers = {})
       url = Addressable::URI.parse(build_url(path)).to_s
       FHIR.logger.info "GETTING: #{url}"
-      headers = clean_headers(headers)
+      headers = clean_headers(headers) unless headers.empty?
       if @use_oauth2_auth
         # @client.refresh!
         begin
@@ -583,7 +606,7 @@ module FHIR
       url = URI(build_url(path)).to_s
       FHIR.logger.info "PATCHING: #{url}"
       headers = clean_headers(headers)
-      payload = request_patch_payload(patchset, headers['format'])
+      payload = request_patch_payload(patchset, headers['Content-Type'])
       if @use_oauth2_auth
         # @client.refresh!
         begin

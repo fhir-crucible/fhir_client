@@ -13,9 +13,9 @@ module FHIR
         options[:format] = format
 
         reply = if options[:search] && options[:search][:flag]
-                  post resource_url(options), nil, fhir_headers(options)
+                  post resource_url(options), nil, fhir_headers({content_type: 'application/x-www-form-urlencoded'})
                 else
-                  get resource_url(options), fhir_headers(options)
+                  get resource_url(options), fhir_headers
                 end
         # reply = get resource_url(options), fhir_headers(options)
         reply.resource = parse_reply(klass, format, reply)
@@ -27,9 +27,9 @@ module FHIR
         options.merge!(resource: klass, id: id, format: format)
         # if options[:search][:flag]
         reply = if options[:search] && options[:search][:flag]
-                  post resource_url(options), nil, fhir_headers(options)
+                  post resource_url(options), nil, fhir_headers({content_type: 'application/x-www-form-urlencoded'})
                 else
-                  get resource_url(options), fhir_headers(options)
+                  get resource_url(options), fhir_headers
                 end
         reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
@@ -39,9 +39,9 @@ module FHIR
       def search_all(options = {}, format = @default_format)
         options[:format] = format
         reply = if options[:search] && options[:search][:flag]
-                  post resource_url(options), nil, fhir_headers(options)
+                  post resource_url(options), nil, fhir_headers({content_type: 'application/x-www-form-urlencoded'})
                 else
-                  get resource_url(options), fhir_headers(options)
+                  get resource_url(options), fhir_headers
                 end
         reply.resource = parse_reply(nil, format, reply)
         reply.resource_class = nil

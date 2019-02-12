@@ -6,46 +6,83 @@ module FHIR
       format: 'application/fhir+xml'
     }.freeze
 
-    DEFAULT_CHARSET = 'UTF-8'.freeze
+    DEFAULT_CHARSET = 'utf-8'.freeze
+    DEFAULT_CONTENT_TYPE = 'application/fhir+xml'.freeze # time to default to json?
 
-    def fhir_headers(options, use_format_param = false)
-      options = DEFAULTS.merge(options)
-
-      format = options[:format] || FHIR::Formats::ResourceFormat::RESOURCE_XML
-      fhir_headers = {
-        'User-Agent' => 'Ruby FHIR Client',
-        'Content-Type' => format + ';charset=' + DEFAULT_CHARSET,
-        'Accept-Charset' => DEFAULT_CHARSET
-      }
-      # remove the content-type header if the format is 'xml' or 'json' because
-      # even those are valid _format parameter options, they are not valid MimeTypes.
-      fhir_headers.delete('Content-Type') if %w(xml json).include?(format.downcase)
-
-      if options[:category]
-        # options[:category] should be an Array of FHIR::Tag objects
-        tags = {
-          'Category' => options[:category].collect(&:to_header).join(',')
-        }
-        fhir_headers.merge!(tags)
-        options.delete(:category)
+    #
+    # Normalize submitted header key value pairs
+    #
+    # 'content-type', 'Content-Type', and :content_type would all represent the content-type header
+    #
+    # Assumes symbols like :content_type to be "content-type"
+    # if for some odd reason the Header string representation contains underscores it would need to be specified
+    # as a string (i.e. options {"Underscore_Header" => 'why not hyphens'})
+    # Note that servers like apache or nginx consider that invalid anyways and drop them
+    # http://httpd.apache.org/docs/trunk/new_features_2_4.html
+    # http://nginx.org/en/docs/http/ngx_http_core_module.html#underscores_in_headers
+    def self.normalize_headers(to_be_normalized, to_symbol = true, capitalized = false)
+      to_be_normalized.inject({}) do |result, (key, value)|
+        key = key.to_s.downcase.split(/-|_/)
+        key.map!(&:capitalize) if capitalized
+        key = to_symbol ? key.join('_').to_sym : key.join('-')
+        result[key] = value.to_s
+        result
       end
+    end
 
-      if use_format_param
-        fhir_headers.delete('Accept')
-        options.delete('Accept')
-        options.delete(:accept)
-      else
-        fhir_headers['Accept'] = format
+    def self.convert_symbol_headers headers
+      headers.inject({}) do |result, (key, value)|
+        if key.is_a? Symbol
+          key = key.to_s.split(/_/).map(&:capitalize).join('-')
+        end
+        result[key] = value.to_s
+        result
       end
+    end
 
-      fhir_headers.merge!(options) unless options.empty?
-      fhir_headers[:operation] = options[:operation][:name] if options[:operation] && options[:operation][:name]
-      fhir_headers.delete('id')
-      fhir_headers.delete('resource')
+    # Returns normalized HTTP Headers
+    # header key value pairs can be supplied with keys specified as symbols or strings
+    # keys will be normalized to symbols.
+    # e.g. the keys :accept, "accept", and "Accept" all represent the Accept HTTP Header
+    # @param [Hash] options key value pairs for the http headerx
+    # @return [Hash] The normalized FHIR Headers
+    def self.fhir_headers(headers = {}, additional_headers = {}, format = DEFAULT_CONTENT_TYPE, use_accept_header = true, use_accept_charset = true)
+      # normalizes header names to be case-insensitive
+      # See relevant HTTP RFCs:
+      # https://tools.ietf.org/html/rfc2616#section-4.2
+      # https://tools.ietf.org/html/rfc7230#section-3.2
+      #
+      # https://tools.ietf.org/html/rfc7231#section-5.3.2
+      # optional white space before and
+      # https://tools.ietf.org/html/rfc2616#section-3.4
+      # utf-8 is case insensitive
+      #
+      headers ||= {}
+      additional_headers ||= {}
+
+      fhir_headers = {user_agent: 'Ruby FHIR Client'}
+
+      fhir_headers[:accept_charset] =  DEFAULT_CHARSET if use_accept_charset
+
+      # https://www.hl7.org/fhir/DSTU2/http.html#mime-type
+      # could add option for ;charset=#{DEFAULT_CHARSET} in accept header
+      fhir_headers[:accept] = "#{format}" if use_accept_header
+
+      # maybe in a future update normalize everything to symbols
+      # Headers should be case insensitive anyways...
+      #headers = normalize_headers(headers) unless headers.empty?
+      #
+      fhir_headers = convert_symbol_headers(fhir_headers)
+      headers = convert_symbol_headers(headers)
+
+      # supplied headers will always be used, e.g. if @use_accept_header is false
+      # ,but an accept header is explicitly supplied then it will be used (or override the existing)
+      fhir_headers.merge!(headers) unless headers.empty?
+      fhir_headers.merge!(additional_headers)
       fhir_headers
     end
 
-    def resource_url(options, use_format_param = false)
+    def self.resource_url(options, use_format_param = false)
       options = DEFAULTS.merge(options)
 
       params = {}
