@@ -322,7 +322,7 @@ module FHIR
       return nil unless [200, 201].include? response.code
       res = nil
       begin
-        res = if(@fhir_version == :dstu2 || klass.ancestors.include?(FHIR::DSTU2::Model))
+        res = if(@fhir_version == :dstu2 || klass&.ancestors&.include?(FHIR::DSTU2::Model))
                 if(format.include?('xml'))
                   FHIR::DSTU2::Xml.from_xml(response.body)
                 else
