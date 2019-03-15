@@ -29,10 +29,10 @@ module FHIR
 
         # The history reply should be a bundle
         bundle_klass = if @fhir_version == :stu3
-                  FHIR::Bundle
-                else
-                  FHIR::DSTU2::Bundle
-                end
+                         FHIR::Bundle
+                       else
+                         FHIR::DSTU2::Bundle
+                       end
 
         reply.resource = parse_reply(bundle_klass, options[:format], reply)
         reply.resource_class = options[:resource]
