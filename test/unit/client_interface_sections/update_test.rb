@@ -37,7 +37,7 @@ class ClientInterfaceUpdateTest < Test::Unit::TestCase
   def test_update
     FHIR::Model.client = client
     patient = FHIR::Patient.new({'id' => 'foo', 'active'=>true})
-    stub_request(:put, /update-test\/Patient\/foo/).with(headers: {'Content-Type'=>'application/json+fhir'}).to_return(status: 200)
+    stub_request(:put, /update-test\/Patient\/foo/).with(headers: {'Content-Type'=>'application/json+fhir;charset=utf-8'}).to_return(status: 200)
     reply = client.update(patient, 'foo')
     check_header_keys reply
     assert reply.code == 200

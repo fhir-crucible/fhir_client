@@ -79,6 +79,9 @@ module FHIR
       # ,but an accept header is explicitly supplied then it will be used (or override the existing)
       fhir_headers.merge!(headers) unless headers.empty?
       fhir_headers.merge!(additional_headers)
+      if /\Aapplication\/(fhir\+xml|xml\+fhir|fhir\+json|json\+fhir)\z/.match? fhir_headers['Content-Type']
+        fhir_headers['Content-Type'] << ";charset=#{DEFAULT_CHARSET}"
+      end
       fhir_headers
     end
 
