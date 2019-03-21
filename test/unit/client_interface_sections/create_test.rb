@@ -65,4 +65,22 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
     assert !reply.is_valid? # reply isn't valid because a response should have been included
   end
 
+  def test_condiitonal_create
+    patient = FHIR::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
+
+
+    stub_request(:post, /create-test/)
+        .with(headers: {'Content-Type'=>'application/fhir+json;charset=utf-8',
+                        'If-None-Exist'=>'identifier=1234'})
+        .to_return(status: 201,
+                   headers: {'Location'=>'http://create-test/Patient/foo/_history/0',
+                             'ETag'=>'W/"foo"',
+                             'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
+    client.default_json
+    reply = client.conditional_create(patient, {'identifier': '1234'})
+    assert reply.resource.is_a? (FHIR::Patient)
+    assert reply.resource_class == FHIR::Patient
+    assert reply.id == 'foo'
+  end
+
 end
