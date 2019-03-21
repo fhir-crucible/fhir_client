@@ -187,7 +187,7 @@ module FHIR
         end
         query = query[0..-2] # strip off the trailing ampersand
         header = {if_none_exist: query}
-        base_create(resource, options, format, header)
+        base_create(resource, nil, format, header)
       end
 
       #

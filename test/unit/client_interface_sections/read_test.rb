@@ -67,4 +67,22 @@ class ClientInterfaceReadTest < Test::Unit::TestCase
     assert reply.id == 'foo'
     check_header_keys reply
   end
+
+  def test_raw_read
+    patient = FHIR::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
+    stub_request(:get, /read-test/)
+        .to_return(status: 200,
+                   body: patient.to_json,
+                   headers: {'Content-Type'=>'application/fhir+json',
+                             'ETag'=>'W/"foo"',
+                             'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
+    temp = client
+    temp.use_stu3
+    temp.default_json
+    options = {resource: FHIR::Patient, id: 'foo'}
+    reply = temp.raw_read(options)
+    returned_resource = temp.parse_reply(FHIR::Patient, FHIR::Formats::ResourceFormat::RESOURCE_JSON, reply)
+    assert returned_resource.is_a?(FHIR::Patient)
+    assert returned_resource.gender == 'female'
+  end
 end
