@@ -1,9 +1,11 @@
 source 'https://rubygems.org'
 
-# gem 'fhir_models', :path => '../fhir_models'
-# gem 'fhir_dstu2_models', :path => '../fhir_dstu2_models'
-
 gemspec
+
+gem 'fhir_models', git: 'https://github.com/fhir-crucible/fhir_models.git', branch: 'master'
+gem 'fhir_stu3_models', git: 'https://github.com/fhir-crucible/fhir_stu3_models.git', branch: 'master'
+gem 'fhir_dstu2_models', git: 'https://github.com/fhir-crucible/fhir_dstu2_models.git', branch: 'update_dep'
+
 
 group :test do
   gem 'codeclimate-test-reporter', require: nil
