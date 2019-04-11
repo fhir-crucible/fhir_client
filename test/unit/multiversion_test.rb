@@ -20,12 +20,21 @@ class MultiversionTest < Test::Unit::TestCase
     assert client.detect_version == :dstu2
   end
 
+  def test_autodetect_r4
+    root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
+    conformance = File.read(File.join(root, 'fixtures', 'r4_capabilitystatement.json'))
+    stub_request(:get, /autodetect/).to_return(body: conformance)
+    client = FHIR::Client.new('autodetect')
+    client.default_json
+    assert client.detect_version == :r4
+  end
+
   def test_stu3_patient_manual
     stub_request(:get, /stu3/).to_return(body: FHIR::STU3::Patient.new.to_json)
     client = FHIR::Client.new('stu3')
     client.default_json
     assert_equal :stu3, client.fhir_version
-    assert client.read(FHIR::Patient, 'foo').resource.is_a?(FHIR::STU3::Patient)
+    assert client.read(FHIR::STU3::Patient, 'foo').resource.is_a?(FHIR::STU3::Patient)
   end
 
   def test_dstu2_patient_manual
@@ -42,7 +51,7 @@ class MultiversionTest < Test::Unit::TestCase
     client = FHIR::Client.new('stu3')
     client.default_json
     FHIR::Model.client = client
-    assert FHIR::Patient.read('foo').is_a?(FHIR::STU3::Patient)
+    assert FHIR::STU3::Patient.read('foo').is_a?(FHIR::STU3::Patient)
   end
 
   def test_dstu2_patient_klass_access

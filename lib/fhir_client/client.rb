@@ -72,6 +72,11 @@ module FHIR
       @default_format = versioned_format_class
     end
 
+    def use_r4
+      @fhir_version = :r4
+      @default_format = versioned_format_class
+    end
+
     #
     # Instructs the client to specify the minimal Prefer Header where applicable
     def use_minimal_preference
@@ -88,12 +93,12 @@ module FHIR
 
     def detect_version
       cap = capability_statement
-      if cap.is_a?(FHIR::STU3::CapabilityStatement)
-        @fhir_version = :stu3
+      if cap.is_a?(FHIR::STU3::CapabilityStatement) || cap.is_a?(FHIR::CapabilityStatement)
+        @fhir_version = cap.fhirVersion.starts_with?('4') ? :r4 : :stu3
       elsif cap.is_a?(FHIR::DSTU2::Conformance)
         @fhir_version = :dstu2
       else
-        @fhir_version = :stu3
+        @fhir_version = :r4
       end
       # Should update the default_format when changing fhir_version
       @default_format = versioned_format_class
@@ -268,7 +273,7 @@ module FHIR
         rescue
           @cached_capability_statement = nil
         end
-        unless @cached_capability_statement
+        if @cached_capability_statement.nil? || !@cached_capability_statement.fhirVersion.starts_with?('4')
           begin
             @cached_capability_statement = parse_reply(FHIR::STU3::CapabilityStatement, frmt, reply)
           rescue
@@ -314,17 +319,17 @@ module FHIR
                 else
                   FHIR::DSTU2::Json.from_json(response.body)
                 end
-              elsif(@fhir_version == :stu3 || klass&.ancestors&.include?(FHIR::STU3::Model))
-                if(format.include?('xml'))
-                  FHIR::STU3::Xml.from_xml(response.body)
-                else
-                  FHIR::STU3::Json.from_json(response.body)
-                end
-              else
+              elsif(@fhir_version == :r4 || klass&.ancestors&.include?(FHIR::Model))
                 if(format.include?('xml'))
                   FHIR::Xml.from_xml(response.body)
                 else
                   FHIR::Json.from_json(response.body)
+                end
+              else
+                if(format.include?('xml'))
+                  FHIR::STU3::Xml.from_xml(response.body)
+                else
+                  FHIR::STU3::Json.from_json(response.body)
                 end
               end
         res.client = self unless res.nil?
@@ -345,11 +350,7 @@ module FHIR
         method(request['method']).call(request['url'], request['headers'])
       elsif [:post, :put].include?(request['method'])
         unless request['payload'].nil?
-          resource = if @fhir_version == :stu3
-                       FHIR::STU3.from_contents(request['payload'])
-                     else
-                       FHIR::DSTU2.from_contents(request['payload'])
-                     end
+          resource = versioned_resource_class.from_contents(request['payload'])
         end
         method(request['method']).call(request['url'], resource, request['headers'])
       end
