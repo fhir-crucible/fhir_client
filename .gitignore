@@ -36,3 +36,6 @@ Gemfile.lock
 # Logs
 *.log
 *.log.*
+
+# User-specific
+.idea
