@@ -2,12 +2,16 @@ module FHIR
   module VersionManagement
 
     def versioned_resource_class(klass = nil)
-      return FHIR if klass.nil?
-      if @fhir_version == :stu3
-        FHIR::STU3.const_get(klass)
-      else
-        FHIR::DSTU2.const_get(klass)
-      end
+      mod = case @fhir_version
+            when :stu3
+              FHIR::STU3
+            when :dstu2
+              FHIR::DSTU2
+            else
+              FHIR
+            end
+      return mod if klass.nil?
+      mod.const_get(klass)
     end
 
     def versioned_format_class(format = nil)
