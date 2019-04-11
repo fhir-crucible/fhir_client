@@ -73,10 +73,10 @@ module FHIR
 
       # Concept Look Up [base]/CodeSystem/$lookup
       def code_system_lookup(params = {}, format = @default_format)
-        klass = if @fhir_version == :stu3
-                  FHIR::STU3::CodeSystem
-                else
+        klass = if @fhir_version == :dstu2
                   FHIR::DSTU2::ValueSet
+                else
+                  self.versioned_resource_class(:CodeSystem)
                 end
         options = { resource: klass, operation: { name: :code_system_lookup } }
         options.deep_merge!(params)

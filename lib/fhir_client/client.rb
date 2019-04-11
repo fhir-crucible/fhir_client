@@ -11,6 +11,7 @@ module FHIR
     include FHIR::Sections::Search
     include FHIR::Sections::Operations
     include FHIR::Sections::Transactions
+    include FHIR::VersionManagement
 
     attr_accessor :reply
     attr_accessor :use_format_param
@@ -99,14 +100,6 @@ module FHIR
     def use_representation_preference
       @use_return_preference = true
       @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
-    end
-
-    def versioned_resource_class(klass)
-      if @fhir_version == :stu3
-        FHIR::STU3.const_get(klass)
-      else
-        FHIR::DSTU2.const_get(klass)
-      end
     end
 
     def detect_version
