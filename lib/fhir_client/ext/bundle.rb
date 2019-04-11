@@ -60,3 +60,11 @@ module FHIR
     end
   end
 end
+
+module FHIR
+  module STU3
+    class Bundle
+      include FHIR::BundleExtras
+    end
+  end
+end

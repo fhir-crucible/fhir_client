@@ -103,7 +103,7 @@ module FHIR
 
     def versioned_resource_class(klass)
       if @fhir_version == :stu3
-        FHIR.const_get(klass)
+        FHIR::STU3.const_get(klass)
       else
         FHIR::DSTU2.const_get(klass)
       end
@@ -111,7 +111,7 @@ module FHIR
 
     def detect_version
       cap = capability_statement
-      if cap.is_a?(FHIR::CapabilityStatement)
+      if cap.is_a?(FHIR::STU3::CapabilityStatement)
         @fhir_version = :stu3
       elsif cap.is_a?(FHIR::DSTU2::Conformance)
         @fhir_version = :dstu2
@@ -285,7 +285,7 @@ module FHIR
         reply = get 'metadata', fhir_headers({accept: "#{frmt}"})
         next unless reply.code == 200
         begin
-          @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
+          @cached_capability_statement = parse_reply(FHIR::STU3::CapabilityStatement, frmt, reply)
         rescue
           @cached_capability_statement = nil
         end
@@ -330,9 +330,9 @@ module FHIR
                 end
               else
                 if(format.include?('xml'))
-                  FHIR::Xml.from_xml(response.body)
+                  FHIR::STU3::Xml.from_xml(response.body)
                 else
-                  FHIR::Json.from_json(response.body)
+                  FHIR::STU3::Json.from_json(response.body)
                 end
               end
         res.client = self unless res.nil?
@@ -354,7 +354,7 @@ module FHIR
       elsif [:post, :put].include?(request['method'])
         unless request['payload'].nil?
           resource = if @fhir_version == :stu3
-                       FHIR.from_contents(request['payload'])
+                       FHIR::STU3.from_contents(request['payload'])
                      else
                        FHIR::DSTU2.from_contents(request['payload'])
                      end

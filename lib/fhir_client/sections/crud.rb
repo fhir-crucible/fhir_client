@@ -210,13 +210,13 @@ module FHIR
           if !type.nil?
             reply.resource = if type.include?('xml') && !reply.body.empty?
                                if @fhir_version == :stu3
-                                 FHIR::Xml.from_xml(reply.body)
+                                 FHIR::STU3::Xml.from_xml(reply.body)
                                else
                                  FHIR::DSTU2::Xml.from_xml(reply.body)
                                end
                              elsif type.include?('json') && !reply.body.empty?
                                if @fhir_version == :stu3
-                                 FHIR::Json.from_json(reply.body)
+                                 FHIR::STU3::Json.from_json(reply.body)
                                else
                                  FHIR::DSTU2::Json.from_json(reply.body)
                                end

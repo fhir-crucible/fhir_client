@@ -70,7 +70,7 @@ class BasicTest < Test::Unit::TestCase
       %i[post put patch].each do |method|
         stub = stub_request(method, /basic-test/).to_timeout
         assert_raise(RestClient::RequestTimeout, RestClient::Exceptions::OpenTimeout) do
-          client.send(method, stubbed_path, FHIR::Patient.new, format_headers)
+          client.send(method, stubbed_path, FHIR::STU3::Patient.new, format_headers)
           assert_requested stub
         end
       end

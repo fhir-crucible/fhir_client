@@ -74,7 +74,7 @@ module FHIR
       # Concept Look Up [base]/CodeSystem/$lookup
       def code_system_lookup(params = {}, format = @default_format)
         klass = if @fhir_version == :stu3
-                  FHIR::CodeSystem
+                  FHIR::STU3::CodeSystem
                 else
                   FHIR::DSTU2::ValueSet
                 end

@@ -98,3 +98,15 @@ module FHIR
     end
   end
 end
+
+module FHIR
+  module STU3
+    class Reference
+      include FHIR::ReferenceExtras
+
+      def resource_class
+        "FHIR::STU3::#{type}".constantize unless contained?
+      end
+    end
+  end
+end

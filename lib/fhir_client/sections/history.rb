@@ -29,7 +29,7 @@ module FHIR
 
         # The history reply should be a bundle
         bundle_klass = if @fhir_version == :stu3
-                         FHIR::Bundle
+                         FHIR::STU3::Bundle
                        else
                          FHIR::DSTU2::Bundle
                        end

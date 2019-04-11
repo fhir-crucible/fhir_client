@@ -139,3 +139,11 @@ module FHIR
     end
   end
 end
+
+module FHIR
+  module STU3
+    class Model
+      include FHIR::ModelExtras
+    end
+  end
+end

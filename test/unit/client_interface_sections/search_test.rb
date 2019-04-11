@@ -8,7 +8,7 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
   def test_url_encoding_only_happens_once
     stub_request(:get, /search-test/).to_return(body: '{"resourceType":"Bundle"}')
     reply = client.search(
-      FHIR::Appointment,
+      FHIR::STU3::Appointment,
       {
         search: {
           parameters: {
