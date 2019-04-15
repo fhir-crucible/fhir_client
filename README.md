@@ -3,7 +3,7 @@
 Ruby FHIR client.
 
 Supports:
-* FHIR STU3 and DSTU2
+* FHIR R4, STU3 and DSTU2
 * XML and JSON
 * All CRUD, including version read and history
 * Transactions and Batches
@@ -69,19 +69,29 @@ if version == :stu3
   puts 'FHIR Client using STU3'
 elsif version == :dstu2
   puts 'FHIR Client using DSTU2'
+elsif version == :r4
+  puts 'FHIR Client using R4'
 end
+
+# tell the client to use R4
+client.use_r4
+# now use the client with the DSTU2 models
+patient = FHIR::Patient.read('example')
+patient = client.read(FHIR::Patient, 'example').resource
 
 # tell the client to use STU3 (default)
 client.use_stu3
 # now use the client normally
-patient = FHIR::Patient.read('example')
-patient = client.read(FHIR::Patient, 'example').resource
+patient = FHIR::STU3::Patient.read('example')
+patient = client.read(FHIR::STU3::Patient, 'example').resource
 
 # tell the client to use DSTU2
 client.use_dstu2
 # now use the client with the DSTU2 models
 patient = FHIR::DSTU2::Patient.read('example')
 patient = client.read(FHIR::DSTU2::Patient, 'example').resource
+
+
 ```
 
 ### Configuration
