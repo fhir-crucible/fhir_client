@@ -45,7 +45,7 @@ module FHIR
       @use_accept_header = true
       @use_accept_charset = true
       @default_format = default_format
-      @fhir_version = :stu3
+      @fhir_version = :r4
       @use_return_preference = false
       @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
       @exception_class = ClientException
