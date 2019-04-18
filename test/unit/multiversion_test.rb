@@ -8,7 +8,10 @@ class MultiversionTest < Test::Unit::TestCase
     stub_request(:get, /autodetect/).to_return(body: capabilitystatement)
     client = FHIR::Client.new('autodetect')
     client.default_json
-    assert client.detect_version == :stu3
+    assert client.cached_capability_statement.nil?
+    assert client.detect_version == :stu3, "Expected Version to be stu3, but found #{client.detect_version.to_s}"
+    assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
+    assert client.cached_capability_statement.is_a?(FHIR::STU3::CapabilityStatement)
   end
 
   def test_autodetect_dstu2
@@ -17,7 +20,10 @@ class MultiversionTest < Test::Unit::TestCase
     stub_request(:get, /autodetect/).to_return(body: conformance)
     client = FHIR::Client.new('autodetect')
     client.default_json
-    assert client.detect_version == :dstu2
+    assert client.cached_capability_statement.nil?
+    assert client.detect_version == :dstu2, "Expected Version to be dstu2, but found #{client.detect_version.to_s}"
+    assert !client.cached_capability_statement.nil?, 'Expected Conformance Statement to be cached'
+    assert client.cached_capability_statement.is_a?(FHIR::DSTU2::Conformance)
   end
 
   def test_autodetect_r4
@@ -26,7 +32,10 @@ class MultiversionTest < Test::Unit::TestCase
     stub_request(:get, /autodetect/).to_return(body: conformance)
     client = FHIR::Client.new('autodetect')
     client.default_json
-    assert client.detect_version == :r4
+    assert client.cached_capability_statement.nil?
+    assert (client.detect_version == :r4), "Expected Version to be r4, but found #{client.detect_version.to_s}"
+    assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
+    assert client.cached_capability_statement.is_a?(FHIR::CapabilityStatement)
   end
 
   def test_stu3_patient_manual
