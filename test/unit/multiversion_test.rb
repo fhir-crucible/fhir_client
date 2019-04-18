@@ -7,11 +7,14 @@ class MultiversionTest < Test::Unit::TestCase
     capabilitystatement = File.read(File.join(root, 'fixtures', 'capabilitystatement.json'))
     stub_request(:get, /autodetect/).to_return(body: capabilitystatement)
     client = FHIR::Client.new('autodetect')
-    client.default_json
+    # Intentionally set the client incorrectly
+    client.default_xml
+    client.use_r4
     assert client.cached_capability_statement.nil?
     assert client.detect_version == :stu3, "Expected Version to be stu3, but found #{client.detect_version.to_s}"
     assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
     assert client.cached_capability_statement.is_a?(FHIR::STU3::CapabilityStatement)
+    assert client.default_format.include? 'json'
   end
 
   def test_autodetect_dstu2
@@ -19,11 +22,14 @@ class MultiversionTest < Test::Unit::TestCase
     conformance = File.read(File.join(root, 'fixtures', 'conformance.json'))
     stub_request(:get, /autodetect/).to_return(body: conformance)
     client = FHIR::Client.new('autodetect')
-    client.default_json
+    # Intentionally set the client incorrectly
+    client.default_xml
+    client.use_r4
     assert client.cached_capability_statement.nil?
     assert client.detect_version == :dstu2, "Expected Version to be dstu2, but found #{client.detect_version.to_s}"
     assert !client.cached_capability_statement.nil?, 'Expected Conformance Statement to be cached'
     assert client.cached_capability_statement.is_a?(FHIR::DSTU2::Conformance)
+    assert client.default_format.include? 'json'
   end
 
   def test_autodetect_r4
@@ -31,11 +37,14 @@ class MultiversionTest < Test::Unit::TestCase
     conformance = File.read(File.join(root, 'fixtures', 'r4_capabilitystatement.json'))
     stub_request(:get, /autodetect/).to_return(body: conformance)
     client = FHIR::Client.new('autodetect')
-    client.default_json
+    # Intentionally set the client incorrectly
+    client.default_xml
+    client.use_stu3
     assert client.cached_capability_statement.nil?
     assert (client.detect_version == :r4), "Expected Version to be r4, but found #{client.detect_version.to_s}"
     assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
     assert client.cached_capability_statement.is_a?(FHIR::CapabilityStatement)
+    assert client.default_format.include? 'json'
   end
 
   def test_stu3_patient_manual

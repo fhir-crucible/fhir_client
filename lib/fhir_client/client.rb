@@ -98,7 +98,7 @@ module FHIR
       elsif cap.is_a?(FHIR::STU3::CapabilityStatement)
         use_stu3
       elsif cap.is_a?(FHIR::DSTU2::Conformance)
-        self.use_dstu2
+        use_dstu2
       else
         use_r4
       end
