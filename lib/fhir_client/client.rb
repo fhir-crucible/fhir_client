@@ -93,12 +93,14 @@ module FHIR
 
     def detect_version
       cap = capability_statement
-      if cap.is_a?(FHIR::STU3::CapabilityStatement) || cap.is_a?(FHIR::CapabilityStatement)
-        @fhir_version = cap.fhirVersion.starts_with?('4') ? :r4 : :stu3
+      if cap.is_a?(FHIR::CapabilityStatement)
+        self.use_r4
+      elsif cap.is_a?(FHIR::STU3::CapabilityStatement)
+        self.use_stu3
       elsif cap.is_a?(FHIR::DSTU2::Conformance)
-        @fhir_version = :dstu2
+        self.use_dstu2
       else
-        @fhir_version = :r4
+        self.use_r4
       end
       # Should update the default_format when changing fhir_version
       @default_format = versioned_format_class
