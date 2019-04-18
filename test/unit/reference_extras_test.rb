@@ -34,17 +34,17 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
   def test_reference_type
     r = FHIR::Reference.new({'reference': 'Patient/foo'})
-    assert r.get_type == 'Patient'
+    assert r.resource_type == 'Patient'
   end
 
   def test_reference_type_stu3
     r = FHIR::STU3::Reference.new({'reference': 'Patient/foo'})
-    assert r.get_type == 'Patient'
+    assert r.resource_type == 'Patient'
   end
 
   def test_reference_type_dstu2
     r = FHIR::DSTU2::Reference.new({'reference': 'Patient/foo'})
-    assert r.get_type == 'Patient'
+    assert r.resource_type == 'Patient'
   end
 
   def test_reference_klass
