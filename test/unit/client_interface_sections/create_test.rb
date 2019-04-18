@@ -6,8 +6,8 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
   end
 
   def test_create_response_properly_parsed_xml
-    patient = FHIR::STU3::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
-    outcome = FHIR::STU3::OperationOutcome.new({'issue'=>[{'code'=>'informational', 'severity'=>'information', 'diagnostics'=>'Successfully created "Patient/foo" in 0 ms'}]})
+    patient = FHIR::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
+    outcome = FHIR::OperationOutcome.new({'issue'=>[{'code'=>'informational', 'severity'=>'information', 'diagnostics'=>'Successfully created "Patient/foo" in 0 ms'}]})
 
     stub_request(:post, /create-test/)
         .with(headers: {'Content-Type'=>'application/fhir+xml;charset=utf-8'})
@@ -18,17 +18,18 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
                              'ETag'=>'W/"foo"',
                              'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
     client.default_xml
+    client.use_r4
     reply = client.create(patient)
-    assert reply.resource.is_a?(FHIR::STU3::OperationOutcome)
-    assert reply.resource_class == FHIR::STU3::Patient
+    assert reply.resource.is_a?(FHIR::OperationOutcome)
+    assert reply.resource_class == FHIR::Patient
     assert reply.id == 'foo'
     assert reply.version == '0'
     assert reply.is_valid?
   end
 
   def test_create_response_properly_parsed_json
-    patient = FHIR::STU3::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
-    outcome = FHIR::STU3::OperationOutcome.new({'issue'=>[{'code'=>'informational', 'severity'=>'information', 'diagnostics'=>'Successfully created "Patient/foo" in 0 ms'}]})
+    patient = FHIR::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
+    outcome = FHIR::OperationOutcome.new({'issue'=>[{'code'=>'informational', 'severity'=>'information', 'diagnostics'=>'Successfully created "Patient/foo" in 0 ms'}]})
 
     stub_request(:post, /create-test/)
         .with(headers: {'Content-Type'=>'application/fhir+json;charset=utf-8'})
@@ -39,16 +40,17 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
                              'ETag'=>'W/"foo"',
                              'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
     client.default_json
+    client.use_r4
     reply = client.create(patient)
-    assert reply.resource.is_a?(FHIR::STU3::OperationOutcome)
-    assert reply.resource_class == FHIR::STU3::Patient
+    assert reply.resource.is_a?(FHIR::OperationOutcome)
+    assert reply.resource_class == FHIR::Patient
     assert reply.id == 'foo'
     assert reply.version == '0'
     assert reply.is_valid?
   end
 
   def test_create_response_blank
-    patient = FHIR::STU3::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
+    patient = FHIR::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
 
     stub_request(:post, /create-test/)
         .with(headers: {'Content-Type'=>'application/fhir+xml;charset=utf-8'})
@@ -58,15 +60,15 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
                              'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
     client.default_xml
     reply = client.create(patient)
-    assert reply.resource.is_a?(FHIR::STU3::Patient)
-    assert reply.resource_class == FHIR::STU3::Patient
+    assert reply.resource.is_a?(FHIR::Patient)
+    assert reply.resource_class == FHIR::Patient
     assert reply.id == 'foo'
     assert reply.version == '0'
     assert !reply.is_valid? # reply isn't valid because a response should have been included
   end
 
   def test_condiitonal_create
-    patient = FHIR::STU3::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
+    patient = FHIR::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
 
 
     stub_request(:post, /create-test/)
@@ -78,8 +80,8 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
                              'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
     client.default_json
     reply = client.conditional_create(patient, {'identifier': '1234'})
-    assert reply.resource.is_a? (FHIR::STU3::Patient)
-    assert reply.resource_class == FHIR::STU3::Patient
+    assert reply.resource.is_a? (FHIR::Patient)
+    assert reply.resource_class == FHIR::Patient
     assert reply.id == 'foo'
   end
 

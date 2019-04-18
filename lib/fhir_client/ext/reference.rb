@@ -39,7 +39,7 @@ module FHIR
       end
     end
 
-    def type
+    def get_type
       return if contained?
       parts[:type]
     end
@@ -82,7 +82,7 @@ module FHIR
     include FHIR::ReferenceExtras
 
     def resource_class
-      "FHIR::#{type}".constantize unless contained?
+      "FHIR::#{get_type}".constantize unless contained?
     end
   end
 end
@@ -93,7 +93,7 @@ module FHIR
       include FHIR::ReferenceExtras
 
       def resource_class
-        "FHIR::DSTU2::#{type}".constantize unless contained?
+        "FHIR::DSTU2::#{get_type}".constantize unless contained?
       end
     end
   end
@@ -105,7 +105,7 @@ module FHIR
       include FHIR::ReferenceExtras
 
       def resource_class
-        "FHIR::STU3::#{type}".constantize unless contained?
+        "FHIR::STU3::#{get_type}".constantize unless contained?
       end
     end
   end

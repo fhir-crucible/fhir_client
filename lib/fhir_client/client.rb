@@ -94,13 +94,13 @@ module FHIR
     def detect_version
       cap = capability_statement
       if cap.is_a?(FHIR::CapabilityStatement)
-        self.use_r4
+        use_r4
       elsif cap.is_a?(FHIR::STU3::CapabilityStatement)
-        self.use_stu3
+        use_stu3
       elsif cap.is_a?(FHIR::DSTU2::Conformance)
         self.use_dstu2
       else
-        self.use_r4
+        use_r4
       end
       # Should update the default_format when changing fhir_version
       @default_format = versioned_format_class
@@ -265,22 +265,24 @@ module FHIR
       formats.insert(0, default_format)
 
       @cached_capability_statement = nil
-      @default_format = nil
 
       formats.each do |frmt|
         reply = get 'metadata', fhir_headers({accept: "#{frmt}"})
         next unless reply.code == 200
+        use_r4
         begin
           @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
         rescue
           @cached_capability_statement = nil
         end
         if @cached_capability_statement.nil? || !@cached_capability_statement.fhirVersion.starts_with?('4')
+          use_stu3
           begin
             @cached_capability_statement = parse_reply(FHIR::STU3::CapabilityStatement, frmt, reply)
           rescue
             @cached_capability_statement = nil
           end
+          use_dstu2
           unless @cached_capability_statement
             begin
               @cached_capability_statement = parse_reply(FHIR::DSTU2::Conformance, frmt, reply)

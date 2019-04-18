@@ -12,7 +12,7 @@ class BundleTest < Test::Unit::TestCase
     }
     clientReply = FHIR::ClientReply.new('bundle-test', response, client)
 
-    bundle = client.parse_reply(FHIR::STU3::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
+    bundle = client.parse_reply(FHIR::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
 
     assert !bundle.nil?, 'Failed to parse example Bundle.'
   end
@@ -28,7 +28,7 @@ class BundleTest < Test::Unit::TestCase
     }
     clientReply = FHIR::ClientReply.new('bundle-test', response, client)
 
-    bundle = client.parse_reply(FHIR::STU3::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
+    bundle = client.parse_reply(FHIR::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
     next_bundle_xml = File.read(File.join(root, 'fixtures', 'next-bundle-example.xml'))
     WebMock.stub_request(:any, bundle.next_link.url).to_return status: 200, body: next_bundle_xml
     next_bundle = bundle.next_bundle
@@ -47,7 +47,7 @@ class BundleTest < Test::Unit::TestCase
     }
     clientReply = FHIR::ClientReply.new('bundle-test', response, client)
 
-    bundle = client.parse_reply(FHIR::STU3::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
+    bundle = client.parse_reply(FHIR::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
     next_bundle_xml = File.read(File.join(root, 'fixtures', 'next-bundle-example.xml'))
     WebMock.stub_request(:any, bundle.next_link.url).to_return status: 200, body: next_bundle_xml
 
@@ -70,7 +70,7 @@ class BundleTest < Test::Unit::TestCase
     }
     clientReply = FHIR::ClientReply.new('bundle-test', response, client)
 
-    bundle = client.parse_reply(FHIR::STU3::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
+    bundle = client.parse_reply(FHIR::Bundle, FHIR::Formats::ResourceFormat::RESOURCE_XML, clientReply)
     next_bundle_xml = File.read(File.join(root, 'fixtures', 'next-bundle-example.xml'))
     WebMock.stub_request(:any, bundle.next_link.url).to_return status: 200, body: next_bundle_xml
 
