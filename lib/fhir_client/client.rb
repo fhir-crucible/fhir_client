@@ -38,7 +38,7 @@ module FHIR
     # @param default_format Default Format Mime type
     # @return
     #
-    def initialize(base_service_url, default_format: FHIR::Formats::ResourceFormat::RESOURCE_XML, proxy: nil)
+    def initialize(base_service_url, default_format: FHIR::Formats::ResourceFormat::RESOURCE_JSON, proxy: nil)
       @base_service_url = base_service_url
       FHIR.logger.info "Initializing client with #{@base_service_url}"
       @use_format_param = false

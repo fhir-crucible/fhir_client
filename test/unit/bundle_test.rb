@@ -19,6 +19,7 @@ class BundleTest < Test::Unit::TestCase
 
   def test_next_bundle
     client = FHIR::Client.new('bundle-test')
+    client.default_xml
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     bundle_xml = File.read(File.join(root, 'fixtures', 'bundle-example.xml'))
     response = {
@@ -38,6 +39,7 @@ class BundleTest < Test::Unit::TestCase
 
   def test_each
     client = FHIR::Client.new('bundle-test')
+    client.default_xml
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     bundle_xml = File.read(File.join(root, 'fixtures', 'bundle-example.xml'))
     response = {
@@ -61,6 +63,7 @@ class BundleTest < Test::Unit::TestCase
 
   def test_each_no_block
     client = FHIR::Client.new('bundle-test')
+    client.default_xml
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     bundle_xml = File.read(File.join(root, 'fixtures', 'bundle-example.xml'))
     response = {
