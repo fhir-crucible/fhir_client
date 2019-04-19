@@ -282,8 +282,8 @@ module FHIR
           rescue
             @cached_capability_statement = nil
           end
-          use_dstu2
           unless @cached_capability_statement
+            use_dstu2
             begin
               @cached_capability_statement = parse_reply(FHIR::DSTU2::Conformance, frmt, reply)
             rescue
