@@ -4,7 +4,7 @@ Ruby FHIR client.
 
 Supports:
 * FHIR R4, STU3 and DSTU2
-* XML and JSON
+* JSON and XML
 * All CRUD, including version read and history
 * Transactions and Batches
 * Search
@@ -58,8 +58,8 @@ patient.destroy
 
 ## Advanced Usage
 
-### STU3 and DSTU2
-The client defaults to `STU3` but can be switched to `DSTU2` or it can also attempt to autodetect the FHIR version based on the `metadata` endpoint.
+### Changing FHIR Versions
+The client defaults to `R4` but can be switched to `DSTU2` or `STU3`. It can also attempt to autodetect the FHIR version based on the `metadata` endpoint.
 
 ```ruby
 # autodetect the FHIR version
@@ -92,6 +92,19 @@ patient = FHIR::DSTU2::Patient.read('example')
 patient = client.read(FHIR::DSTU2::Patient, 'example').resource
 
 
+```
+
+### Changing FHIR Formats
+The client defaults to `json` representation of resources but can be switched to `xml` representations.
+
+```ruby
+client = FHIR::Client.new(url)
+
+# Tell the client to use xml
+client.default_xml
+
+# Tell the client to use json
+client.default_json
 ```
 
 ### Configuration
