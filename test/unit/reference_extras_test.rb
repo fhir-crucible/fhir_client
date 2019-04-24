@@ -7,6 +7,11 @@ class ReferencesExtrasTest < Test::Unit::TestCase
     assert r.reference_id == 'foo'
   end
 
+  def test_reference_id_stu3
+    r = FHIR::STU3::Reference.new({'reference': 'Patient/foo'})
+    assert r.reference_id == 'foo'
+  end
+
   def test_reference_id_dstu2
     r = FHIR::DSTU2::Reference.new({'reference': 'Patient/foo'})
     assert r.reference_id == 'foo'
@@ -17,6 +22,11 @@ class ReferencesExtrasTest < Test::Unit::TestCase
     assert r.contained?
   end
 
+  def test_reference_contained_stu3
+    r = FHIR::STU3::Reference.new({'reference': '#foo'})
+    assert r.contained?
+  end
+
   def test_reference_contained_dstu2
     r = FHIR::DSTU2::Reference.new({'reference': '#foo'})
     assert r.contained?
@@ -24,17 +34,27 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
   def test_reference_type
     r = FHIR::Reference.new({'reference': 'Patient/foo'})
-    assert r.type == 'Patient'
+    assert r.resource_type == 'Patient'
+  end
+
+  def test_reference_type_stu3
+    r = FHIR::STU3::Reference.new({'reference': 'Patient/foo'})
+    assert r.resource_type == 'Patient'
   end
 
   def test_reference_type_dstu2
     r = FHIR::DSTU2::Reference.new({'reference': 'Patient/foo'})
-    assert r.type == 'Patient'
+    assert r.resource_type == 'Patient'
   end
 
   def test_reference_klass
     r = FHIR::Reference.new({'reference': 'Patient/foo'})
     assert r.resource_class == FHIR::Patient
+  end
+
+  def test_reference_klass_stu3
+    r = FHIR::STU3::Reference.new({'reference': 'Patient/foo'})
+    assert r.resource_class == FHIR::STU3::Patient
   end
 
   def test_reference_klass_dstu2
@@ -47,6 +67,11 @@ class ReferencesExtrasTest < Test::Unit::TestCase
     assert r.relative?
   end
 
+  def test_relative_stu3
+    r = FHIR::STU3::Reference.new({'reference': 'Patient/foo'})
+    assert r.relative?
+  end
+
   def test_relative_dstu2
     r = FHIR::DSTU2::Reference.new({'reference': 'Patient/foo'})
     assert r.relative?
@@ -54,6 +79,11 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
   def test_absolute
     r = FHIR::Reference.new({'reference': 'https://my-server.com/fhir/Patient/foo'})
+    assert r.absolute?
+  end
+
+  def test_absolute_stu3
+    r = FHIR::STU3::Reference.new({'reference': 'https://my-server.com/fhir/Patient/foo'})
     assert r.absolute?
   end
 

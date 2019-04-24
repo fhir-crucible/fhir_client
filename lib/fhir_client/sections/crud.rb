@@ -209,17 +209,11 @@ module FHIR
           type = reply.response[:headers].detect{|x, _y| x.downcase=='content-type'}.try(:last)
           if !type.nil?
             reply.resource = if type.include?('xml') && !reply.body.empty?
-                               if @fhir_version == :stu3
-                                 FHIR::Xml.from_xml(reply.body)
-                               else
-                                 FHIR::DSTU2::Xml.from_xml(reply.body)
-                               end
+                               klass = self.versioned_resource_class(:Xml)
+                               klass.from_xml(reply.body)
                              elsif type.include?('json') && !reply.body.empty?
-                               if @fhir_version == :stu3
-                                 FHIR::Json.from_json(reply.body)
-                               else
-                                 FHIR::DSTU2::Json.from_json(reply.body)
-                               end
+                               klass = self.versioned_resource_class(:Json)
+                               klass.from_json(reply.body)
                              else
                                resource # just send back the submitted resource
                              end

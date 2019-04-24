@@ -18,6 +18,7 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
                              'ETag'=>'W/"foo"',
                              'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
     client.default_xml
+    client.use_r4
     reply = client.create(patient)
     assert reply.resource.is_a?(FHIR::OperationOutcome)
     assert reply.resource_class == FHIR::Patient
@@ -39,6 +40,7 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
                              'ETag'=>'W/"foo"',
                              'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
     client.default_json
+    client.use_r4
     reply = client.create(patient)
     assert reply.resource.is_a?(FHIR::OperationOutcome)
     assert reply.resource_class == FHIR::Patient

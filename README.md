@@ -3,8 +3,8 @@
 Ruby FHIR client.
 
 Supports:
-* FHIR STU3 and DSTU2
-* XML and JSON
+* FHIR R4, STU3 and DSTU2
+* JSON and XML
 * All CRUD, including version read and history
 * Transactions and Batches
 * Search
@@ -58,8 +58,8 @@ patient.destroy
 
 ## Advanced Usage
 
-### STU3 and DSTU2
-The client defaults to `STU3` but can be switched to `DSTU2` or it can also attempt to autodetect the FHIR version based on the `metadata` endpoint.
+### Changing FHIR Versions
+The client defaults to `R4` but can be switched to `DSTU2` or `STU3`. It can also attempt to autodetect the FHIR version based on the `metadata` endpoint.
 
 ```ruby
 # autodetect the FHIR version
@@ -69,19 +69,42 @@ if version == :stu3
   puts 'FHIR Client using STU3'
 elsif version == :dstu2
   puts 'FHIR Client using DSTU2'
+elsif version == :r4
+  puts 'FHIR Client using R4'
 end
+
+# tell the client to use R4
+client.use_r4
+# now use the client with the DSTU2 models
+patient = FHIR::Patient.read('example')
+patient = client.read(FHIR::Patient, 'example').resource
 
 # tell the client to use STU3 (default)
 client.use_stu3
 # now use the client normally
-patient = FHIR::Patient.read('example')
-patient = client.read(FHIR::Patient, 'example').resource
+patient = FHIR::STU3::Patient.read('example')
+patient = client.read(FHIR::STU3::Patient, 'example').resource
 
 # tell the client to use DSTU2
 client.use_dstu2
 # now use the client with the DSTU2 models
 patient = FHIR::DSTU2::Patient.read('example')
 patient = client.read(FHIR::DSTU2::Patient, 'example').resource
+
+
+```
+
+### Changing FHIR Formats
+The client defaults to `json` representation of resources but can be switched to `xml` representations.
+
+```ruby
+client = FHIR::Client.new(url)
+
+# Tell the client to use xml
+client.default_xml
+
+# Tell the client to use json
+client.default_json
 ```
 
 ### Configuration
@@ -192,7 +215,7 @@ end
 
 # License
 
-Copyright 2014-2016 The MITRE Corporation
+Copyright 2014-2019 The MITRE Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

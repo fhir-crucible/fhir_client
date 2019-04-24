@@ -11,6 +11,7 @@ module FHIR
     include FHIR::Sections::Search
     include FHIR::Sections::Operations
     include FHIR::Sections::Transactions
+    include FHIR::VersionManagement
 
     attr_accessor :reply
     attr_accessor :use_format_param
@@ -37,14 +38,14 @@ module FHIR
     # @param default_format Default Format Mime type
     # @return
     #
-    def initialize(base_service_url, default_format: FHIR::Formats::ResourceFormat::RESOURCE_XML, proxy: nil)
+    def initialize(base_service_url, default_format: FHIR::Formats::ResourceFormat::RESOURCE_JSON, proxy: nil)
       @base_service_url = base_service_url
       FHIR.logger.info "Initializing client with #{@base_service_url}"
       @use_format_param = false
       @use_accept_header = true
       @use_accept_charset = true
       @default_format = default_format
-      @fhir_version = :stu3
+      @fhir_version = :r4
       @use_return_preference = false
       @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
       @exception_class = ClientException
@@ -54,37 +55,26 @@ module FHIR
     end
 
     def default_json
-      @default_format = if @fhir_version == :stu3
-                          FHIR::Formats::ResourceFormat::RESOURCE_JSON
-                        else
-                          FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2
-                        end
+      @default_format = versioned_format_class(:json)
     end
 
     def default_xml
-      @default_format = if @fhir_version == :stu3
-                          FHIR::Formats::ResourceFormat::RESOURCE_XML
-                        else
-                          FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2
-                        end
+      @default_format = versioned_format_class(:xml)
     end
 
     def use_stu3
       @fhir_version = :stu3
-      @default_format = if @default_format.include?('xml')
-                          FHIR::Formats::ResourceFormat::RESOURCE_XML
-                        else
-                          FHIR::Formats::ResourceFormat::RESOURCE_JSON
-                        end
+      @default_format = versioned_format_class
     end
 
     def use_dstu2
       @fhir_version = :dstu2
-      @default_format = if @default_format.include?('xml')
-                          FHIR::Formats::ResourceFormat::RESOURCE_XML_DSTU2
-                        else
-                          FHIR::Formats::ResourceFormat::RESOURCE_JSON_DSTU2
-                        end
+      @default_format = versioned_format_class
+    end
+
+    def use_r4
+      @fhir_version = :r4
+      @default_format = versioned_format_class
     end
 
     #
@@ -101,23 +91,19 @@ module FHIR
       @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
     end
 
-    def versioned_resource_class(klass)
-      if @fhir_version == :stu3
-        FHIR.const_get(klass)
-      else
-        FHIR::DSTU2.const_get(klass)
-      end
-    end
-
     def detect_version
       cap = capability_statement
       if cap.is_a?(FHIR::CapabilityStatement)
-        @fhir_version = :stu3
+        use_r4
+      elsif cap.is_a?(FHIR::STU3::CapabilityStatement)
+        use_stu3
       elsif cap.is_a?(FHIR::DSTU2::Conformance)
-        @fhir_version = :dstu2
+        use_dstu2
       else
-        @fhir_version = :stu3
+        use_r4
       end
+      # Should update the default_format when changing fhir_version
+      @default_format = versioned_format_class
       FHIR.logger.info("Detecting server FHIR version as #{@fhir_version} via metadata")
       @fhir_version
     end
@@ -279,21 +265,30 @@ module FHIR
       formats.insert(0, default_format)
 
       @cached_capability_statement = nil
-      @default_format = nil
 
       formats.each do |frmt|
         reply = get 'metadata', fhir_headers({accept: "#{frmt}"})
         next unless reply.code == 200
+        use_r4
         begin
           @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
         rescue
           @cached_capability_statement = nil
         end
-        unless @cached_capability_statement
+        if @cached_capability_statement.nil? || !@cached_capability_statement.fhirVersion.starts_with?('4')
+          use_stu3
           begin
-            @cached_capability_statement = parse_reply(FHIR::DSTU2::Conformance, frmt, reply)
+            @cached_capability_statement = parse_reply(FHIR::STU3::CapabilityStatement, frmt, reply)
           rescue
             @cached_capability_statement = nil
+          end
+          unless @cached_capability_statement
+            use_dstu2
+            begin
+              @cached_capability_statement = parse_reply(FHIR::DSTU2::Conformance, frmt, reply)
+            rescue
+              @cached_capability_statement = nil
+            end
           end
         end
         if @cached_capability_statement
@@ -328,11 +323,17 @@ module FHIR
                 else
                   FHIR::DSTU2::Json.from_json(response.body)
                 end
-              else
+              elsif(@fhir_version == :r4 || klass&.ancestors&.include?(FHIR::Model))
                 if(format.include?('xml'))
                   FHIR::Xml.from_xml(response.body)
                 else
                   FHIR::Json.from_json(response.body)
+                end
+              else
+                if(format.include?('xml'))
+                  FHIR::STU3::Xml.from_xml(response.body)
+                else
+                  FHIR::STU3::Json.from_json(response.body)
                 end
               end
         res.client = self unless res.nil?
@@ -353,11 +354,7 @@ module FHIR
         method(request['method']).call(request['url'], request['headers'])
       elsif [:post, :put].include?(request['method'])
         unless request['payload'].nil?
-          resource = if @fhir_version == :stu3
-                       FHIR.from_contents(request['payload'])
-                     else
-                       FHIR::DSTU2.from_contents(request['payload'])
-                     end
+          resource = versioned_resource_class.from_contents(request['payload'])
         end
         method(request['method']).call(request['url'], resource, request['headers'])
       end

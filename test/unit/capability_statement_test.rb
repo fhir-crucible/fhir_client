@@ -7,7 +7,7 @@ class CapabilityStatementTest < Test::Unit::TestCase
 
   def test_metadata_returns_capability_statement
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
-    capabilitystatement = File.read(File.join(root, 'fixtures', 'capabilitystatement-example.json'))
+    capabilitystatement = File.read(File.join(root, 'fixtures', 'r4_capabilitystatement.json'))
     stub_request(:get, /capability-test/).to_return(body: capabilitystatement)
     statement = client.conformance_statement
     assert statement.is_a?(FHIR::CapabilityStatement)

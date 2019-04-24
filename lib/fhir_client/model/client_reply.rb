@@ -1,5 +1,8 @@
 module FHIR
   class ClientReply
+
+    include FHIR::VersionManagement
+
     @@path_regexes = {
       '[type]' => "(#{FHIR::RESOURCES.join('|')})",
       '[id]' => FHIR::PRIMITIVES['id']['regex'],
@@ -157,11 +160,7 @@ module FHIR
         if body_rules['types']
           body_type_match = false
           begin
-            content = if @fhir_version == :stu3
-                        FHIR.from_contents(body)
-                      else
-                        FHIR::DSTU2.from_contents(body)
-                      end
+            content = versioned_resource_class().from_contents(body)
             body_rules['types'].each do |type|
               body_type_match = true if content.resourceType == type
               body_type_match = true if type == 'Resource' && validate_resource(content.resourceType)
@@ -182,12 +181,7 @@ module FHIR
     end
 
     def validate_resource(resource_type)
-      if @fhir_version == :stu3
-        return true if FHIR::RESOURCES.include?(resource_type)
-      else
-        return true if FHIR::DSTU2::RESOURCES.include?(resource_type)
-      end
-      false
+      versioned_resource_class(:RESOURCES).include?(resource_type)? true : false
     end
 
     private :validate_headers, :validate_body, :validate_resource

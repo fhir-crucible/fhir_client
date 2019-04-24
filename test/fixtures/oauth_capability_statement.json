@@ -10,7 +10,7 @@
   "description": "Describes capabilities of this SMART on FHIR server",
   "status": "draft",
   "date": "2015-09-23T04:49:25.469-00:00",
-  "fhirVersion": "1.7.0",
+  "fhirVersion": "4.0.0",
   "kind": "instance",
   "acceptUnknown": "no",
   "format": [
