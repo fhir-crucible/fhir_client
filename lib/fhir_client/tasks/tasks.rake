@@ -46,7 +46,7 @@ namespace :fhir do
     fhir_resources.each do |klass|
       reply = client.read_feed(klass)
       total = reply.resource.nil? ? 0 : reply.resource.total
-      total = reply.resource.each.reduce(0) { |s| s += 1 } if total.nil?
+      total = reply.resource.each.reduce(0) { |s| s + 1 } if total.nil?
       if total > 0 || display_zero
         counts[klass.name.demodulize.to_s] = total
       end
