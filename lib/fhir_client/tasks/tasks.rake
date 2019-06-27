@@ -45,15 +45,17 @@ namespace :fhir do
     counts = {}
     fhir_resources.each do |klass|
       reply = client.read_feed(klass)
-      if !reply.resource.nil? && (reply.resource.total > 0 || display_zero)
-        counts[klass.name.demodulize.to_s] = reply.resource.total
+      total = reply.resource.nil? ? 0 : reply.resource.total
+      total = reply.resource.each.reduce(0) { |s| s += 1 } if total.nil?
+      if total > 0 || display_zero
+        counts[klass.name.demodulize.to_s] = total
       end
     end
-    printf "  %-30s %5s\n", 'Resource', 'Count'
-    printf "  %-30s %5s\n", '--------', '-----'
+    printf "  %-35s %7s\n", 'Resource', 'Count'
+    printf "  %-35s %7s\n", '--------', '-----'
     counts.each do |key, value|
       # puts "#{key}  #{value}"
-      printf "  %-30s %5s\n", key, value
+      printf "  %-35s %7s\n", key, value
     end
   end
 
