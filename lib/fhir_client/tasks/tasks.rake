@@ -51,11 +51,11 @@ namespace :fhir do
         counts[klass.name.demodulize.to_s] = total
       end
     end
-    printf "  %-35s %7s\n", 'Resource', 'Count'
-    printf "  %-35s %7s\n", '--------', '-----'
+    format = "  %-35s %7s\n"
+    printf format, 'Resource', 'Count'
+    printf format, '--------', '-----'
     counts.each do |key, value|
-      # puts "#{key}  #{value}"
-      printf "  %-35s %7s\n", key, value
+      printf format, key, value
     end
   end
 
