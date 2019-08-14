@@ -38,22 +38,26 @@ namespace :fhir do
   end
 
   desc 'count all resources for a given server'
-  task :count, [:url, :display_zero] do |_t, args|
+  task :count, [:url, :display_zero, :include_all] do |_t, args|
     client = FHIR::Client.new(args.url)
     client.try_conformance_formats(FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     display_zero = (args.display_zero == 'true')
+    include_all = (args.include_all == 'true')
     counts = {}
     fhir_resources.each do |klass|
       reply = client.read_feed(klass)
-      if !reply.resource.nil? && (reply.resource.total > 0 || display_zero)
-        counts[klass.name.demodulize.to_s] = reply.resource.total
+      total = reply.resource.nil? ? 0 : reply.resource.total
+      total = reply.resource.each.reduce(0) { |s| s + 1 } if total.nil? && include_all
+      total = 'n/a' if total.nil?
+      if total.to_s != "0" || display_zero
+        counts[klass.name.demodulize.to_s] = total.to_s
       end
     end
-    printf "  %-30s %5s\n", 'Resource', 'Count'
-    printf "  %-30s %5s\n", '--------', '-----'
+    format = "  %-35s %7s\n"
+    printf format, 'Resource', 'Count'
+    printf format, '--------', '-----'
     counts.each do |key, value|
-      # puts "#{key}  #{value}"
-      printf "  %-30s %5s\n", key, value
+      printf format, key, value
     end
   end
 
