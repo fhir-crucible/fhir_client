@@ -6,14 +6,16 @@ rvm:
 before_install:
   - gem update --system
   - gem install bundler
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 script:
   - bundle exec rake test
-  - bundle exec codeclimate-test-reporter
+after_script:
+  - ./cc-test-reporter after-build -t simplecov --exit-code $TRAVIS_TEST_RESULT
 notifications:
   email:
     recipients:
       - fhir-testing-list@lists.mitre.org
     on_failure: change
-addons:
-    code_climate:
-        repo_token: ac1640edaefa720557e56bfaba4e09808559d7d61812f96d58ea4aa5f4669738
