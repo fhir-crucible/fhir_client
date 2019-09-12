@@ -384,6 +384,10 @@ module FHIR
           resource.to_xml
         elsif format_specified.downcase.include?('json')
           resource.to_json
+        elsif format_specified.downcase.include?('urlencoded')
+          resource.map do |k,v|
+            "#{k}=#{v}"
+          end.join('&')
         else
           resource.to_xml
         end
