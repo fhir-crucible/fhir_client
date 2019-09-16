@@ -385,9 +385,7 @@ module FHIR
         elsif format_specified.downcase.include?('json')
           resource.to_json
         elsif format_specified.downcase.include?('urlencoded')
-          resource.map do |k,v|
-            "#{k}=#{v}"
-          end.join('&')
+          URI.encode_www_form(resource)
         else
           resource.to_xml
         end
