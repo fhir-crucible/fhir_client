@@ -337,7 +337,6 @@ module FHIR
                 end
               end
         res.client = self unless res.nil?
-        FHIR.logger.warn "Expected #{klass} but got #{res.class}" if res.class != klass
       rescue => e
         FHIR.logger.error "Failed to parse #{format} as resource #{klass}: #{e.message}"
         res = nil
