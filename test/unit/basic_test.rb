@@ -66,10 +66,20 @@ class BasicTest < Test::Unit::TestCase
           client.send(method, stubbed_path, format_headers)
           assert_requested stub
         end
+        stub = stub_request(method, /basic-test/).to_raise(SocketError)
+        assert_raise(SocketError) do
+          client.send(method, stubbed_path, format_headers)
+          assert_requested stub
+        end
       end
       %i[post put patch].each do |method|
         stub = stub_request(method, /basic-test/).to_timeout
         assert_raise(RestClient::RequestTimeout, RestClient::Exceptions::OpenTimeout) do
+          client.send(method, stubbed_path, FHIR::Patient.new, format_headers)
+          assert_requested stub
+        end
+        stub = stub_request(method, /basic-test/).to_raise(SocketError)
+        assert_raise(SocketError) do
           client.send(method, stubbed_path, FHIR::Patient.new, format_headers)
           assert_requested stub
         end
