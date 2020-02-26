@@ -433,7 +433,7 @@ module FHIR
         begin
           response = @client.get(url, headers: headers)
         rescue => e
-          unless e.response
+          unless e.respond_to? :response
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
             FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
@@ -480,7 +480,7 @@ module FHIR
           @reply = FHIR::ClientReply.new(req, res, self)
           return @reply
         rescue => e
-          unless e.response
+          unless e.respond_to? :response
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
             FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
@@ -515,7 +515,7 @@ module FHIR
         begin
           response = @client.post(url, headers: headers, body: payload)
         rescue => e
-          unless e.response
+          unless e.respond_to? :response
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
             FHIR.logger.error "POST - Request: #{url} failed! No response from server: #{e}"
@@ -562,7 +562,7 @@ module FHIR
         begin
           response = @client.put(url, headers: headers, body: payload)
         rescue => e
-          unless e.response
+          unless e.respond_to? :response
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
             FHIR.logger.error "PUT - Request: #{url} failed! No response from server: #{e}"
@@ -609,7 +609,7 @@ module FHIR
         begin
           response = @client.patch(url, headers: headers, body: payload)
         rescue => e
-          unless e.response
+          unless e.respond_to? :response
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
             FHIR.logger.error "PATCH - Request: #{url} failed! No response from server: #{e}"
@@ -645,7 +645,7 @@ module FHIR
             @reply = FHIR::ClientReply.new(request.args, res, self)
           end
         rescue => e
-          unless e.response
+          unless e.respond_to? :response
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
             FHIR.logger.error "PATCH - Request: #{url} failed! No response from server: #{e}"
@@ -677,7 +677,7 @@ module FHIR
         begin
           response = @client.delete(url, headers: headers)
         rescue => e
-          unless e.response
+          unless e.respond_to? :response
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
             FHIR.logger.error "DELETE - Request: #{url} failed! No response from server: #{e}"
