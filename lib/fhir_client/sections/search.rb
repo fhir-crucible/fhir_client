@@ -32,7 +32,7 @@ module FHIR
                   headers[:content_type] = 'application/x-www-form-urlencoded'
                   post resource_url(options), nil, fhir_headers(headers)
                 else
-                  get resource_url(options), fhir_headers
+                  get resource_url(options), fhir_headers(headers)
                 end
         reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
@@ -45,7 +45,7 @@ module FHIR
                   headers[:content_type] = 'application/x-www-form-urlencoded'
                   post resource_url(options), nil, fhir_headers(headers)
                 else
-                  get resource_url(options), fhir_headers
+                  get resource_url(options), fhir_headers(headers)
                 end
         reply.resource = parse_reply(nil, format, reply)
         reply.resource_class = nil
