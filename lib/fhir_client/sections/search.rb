@@ -6,7 +6,7 @@ module FHIR
       #
       # @param klass The type of resource to be searched.
       # @param options A hash of options used to construct the search query.
-      # @param headers A hash of headers used in the http request itself. 
+      # @param headers A hash of headers used in the http request itself.  
       # @return FHIR::ClientReply
       #
       def search(klass, options = {}, format = @default_format, headers = {})
