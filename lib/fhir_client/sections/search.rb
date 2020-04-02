@@ -6,6 +6,7 @@ module FHIR
       #
       # @param klass The type of resource to be searched.
       # @param options A hash of options used to construct the search query.
+      # @param headers A hash of headers used in the http request itself.
       # @return FHIR::ClientReply
       #
       def search(klass, options = {}, format = @default_format)
@@ -29,7 +30,7 @@ module FHIR
         reply = if options[:search] && options[:search][:flag]
                   post resource_url(options), nil, fhir_headers({content_type: 'application/x-www-form-urlencoded'})
                 else
-                  get resource_url(options), fhir_headers
+                  get resource_url(options), fhir_headers(headers)
                 end
         reply.resource = parse_reply(klass, format, reply)
         reply.resource_class = klass
@@ -41,7 +42,7 @@ module FHIR
         reply = if options[:search] && options[:search][:flag]
                   post resource_url(options), nil, fhir_headers({content_type: 'application/x-www-form-urlencoded'})
                 else
-                  get resource_url(options), fhir_headers
+                  get resource_url(options), fhir_headers(headers)
                 end
         reply.resource = parse_reply(nil, format, reply)
         reply.resource_class = nil
