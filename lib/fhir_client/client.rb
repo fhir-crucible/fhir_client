@@ -165,6 +165,43 @@ module FHIR
       @client = client.client_credentials.get_token
     end
 
+    # Enable OAuth authentication through the use of access and refresh tokens
+    # client -- client id
+    # secret -- client secret
+    # options -- hash of options
+    #   access_token: Current access_token
+    #   refresh_token: a token that is used to obtain an new access_token when it
+    #                  expires or does not currently exist
+    #   authorize_path -- absolute path of authorization endpoint
+    #   token_path -- absolute path of token endpoint
+    #   auto_configure -- whether or not to configure the oauth endpoints from the servers capability statement
+    #  Addtional options can be passed in as supported by the OAuth2::AccessToken class
+    def set_auth_from_token(client, secret, options)
+      FHIR.logger.info 'Configuring the client to use OAuth2 access token authentication.'
+
+      raise  "Must provide an access_token or a refresh_token" if options[:access_token].nil? &&  options[:refresh_token].nil?
+      token = options.delete(:access_token)
+      auto_configure = options.delete(:auto_configure)
+      client_options = {
+        authorize_url: options.delete(:authorize_path),
+        token_url: options.delete(:token_path)
+      }
+      client_options = get_oauth2_metadata_from_conformance(false) if auto_configure
+      # dont set befor call to capability statement, it will fail
+      @use_oauth2_auth = true
+      @use_basic_auth = false
+      @security_headers = {}
+
+      client = OAuth2::Client.new(client, secret, client_options)
+
+      access_token = OAuth2::AccessToken.new(client, token, options)
+      @client = access_token
+      if access_token.refresh_token && access_token.expired?
+        @client = access_token.refresh!
+      end
+      @client
+    end
+
     # Get the OAuth2 server and endpoints from the capability statement
     # (the server should not require OAuth2 or other special security to access
     # the capability statement).
