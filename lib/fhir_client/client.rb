@@ -737,8 +737,6 @@ module FHIR
       end
     end
 
-    private
-
     def refresh_oauth2_session
       return unless @use_oauth2_auth
       @client = @client.refresh! if (@client.expired? && @client.refresh_token)
