@@ -23,3 +23,7 @@ require_relative 'fhir_client/version'
 Dir.glob(File.join(root, 'fhir_client', 'model', '**', '*.rb')).each do |file|
   require file
 end
+
+Dir.glob(File.join(root, 'fhir_client', 'client', '**', '*.rb')).each do |file|
+  require file
+end

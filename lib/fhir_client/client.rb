@@ -416,317 +416,52 @@ module FHIR
       FHIR::ResourceAddress.convert_symbol_headers(headers)
     end
 
-    def scrubbed_response_headers(result)
-      result.each_key do |k|
-        v = result[k]
-        result[k] = v[0] if v.is_a? Array
-      end
-    end
-
     def get(path, headers = {})
-      url = Addressable::URI.parse(build_url(path)).to_s
-      FHIR.logger.info "GETTING: #{url}"
-      headers = clean_headers(headers) unless headers.empty?
-      if @use_oauth2_auth
-        # @client.refresh!
-        begin
-          response = @client.get(url, headers: headers)
-        rescue => e
-          if !e.respond_to?(:response) || e.response.nil?
-            # Re-raise the client error if there's no response. Otherwise, logging
-            # and other things break below!
-            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
-            raise # Re-raise the same error we caught.
-          end
-          response = e.response if e.response
-        end
-        req = {
-          method: :get,
-          url: url,
-          path: url.gsub(@base_service_url, ''),
-          headers: headers,
-          payload: nil
-        }
-        res = {
-          code: response.status.to_s,
-          headers: response.headers,
-          body: response.body
-        }
-        if url.end_with?('/metadata')
-          FHIR.logger.debug "GET - Request: #{req}, Response: [too large]"
-        else
-          FHIR.logger.debug "GET - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        end
-        @reply = FHIR::ClientReply.new(req, res, self)
-      else
-        headers.merge!(@security_headers) if @use_basic_auth
-        begin
-          response = @client.get(url, headers)
-        rescue RestClient::SSLCertificateNotVerified => sslerr
-          FHIR.logger.error "SSL Error: #{url}"
-          req = {
-            method: :get,
-            url: url,
-            path: url.gsub(@base_service_url, ''),
-            headers: headers,
-            payload: nil
-          }
-          res = {
-            code: nil,
-            headers: nil,
-            body: sslerr.message
-          }
-          @reply = FHIR::ClientReply.new(req, res, self)
-          return @reply
-        rescue => e
-          if !e.respond_to?(:response) || e.response.nil?
-            # Re-raise the client error if there's no response. Otherwise, logging
-            # and other things break below!
-            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
-            raise # Re-raise the same error we caught.
-          end
-          response = e.response
-        end
-        if url.end_with?('/metadata')
-          FHIR.logger.debug "GET - Request: #{response.request.to_json}, Response: [too large]"
-        else
-          FHIR.logger.debug "GET - Request: #{response.request.to_json}, Response: #{response.body.force_encoding('UTF-8')}"
-        end
-        response.request.args[:path] = response.request.args[:url].gsub(@base_service_url, '')
-        headers = response.headers.each_with_object({}) { |(k, v), h| h[k.to_s.tr('_', '-')] = v.to_s; h }
-        res = {
-          code: response.code,
-          headers: scrubbed_response_headers(headers),
-          body: response.body
-        }
-
-        @reply = FHIR::ClientReply.new(response.request.args, res, self)
-      end
+      request :get, path, headers
     end
 
     def post(path, resource, headers)
-      url = URI(build_url(path)).to_s
-      FHIR.logger.info "POSTING: #{url}"
-      headers = clean_headers(headers)
-      payload = request_payload(resource, headers) if resource
-      if @use_oauth2_auth
-        # @client.refresh!
-        begin
-          response = @client.post(url, headers: headers, body: payload)
-        rescue => e
-          if !e.respond_to?(:response) || e.response.nil?
-            # Re-raise the client error if there's no response. Otherwise, logging
-            # and other things break below!
-            FHIR.logger.error "POST - Request: #{url} failed! No response from server: #{e}"
-            raise # Re-raise the same error we caught.
-          end
-          response = e.response if e.response
-        end
-        req = {
-          method: :post,
-          url: url,
-          path: url.gsub(@base_service_url, ''),
-          headers: headers,
-          payload: payload
-        }
-        res = {
-          code: response.status.to_s,
-          headers: response.headers,
-          body: response.body
-        }
-        FHIR.logger.debug "POST - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        @reply = FHIR::ClientReply.new(req, res, self)
-      else
-        headers.merge!(@security_headers) if @use_basic_auth
-        @client.post(url, payload, headers) do |resp, request, result|
-          FHIR.logger.debug "POST - Request: #{request.to_json}\nResponse:\nResponse Headers: #{scrubbed_response_headers(result.each_key {})} \nResponse Body: #{resp.force_encoding('UTF-8')}"
-          request.args[:path] = url.gsub(@base_service_url, '')
-          res = {
-            code: result.code,
-            headers: scrubbed_response_headers(result.each_key {}),
-            body: resp
-          }
-          @reply = FHIR::ClientReply.new(request.args, res, self)
-        end
-      end
+      request :post, path, headers, resource
     end
 
     def put(path, resource, headers)
-      url = URI(build_url(path)).to_s
-      FHIR.logger.info "PUTTING: #{url}"
-      headers = clean_headers(headers)
-      payload = request_payload(resource, headers) if resource
-      if @use_oauth2_auth
-        # @client.refresh!
-        begin
-          response = @client.put(url, headers: headers, body: payload)
-        rescue => e
-          if !e.respond_to?(:response) || e.response.nil?
-            # Re-raise the client error if there's no response. Otherwise, logging
-            # and other things break below!
-            FHIR.logger.error "PUT - Request: #{url} failed! No response from server: #{e}"
-            raise # Re-raise the same error we caught.
-          end
-          response = e.response if e.response
-        end
-        req = {
-          method: :put,
-          url: url,
-          path: url.gsub(@base_service_url, ''),
-          headers: headers,
-          payload: payload
-        }
-        res = {
-          code: response.status.to_s,
-          headers: response.headers,
-          body: response.body
-        }
-        FHIR.logger.debug "PUT - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        @reply = FHIR::ClientReply.new(req, res, self)
-      else
-        headers.merge!(@security_headers) if @use_basic_auth
-        @client.put(url, payload, headers) do |resp, request, result|
-          FHIR.logger.debug "PUT - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
-          request.args[:path] = url.gsub(@base_service_url, '')
-          res = {
-            code: result.code,
-            headers: scrubbed_response_headers(result.each_key {}),
-            body: resp
-          }
-          @reply = FHIR::ClientReply.new(request.args, res, self)
-        end
-      end
+      request :put, path, headers, resource
     end
 
-    def patch(path, patchset, headers)
-      url = URI(build_url(path)).to_s
-      FHIR.logger.info "PATCHING: #{url}"
-      headers = clean_headers(headers)
-      payload = request_patch_payload(patchset, headers['Content-Type'])
-      if @use_oauth2_auth
-        # @client.refresh!
-        begin
-          response = @client.patch(url, headers: headers, body: payload)
-        rescue => e
-          if !e.respond_to?(:response) || e.response.nil?
-            # Re-raise the client error if there's no response. Otherwise, logging
-            # and other things break below!
-            FHIR.logger.error "PATCH - Request: #{url} failed! No response from server: #{e}"
-            raise # Re-raise the same error we caught.
-          end
-          response = e.response if e.response
-        end
-        req = {
-          method: :patch,
-          url: url,
-          path: url.gsub(@base_service_url, ''),
-          headers: headers,
-          payload: payload
-        }
-        res = {
-          code: response.status.to_s,
-          headers: response.headers,
-          body: response.body
-        }
-        FHIR.logger.debug "PATCH - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        @reply = FHIR::ClientReply.new(req, res, self)
-      else
-        headers.merge!(@security_headers) if @use_basic_auth
-        begin
-          @client.patch(url, payload, headers) do |resp, request, result|
-            FHIR.logger.debug "PATCH - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
-            request.args[:path] = url.gsub(@base_service_url, '')
-            res = {
-              code: result.code,
-              headers: scrubbed_response_headers(result.each_key {}),
-              body: resp
-            }
-            @reply = FHIR::ClientReply.new(request.args, res, self)
-          end
-        rescue => e
-          if !e.respond_to?(:response) || e.response.nil?
-            # Re-raise the client error if there's no response. Otherwise, logging
-            # and other things break below!
-            FHIR.logger.error "PATCH - Request: #{url} failed! No response from server: #{e}"
-            raise # Re-raise the same error we caught.
-          end
-          req = {
-            method: :patch,
-            url: url,
-            path: url.gsub(@base_service_url, ''),
-            headers: headers,
-            payload: payload
-          }
-          res = {
-            body: e.message
-          }
-          FHIR.logger.debug "PATCH - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-          FHIR.logger.error "PATCH Error: #{e.message}"
-          @reply = FHIR::ClientReply.new(req, res, self)
-        end
-      end
+    def patch(path, resource, headers)
+      request :patch, path, headers, resource
     end
 
-    def delete(path, headers)
-      url = URI(build_url(path)).to_s
-      FHIR.logger.info "DELETING: #{url}"
-      headers = clean_headers(headers)
-      if @use_oauth2_auth
-        # @client.refresh!
-        begin
-          response = @client.delete(url, headers: headers)
-        rescue => e
-          if !e.respond_to?(:response) || e.response.nil?
-            # Re-raise the client error if there's no response. Otherwise, logging
-            # and other things break below!
-            FHIR.logger.error "DELETE - Request: #{url} failed! No response from server: #{e}"
-            raise # Re-raise the same error we caught.
-          end
-          response = e.response if e.response
-        end
-        req = {
-          method: :delete,
-          url: url,
-          path: url.gsub(@base_service_url, ''),
-          headers: headers,
-          payload: nil
-        }
-        res = {
-          code: response.status.to_s,
-          headers: response.headers,
-          body: response.body
-        }
-        FHIR.logger.debug "DELETE - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
-        @reply = FHIR::ClientReply.new(req, res, self)
-      else
-        headers.merge!(@security_headers) if @use_basic_auth
-        @client.delete(url, headers) do |resp, request, result|
-          FHIR.logger.debug "DELETE - Request: #{request.to_json}, Response: #{resp.force_encoding('UTF-8')}"
-          request.args[:path] = url.gsub(@base_service_url, '')
-          res = {
-            code: result.code,
-            headers: scrubbed_response_headers(result.each_key {}),
-            body: resp
-          }
-          @reply = FHIR::ClientReply.new(request.args, res, self)
-        end
-      end
+    def delete(path, headers = {})
+      request :delete, path, headers
     end
 
     def head(path, headers)
-      headers.merge!(@security_headers) unless @security_headers.blank?
-      url = URI(build_url(path)).to_s
-      FHIR.logger.info "HEADING: #{url}"
-      RestClient.head(url, headers) do |response, request, result|
-        FHIR.logger.debug "HEAD - Request: #{request.to_json}, Response: #{response.force_encoding('UTF-8')}"
-        request.args[:path] = url.gsub(@base_service_url, '')
-        res = {
-          code: result.code,
-          headers: scrubbed_response_headers(result.each_key {}),
-          body: response
-        }
-        @reply = FHIR::ClientReply.new(request.args, res, self)
+      request :head, path, headers
+    end
+    
+    def request(action, path, headers, resource = nil)
+      # Grab the name of the class
+      # If 
+      module_name = @client.class
+      module_name = @client if [Object, Module].include? module_name
+      resolver    = FHIR::Client::RestProviders.const_get(module_name.to_s)
+
+      url = Addressable::URI.parse(build_url(path)).to_s
+      FHIR.logger.info "#{action.to_s.upcase} #{url}"
+
+      headers = clean_headers(headers) unless headers.empty?
+      case action
+      when :patch
+        payload = request_patch_payload(resource, headers['Content-Type'])
+      else
+        payload = request_payload(resource, headers) if resource
       end
+      @reply = resolver.request action, self, url,
+                    base_service_url: @base_service_url,
+                    credentials: @security_headers,
+                    headers: headers,
+                    body: payload
     end
 
     def build_url(path)
