@@ -385,7 +385,8 @@ module FHIR
         elsif format_specified.downcase.include?('json')
           resource.to_json
         elsif format_specified.downcase == 'application/x-www-form-urlencoded'
-          # special case where this is a search body and not a resource
+          # Special case where this is a search body and not a resource.
+          # Leave as hash because underlying libraries automatically URL encode it.
           resource
         else
           resource.to_xml
