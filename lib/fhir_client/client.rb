@@ -374,6 +374,7 @@ module FHIR
     end
 
     # Extract the request payload in the specified format, defaults to XML
+    # Note that the payload is usually a resource, but could be a form post for searches depending on content type
     def request_payload(resource, headers)
       if headers
         format_specified = headers['Content-Type']
@@ -383,6 +384,9 @@ module FHIR
           resource.to_xml
         elsif format_specified.downcase.include?('json')
           resource.to_json
+        elsif format_specified.downcase == 'application/x-www-form-urlencoded'
+          # special case where this is a search body and not a resource
+          resource
         else
           resource.to_xml
         end
