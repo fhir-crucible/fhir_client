@@ -3,6 +3,9 @@
 require 'bundler/setup'
 require 'fhir_client'
 
+# Default to INFO because Debug level makes the console hard to use
+FHIR.logger.level = Logger::INFO
+
 # You can add fixtures and/or initialization code here to make experimenting
 # with your gem easier. You can also use a different console, if you like.
 
