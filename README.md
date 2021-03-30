@@ -151,9 +151,14 @@ client.destroy(FHIR::Patient, patient_id)
 
 ### Searching
 ```ruby
+# via GET
 reply = client.search(FHIR::Patient, search: {parameters: {name: 'P'}})
+
+# via POST
+reply = client.search(FHIR::Patient, search: {body: {name: 'P'}})
+
 bundle = reply.resource
-patient = bundle.entry.first.resource
+patient = bundle&.entry&.first&.resource
 ```
 
 ### Fetching a Bundle
