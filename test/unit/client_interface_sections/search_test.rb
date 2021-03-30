@@ -7,7 +7,7 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
   def empty_search_response
     {
       headers: {
-        'Accept': 'application/fhir+json'
+        'Content-Type': 'application/fhir+json'
       },
       body: { resourceType: 'Bundle' }.to_json
     }
