@@ -31,7 +31,7 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
   end
 
   def test_get_search
-    stub_request(:get, 'http://search-test/Patient?address=123%20Sesame%20Street&given=name').
+    search_response = stub_request(:get, 'http://search-test/Patient?address=123%20Sesame%20Street&given=name').
       to_return(empty_search_response)
 
     reply = @client.search(
@@ -45,8 +45,7 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
         }
       }
     )
-    assert_equal 'http://search-test/Patient?address=123%20Sesame%20Street&given=name',
-                 reply.request[:url]
+    assert_requested(search_response)
   end
   def test_post_search
     search_body = {
@@ -56,7 +55,7 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
 
     # Stub this request in a slightly more difficult manner to completely ensure that requests
     # contain encoded bodies and there isn't magic obscuring the fact that we are not.
-    stub_request(:post, 'http://search-test/Patient/_search').
+    search_response = stub_request(:post, 'http://search-test/Patient/_search').
       with do |request|
         ['address=123+Sesame+Street&given=name', 'given=name&address=123+Sesame+Street'].include?(request.body) &&
         request.headers['Content-Type'] == 'application/x-www-form-urlencoded'
@@ -70,12 +69,11 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
         }
       }
     )
-
-    assert_equal 'http://search-test/Patient/_search', reply.request[:url]
+    assert_requested(search_response)
   end
 
   def test_post_search_no_body
-    stub_request(:post, 'http://search-test/Patient/_search?address=123%20Sesame%20Street&given=name').
+    search_response = stub_request(:post, 'http://search-test/Patient/_search?address=123%20Sesame%20Street&given=name').
       with(headers: { 'Content-Type' => 'application/x-www-form-urlencoded' }).
       to_return(empty_search_response)
 
@@ -91,14 +89,11 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
         }
       }
     )
-
-    assert_equal 'http://search-test/Patient/_search?address=123%20Sesame%20Street&given=name',
-                 reply.request[:url]
-
+    assert_requested(search_response)
   end
 
   def test_post_search_body_and_params
-    stub_request(:post, 'http://search-test/Patient/_search?address=123%20Sesame%20Street').
+    search_response = stub_request(:post, 'http://search-test/Patient/_search?address=123%20Sesame%20Street').
       with(body: {given: 'name'}, headers: {"Content-Type" => 'application/x-www-form-urlencoded'}).
       to_return(empty_search_response)
 
@@ -115,15 +110,13 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
         }
       }
     )
-
-    assert_equal 'http://search-test/Patient/_search?address=123%20Sesame%20Street',
-                 reply.request[:url]
+    assert_requested(search_response)
   end
 
   # It does not appear that this is still in the specification (if it ever was)
   # Investigate removing.  Keeping test until code is removed.
   def test_get_search_existing
-    stub_request(:get, 'http://search-test/Patient/1?address=123%20Sesame%20Street&given=name').
+    search_response = stub_request(:get, 'http://search-test/Patient/1?address=123%20Sesame%20Street&given=name').
       to_return(empty_search_response)
 
     reply = @client.search_existing(
@@ -137,12 +130,11 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
         }
       }
     )
-    assert_equal 'http://search-test/Patient/1?address=123%20Sesame%20Street&given=name',
-                 reply.request[:url]
+    assert_requested(search_response)
   end
 
   def test_get_search_all
-    stub_request(:get, 'http://search-test/?address=123%20Sesame%20Street&given=name').
+    search_response = stub_request(:get, 'http://search-test/?address=123%20Sesame%20Street&given=name').
       to_return(empty_search_response)
 
     reply = @client.search_all(
@@ -155,8 +147,7 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
         }
       }
     )
-    assert_equal 'http://search-test/?address=123%20Sesame%20Street&given=name',
-                 reply.request[:url]
+    assert_requested(search_response)
   end
 
 end
