@@ -47,6 +47,26 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
     )
     assert_requested(search_response)
   end
+
+  def test_get_search_flag_false
+    search_response = stub_request(:get, 'http://search-test/Patient?address=123%20Sesame%20Street&given=name').
+      to_return(empty_search_response)
+
+    reply = @client.search(
+      FHIR::Patient,
+      {
+        search: {
+          flag: false,
+          parameters: {
+            given: 'name',
+            address: '123 Sesame Street'
+          }
+        }
+      }
+    )
+    assert_requested(search_response)
+  end
+
   def test_post_search
     search_body = {
             given: 'name',
