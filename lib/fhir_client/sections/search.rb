@@ -12,7 +12,7 @@ module FHIR
         options[:resource] = klass
         options[:format] = format
 
-        reply = if options.dig(:search, :flag).nil? && options.dig(:search, :body).nil?
+        reply = if options.dig(:search, :flag) != true && options.dig(:search, :body).nil?
                   get resource_url(options), fhir_headers
                 else
                   options[:search][:flag] = true
