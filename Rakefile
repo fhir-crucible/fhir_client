@@ -19,7 +19,7 @@ task :rubocop do
   RuboCop::RakeTask.new
 end
 
-task test: [:rubocop] do
+task :test do
   system('open coverage/index.html')
 end
 
