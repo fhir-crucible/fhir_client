@@ -2,17 +2,14 @@ module FHIR
   module ModelExtras
 
     def self.included base
-      base.send :include, InstanceMethods
+      base.include InstanceMethods
       base.extend ClassMethods
+      base.attr_writer :client
     end
 
     module InstanceMethods
       def client
-        FHIR::Model.client
-      end
-
-      def client=(client)
-        FHIR::Model.client = client
+        @client || FHIR::Model.client
       end
 
       def vread(version_id)
