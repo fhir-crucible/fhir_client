@@ -132,8 +132,11 @@ module FHIR
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'onlyCertainMatches', 'Boolean', options[:onlyCertainMatches]) unless options[:onlyCertainMatches].nil?
         add_parameter(params, 'count', 'Integer', options[:matchCount]) if options[:matchCount].is_a?(Integer)
-        post resource_url(options), params, fhir_headers({content_type: "#{format || @default_format}",
-                                                          accept: "#{format || @default_format}"})
+        post(
+          resource_url(options),
+          params,
+          fhir_headers({content_type: "#{format || @default_format}", accept: "#{format || @default_format}"})
+        ).tap { |reply| set_client_on_resource(reply.resource) }
       end
 
       #
@@ -154,7 +157,8 @@ module FHIR
         params = versioned_resource_class('Parameters').new
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'profile', 'Uri', options[:profile_uri]) unless options[:profile_uri].nil?
-        post resource_url(options), params, fhir_headers(headers)
+        post(resource_url(options), params, fhir_headers(headers))
+          .tap { |reply| set_client_on_resource(reply.resource) }
       end
 
       def validate_existing(resource, id, options = {}, format = @default_format)
@@ -165,7 +169,8 @@ module FHIR
         params = versioned_resource_class('Parameters').new
         add_resource_parameter(params, 'resource', resource)
         add_parameter(params, 'profile', 'Uri', options[:profile_uri]) unless options[:profile_uri].nil?
-        post resource_url(options), params, fhir_headers(headers)
+        post(resource_url(options), params, fhir_headers(headers))
+          .tap { |reply| set_client_on_resource(reply.resource) }
       end
 
       private

@@ -345,8 +345,10 @@ module FHIR
     end
 
     def set_client_on_resource(resource)
+      return if resource.nil?
+
       resource.client = self
-      resource.each_element do |element, _, path|
+      resource.each_element do |element, _, _|
         element.client = self if element.is_a?(Reference) || element.respond_to?(:resourceType)
       end
     end
