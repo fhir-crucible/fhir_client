@@ -148,4 +148,17 @@ class ReferencesExtrasTest < Test::Unit::TestCase
     assert res.nil?
   end
 
+  def test_reference_read_client
+    reference_client = FHIR::Client.new('reference')
+    model_client = FHIR::Client.new('model')
+
+    ref = FHIR::Reference.new({'reference': 'Patient/foo'})
+    ref.client = reference_client
+    FHIR::Model.client = model_client
+
+    request = stub_request(:get, /reference/)
+    ref.read
+
+    assert_requested(request)
+  end
 end
