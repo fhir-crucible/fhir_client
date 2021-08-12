@@ -7,7 +7,9 @@ require 'test/unit'
 require 'webmock/test_unit'
 
 require 'fhir_client'
-FHIR.logger.level = Logger::ERROR
+FHIR.logger = Logger.new('/dev/null')
+FHIR::STU3.logger = Logger.new('/dev/null')
+FHIR::DSTU2.logger = Logger.new('/dev/null')
 
 ACCEPT_REGEX_XML = /^(\s*application\/fhir\+xml\s*)(;\s*charset\s*=\s*utf-8\s*)?$/
 ACCEPT_REGEX_JSON = /^(\s*application\/fhir\+json\s*)(;\s*charset\s*=\s*utf-8\s*)?$/

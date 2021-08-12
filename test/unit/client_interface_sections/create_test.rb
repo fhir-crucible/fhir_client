@@ -85,4 +85,28 @@ class ClientInterfaceCreateTest < Test::Unit::TestCase
     assert reply.id == 'foo'
   end
 
+  def test_create_sets_client_on_resource
+    patient = FHIR::Patient.new({'gender'=>'female', 'active'=>true, 'deceasedBoolean'=>false})
+    outcome = FHIR::OperationOutcome.new({'issue'=>[{'code'=>'informational', 'severity'=>'information', 'diagnostics'=>'Successfully created "Patient/foo" in 0 ms'}]})
+
+    stub_request(:post, /create-test/)
+        .with(headers: {'Content-Type'=>'application/fhir+json;charset=utf-8'})
+        .to_return(status: 201,
+                   body: outcome.to_json,
+                   headers: {'Content-Type'=>'application/fhir+json',
+                             'Location'=>'http://create-test/Patient/foo/_history/0',
+                             'ETag'=>'W/"foo"',
+                             'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
+    client.default_json
+    client.use_r4
+    reply = client.create(patient)
+    resource = reply.resource
+
+    assert_equal(client, resource.client)
+
+    FHIR::Model.client = FHIR::Client.new('abc')
+
+    assert_equal(client, resource.client)
+  end
+
 end

@@ -74,6 +74,7 @@ module FHIR
         rescue
           reply.resource = nil
         end
+        set_client_on_resource(reply.resource)
         reply.resource_class = reply.resource.class
         reply
       end

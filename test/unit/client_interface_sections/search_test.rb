@@ -170,4 +170,46 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
     assert_requested(search_response)
   end
 
+  def test_search_sets_client
+    condition = FHIR::Condition.new(
+      resourceType: 'Condition',
+      subject: {
+        reference: 'Patient/123'
+      }
+    )
+    bundle = FHIR::Bundle.new(
+      entry: [
+        {
+          resource: condition
+        }
+      ]
+    )
+
+    search_response =
+      stub_request(:get, 'http://search-test/Condition?subject=Patient/123')
+        .to_return(
+          headers: { 'Content-Type': 'application/fhir+json' },
+          body: bundle.to_json
+        )
+
+    reply = @client.search(
+      FHIR::Condition,
+      { search: { parameters: { subject: 'Patient/123' } } }
+    )
+
+    bundle_reply = reply.resource
+    entry = bundle_reply.entry.first.resource
+    reference = entry.subject
+
+    assert_requested(search_response)
+    assert_equal(@client, bundle_reply.client)
+    assert_equal(@client, entry.client)
+    assert_equal(@client, reference.client)
+
+    FHIR::Model.client = FHIR::Client.new('abc')
+
+    assert_equal(@client, bundle_reply.client)
+    assert_equal(@client, entry.client)
+    assert_equal(@client, reference.client)
+  end
 end

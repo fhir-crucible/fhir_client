@@ -226,7 +226,7 @@ module FHIR
           resource.id = FHIR::ResourceAddress.pull_out_id(resource.class.name.demodulize, reply.self_link)
           reply.resource = resource # just send back the submitted resource
         end
-        reply.resource.client = self
+        set_client_on_resource(reply.resource)
         reply.resource_class = resource.class
         reply
       end

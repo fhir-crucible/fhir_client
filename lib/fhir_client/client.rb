@@ -315,33 +315,42 @@ module FHIR
     def parse_reply(klass, format, response)
       FHIR.logger.debug "Parsing response with {klass: #{klass}, format: #{format}, code: #{response.code}}."
       return nil unless [200, 201].include? response.code
-      res = nil
-      begin
-        res = if(@fhir_version == :dstu2 || klass&.ancestors&.include?(FHIR::DSTU2::Model))
-                if(format.include?('xml'))
-                  FHIR::DSTU2::Xml.from_xml(response.body)
-                else
-                  FHIR::DSTU2::Json.from_json(response.body)
-                end
-              elsif(@fhir_version == :r4 || klass&.ancestors&.include?(FHIR::Model))
-                if(format.include?('xml'))
-                  FHIR::Xml.from_xml(response.body)
-                else
-                  FHIR::Json.from_json(response.body)
-                end
-              else
-                if(format.include?('xml'))
-                  FHIR::STU3::Xml.from_xml(response.body)
-                else
-                  FHIR::STU3::Json.from_json(response.body)
-                end
-              end
-        res.client = self unless res.nil?
-      rescue => e
-        FHIR.logger.error "Failed to parse #{format} as resource #{klass}: #{e.message}"
-        res = nil
-      end
+      res =
+        begin
+          if(@fhir_version == :dstu2 || klass&.ancestors&.include?(FHIR::DSTU2::Model))
+            if(format.include?('xml'))
+              FHIR::DSTU2::Xml.from_xml(response.body)
+            else
+              FHIR::DSTU2::Json.from_json(response.body)
+            end
+          elsif(@fhir_version == :r4 || klass&.ancestors&.include?(FHIR::Model))
+            if(format.include?('xml'))
+              FHIR::Xml.from_xml(response.body)
+            else
+              FHIR::Json.from_json(response.body)
+            end
+          else
+            if(format.include?('xml'))
+              FHIR::STU3::Xml.from_xml(response.body)
+            else
+              FHIR::STU3::Json.from_json(response.body)
+            end
+          end
+        rescue => e
+          FHIR.logger.error "Failed to parse #{format} as resource #{klass}: #{e.message}"
+          nil
+        end
+      set_client_on_resource(res) unless res.nil?
       res
+    end
+
+    def set_client_on_resource(resource)
+      return if resource.nil?
+
+      resource.client = self
+      resource.each_element do |element, _, _|
+        element.client = self if element.is_a?(Reference) || element.respond_to?(:resourceType)
+      end
     end
 
     def strip_base(path)
