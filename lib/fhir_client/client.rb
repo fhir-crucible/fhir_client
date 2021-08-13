@@ -349,7 +349,9 @@ module FHIR
 
       resource.client = self
       resource.each_element do |element, _, _|
-        element.client = self if element.is_a?(Reference) || element.respond_to?(:resourceType)
+        if element.is_a?(Reference) || element.is_a?(STU3::Reference) || element.is_a?(DSTU2::Reference) || element.respond_to?(:resourceType)
+          element.client = self
+        end
       end
     end
 
