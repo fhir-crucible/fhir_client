@@ -30,7 +30,7 @@ class ClientInterfaceUpdateTest < Test::Unit::TestCase
     outcome = FHIR::OperationOutcome.new({'issue'=>[{'code'=>'informational', 'severity'=>'information', 'diagnostics'=>'Successfully updated "Patient/foo" in 0 ms'}]})
 
     stub_request(:patch, /Patient\/foo/).with(body: "[{\"op\":\"replace\",\"path\":\"/active/\",\"value\":\"false\"}]").to_return(status: 200, body: outcome.to_json, headers: {'Content-Type'=>'application/fhir+json', 'Location'=>'http://update-test/Patient/foo/_history/0', 'ETag'=>'W/"foo"', 'Last-Modified'=>Time.now.strftime("%a, %e %b %Y %T %Z")})
-    reply = FHIR::Patient.partial_update(patient.id, patchset)
+    reply = FHIR::Patient.partial_update(patient.id, patchset, {}, client)
     assert reply.is_a?(FHIR::DSTU2::OperationOutcome)
   end
 

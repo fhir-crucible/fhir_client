@@ -104,7 +104,7 @@ module FHIR
         handle_response client.exception_class, client.conditional_create(model, params)
       end
 
-      def partial_update(id, patchset, options = {})
+      def partial_update(id, patchset, options = {}, client = self.client)
         handle_response client.exception_class, client.partial_update(self, id, patchset, options)
       end
 
