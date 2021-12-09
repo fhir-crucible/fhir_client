@@ -161,4 +161,30 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
     assert_requested(request)
   end
+
+  def test_reference_read_optional_client
+    reference_client = FHIR::Client.new('reference')
+    custom_client = FHIR::Client.new('custom')
+
+    ref = FHIR::Reference.new({'reference': 'Patient/foo'})
+    ref.client = reference_client
+
+    request = stub_request(:get, /custom/)
+    ref.read(custom_client)
+
+    assert_requested(request)
+  end
+
+  def test_reference_vread_optional_client
+    reference_client = FHIR::Client.new('reference')
+    custom_client = FHIR::Client.new('custom')
+
+    ref = FHIR::Reference.new({'reference': 'Patient/foo/_history/1'})
+    ref.client = reference_client
+
+    request = stub_request(:get, /custom/)
+    ref.vread(custom_client)
+
+    assert_requested(request)
+  end
 end

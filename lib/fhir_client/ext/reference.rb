@@ -54,7 +54,7 @@ module FHIR
       parts[:base_uri]
     end
 
-    def read
+    def read(client = self.client)
       return if !(relative? || absolute?)
       if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
         read_client = client
@@ -64,7 +64,7 @@ module FHIR
       resource_class.read(reference_id, read_client)
     end
 
-    def vread
+    def vread(client = self.client)
       return if !(relative? || absolute?) || version_id.blank?
       if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
         read_client = client
