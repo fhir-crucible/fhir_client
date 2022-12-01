@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'fhir_stu3_models', '>= 3.1.1'
   spec.add_dependency 'fhir_dstu2_models', '>= 1.1.1'
   spec.add_dependency 'nokogiri', '>= 1.10.4'
-  spec.add_dependency 'oauth2', '~> 1.1'
+  spec.add_dependency 'oauth2', '>= 1.1'
   spec.add_dependency 'rack', '>= 1.5'
   spec.add_dependency 'rest-client', '~> 2.0'
   spec.add_dependency 'tilt', '>= 1.1'
