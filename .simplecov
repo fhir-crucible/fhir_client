@@ -1,9 +1,5 @@
 require 'simplecov'
 SimpleCov.command_name 'Unit Tests'
-SimpleCov.start do
-  add_filter "test/"
-  add_group "Library", "lib"
-end
 
 class SimpleCov::Formatter::QualityFormatter
   def format(result)

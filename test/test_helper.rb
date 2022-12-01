@@ -1,7 +1,9 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'simplecov'
-SimpleCov.start
-
+SimpleCov.start do
+  add_filter "test/"
+  add_group "Library", "lib"
+end
 require 'pry'
 require 'test/unit'
 require 'webmock/test_unit'
