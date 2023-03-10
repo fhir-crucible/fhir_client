@@ -1,23 +1,23 @@
 module FHIR
   module BundleExtras
     def self_link
-      link.select { |n| n.relation == 'self' }.first
+      link.find { |n| n.relation == 'self' }
     end
 
     def first_link
-      link.select { |n| n.relation == 'first' }.first
+      link.find { |n| n.relation == 'first' }
     end
 
     def last_link
-      link.select { |n| n.relation == 'last' }.first
+      link.find { |n| n.relation == 'last' }
     end
 
     def next_link
-      link.select { |n| n.relation == 'next' }.first
+      link.find { |n| n.relation == 'next' }
     end
 
     def previous_link
-      link.select { |n| n.relation == 'previous' || n.relation == 'prev' }.first
+      link.find { |n| n.relation == 'previous' || n.relation == 'prev' }
     end
 
     def get_by_id(id)

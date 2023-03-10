@@ -9,10 +9,10 @@ require 'active_support/all'
 FHIR.logger.level = Logger::INFO
 
 root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
-Dir.glob(File.join(root, 'fhir_client', 'sections', '**', '*.rb')).each do |file|
+Dir.glob(File.join(root, 'fhir_client', 'sections', '**', '*.rb')).sort.each do |file|
   require file
 end
-Dir.glob(File.join(root, 'fhir_client', 'ext', '**', '*.rb')).each do |file|
+Dir.glob(File.join(root, 'fhir_client', 'ext', '**', '*.rb')).sort.each do |file|
   require file
 end
 
@@ -25,6 +25,6 @@ require_relative 'fhir_client/patch_format'
 require_relative 'fhir_client/client_exception'
 require_relative 'fhir_client/version'
 
-Dir.glob(File.join(root, 'fhir_client', 'model', '**', '*.rb')).each do |file|
+Dir.glob(File.join(root, 'fhir_client', 'model', '**', '*.rb')).sort.each do |file|
   require file
 end
