@@ -453,6 +453,7 @@ module FHIR
 
     def get(path, headers = {})
       url = Addressable::URI.parse(build_url(path)).to_s
+      FHIR.logger.info "GETTING: #{url}"
       headers = clean_headers(headers) unless headers.empty?
       if @use_oauth2_auth
         # @client.refresh!
@@ -504,7 +505,6 @@ module FHIR
             body: sslerr.message
           }
           @reply = FHIR::ClientReply.new(req, res, self)
-          return @reply
         rescue => e
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
