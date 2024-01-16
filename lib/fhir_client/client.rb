@@ -538,6 +538,7 @@ module FHIR
 
     def post(path, resource, headers)
       url = URI(build_url(path)).to_s
+      FHIR.logger.info "POSTING: #{url}"
       headers = clean_headers(headers)
       payload = request_payload(resource, headers) if resource
       if @use_oauth2_auth
