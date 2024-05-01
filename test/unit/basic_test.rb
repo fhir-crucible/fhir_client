@@ -15,7 +15,7 @@ class BasicTest < Test::Unit::TestCase
     assert client.use_oauth2_auth == false
     assert client.use_basic_auth == true
     assert client.security_headers == {"Authorization"=>"Basic Y2xpZW50OnNlY3JldA==\n"}
-    assert client.client == RestClient
+    assert client.client.is_a?(Faraday::Connection)
   end
 
   def test_bearer_token_auth
@@ -24,7 +24,7 @@ class BasicTest < Test::Unit::TestCase
     assert client.use_oauth2_auth == false
     assert client.use_basic_auth == true
     assert client.security_headers == {"Authorization"=>"Bearer secret_token"}
-    assert client.client == RestClient
+    assert client.client.is_a?(Faraday::Connection)
 
   end
 
@@ -62,24 +62,24 @@ class BasicTest < Test::Unit::TestCase
       client.use_oauth2_auth = use_auth
       %i[get delete head].each do |method|
         stub = stub_request(method, /basic-test/).to_timeout
-        assert_raise(RestClient::RequestTimeout, RestClient::Exceptions::OpenTimeout) do
+        assert_raise(Faraday::RequestTimeoutError, Faraday::ConnectionFailed) do
           client.send(method, stubbed_path, format_headers)
           assert_requested stub
         end
         stub = stub_request(method, /basic-test/).to_raise(SocketError)
-        assert_raise(SocketError) do
+        assert_raise(Faraday::ConnectionFailed) do
           client.send(method, stubbed_path, format_headers)
           assert_requested stub
         end
       end
       %i[post put patch].each do |method|
         stub = stub_request(method, /basic-test/).to_timeout
-        assert_raise(RestClient::RequestTimeout, RestClient::Exceptions::OpenTimeout) do
+        assert_raise(Faraday::RequestTimeoutError, Faraday::ConnectionFailed) do
           client.send(method, stubbed_path, FHIR::Patient.new, format_headers)
           assert_requested stub
         end
         stub = stub_request(method, /basic-test/).to_raise(SocketError)
-        assert_raise(SocketError) do
+        assert_raise(Faraday::ConnectionFailed) do
           client.send(method, stubbed_path, FHIR::Patient.new, format_headers)
           assert_requested stub
         end

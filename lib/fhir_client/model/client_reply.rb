@@ -83,7 +83,7 @@ module FHIR
     end
 
     def self_link
-      (@response[:headers]['content-location'] || @response[:headers]['location']) unless @response.nil? || @response[:headers].nil?
+      (@response[:headers]['Content-Location'] || @response[:headers]['Location']) unless @response.nil? || @response[:headers].nil?
     end
 
     def body
