@@ -93,14 +93,10 @@ module FHIR
 
     def detect_version
       cap = capability_statement
-      if cap.is_a?(FHIR::CapabilityStatement)
-        use_r4
-      elsif cap.is_a?(FHIR::STU3::CapabilityStatement)
+      if cap.is_a?(FHIR::STU3::CapabilityStatement)
         use_stu3
       elsif cap.is_a?(FHIR::DSTU2::Conformance)
         use_dstu2
-      else
-        use_r4
       end
       # Should update the default_format when changing fhir_version
       @default_format = versioned_format_class
@@ -227,14 +223,9 @@ module FHIR
         token_url: nil
       }
       rest.security.extension.find{|x| x.url == oauth_extension}.extension.each do |ext|
-        case ext.url
-        when authorize_extension
+        if ext.url == authorize_extension || ext.url == "#{oauth_extension}\##{authorize_extension}"
           options[:authorize_url] = ext.value
-        when "#{oauth_extension}\##{authorize_extension}"
-          options[:authorize_url] = ext.value
-        when token_extension
-          options[:token_url] = ext.value
-        when "#{oauth_extension}\##{token_extension}"
+        elsif ext.url == token_extension || ext.url == "#{oauth_extension}\##{token_extension}"
           options[:token_url] = ext.value
         end
       end
@@ -389,18 +380,12 @@ module FHIR
     def request_payload(resource, headers)
       if headers
         format_specified = headers['Content-Type']
-        if format_specified.nil?
-          resource.to_xml
-        elsif format_specified.downcase.include?('xml')
+        if format_specified.nil? || format_specified.downcase.include?('xml')
           resource.to_xml
         elsif format_specified.downcase.include?('json')
           resource.to_json
         elsif format_specified.downcase == 'application/x-www-form-urlencoded'
-          # Special case where this is a search body and not a resource.
-          # Leave as hash because underlying libraries automatically URL encode it.
           resource
-        else
-          resource.to_xml
         end
       else
         resource.to_xml

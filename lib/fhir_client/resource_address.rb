@@ -33,7 +33,7 @@ module FHIR
     def self.convert_symbol_headers headers
       headers.inject({}) do |result, (key, value)|
         if key.is_a? Symbol
-          key = key.to_s.split(/_/).map(&:capitalize).join('-')
+          key = key.to_s.split("_").map(&:capitalize).join('-')
         end
         result[key] = value.to_s
         result

@@ -47,7 +47,7 @@ namespace :fhir do
     fhir_resources.each do |klass|
       reply = client.read_feed(klass)
       total = reply.resource.nil? ? 0 : reply.resource.total
-      total = reply.resource.each.reduce(0) { |s| s + 1 } if total.nil? && include_all
+      total = reply.resource.each.reduce(0) { |s, _| s + 1 } if total.nil? && include_all
       total = 'n/a' if total.nil?
       if total.to_s != "0" || display_zero
         counts[klass.name.demodulize.to_s] = total.to_s
@@ -63,6 +63,7 @@ namespace :fhir do
 
   desc 'delete all resources for a given server'
   task :clean, [:url] do |_t, args|
+    reply_codes = [405, 409]
     client = FHIR::Client.new(args.url)
     client.try_conformance_formats(FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     fhir_resources.each do |klass|
@@ -74,7 +75,7 @@ namespace :fhir do
         reply.resource.entry.each do |entry|
           unless entry.resource.nil?
             del_reply = client.destroy(klass, entry.resource.id)
-            skipped << "#{klass.name.demodulize}/#{entry.resource.id}" if [405, 409].include?(del_reply.code)
+            skipped << "#{klass.name.demodulize}/#{entry.resource.id}" if reply_codes.include?(del_reply.code)
           end
         end
         if skipped.empty?

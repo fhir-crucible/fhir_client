@@ -1,7 +1,11 @@
+require:
+  - rubocop-performance
+
 inherit_from: .rubocop_todo.yml
 
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 3.2
+  NewCops: enable
   Exclude:
     - '*.gemspec'
     - 'Gemfile*'
@@ -26,4 +30,7 @@ Performance/Casecmp:
   Enabled: false
 
 Naming:
+  Enabled: false
+
+Lint/EmptyBlock:
   Enabled: false

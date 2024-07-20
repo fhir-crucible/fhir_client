@@ -37,7 +37,7 @@ module FHIR
             p = versioned_resource_class('Parameters').new
             options[:operation][:parameters].each do |key, value|
               parameter = versioned_resource_class('Parameters::Parameter').new.from_hash(name: key.to_s)
-              parameter.method("value#{value[:type]}=").call(value[:value])
+              parameter.method(:"value#{value[:type]}=").call(value[:value])
               p.parameter << parameter
             end
           end
@@ -113,7 +113,7 @@ module FHIR
             p = versioned_resource_class('Parameters').new
             options[:operation][:parameters].each do |key, value|
               parameter = versioned_resource_class('Parameters::Parameter').new.from_hash(name: key.to_s)
-              parameter.method("value#{value[:type]}=").call(value[:value])
+              parameter.method(:"value#{value[:type]}=").call(value[:value])
               p.parameter << parameter
             end
           end
@@ -178,7 +178,7 @@ module FHIR
       def add_parameter(params, name, type, value)
         params.parameter ||= []
         parameter = versioned_resource_class('Parameters::Parameter').new.from_hash(name: name)
-        parameter.method("value#{type}=").call(value)
+        parameter.method(:"value#{type}=").call(value)
         params.parameter << parameter
       end
 

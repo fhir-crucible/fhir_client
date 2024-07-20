@@ -2,7 +2,7 @@ require 'bundler/gem_tasks'
 require 'rake/testtask'
 require 'rubocop/rake_task'
 
-Dir['lib/fhir_client/tasks/**/*.rake'].sort.each do |ext|
+Dir['lib/fhir_client/tasks/**/*.rake'].each do |ext|
   load ext
 end
 

@@ -28,7 +28,7 @@ module FHIR
     end
 
     def has_version?
-      /_history/.match reference.to_s
+      reference.to_s.include?('_history')
     end
 
     def reference_id
