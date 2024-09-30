@@ -77,6 +77,16 @@ module FHIR
       @default_format = versioned_format_class
     end
 
+    def use_r4b
+      @fhir_version = :r4b
+      @default_format = versioned_format_class
+    end
+
+    def use_r5
+      @fhir_version = :r5
+      @default_format = versioned_format_class
+    end
+
     #
     # Instructs the client to specify the minimal Prefer Header where applicable
     def use_minimal_preference
@@ -95,6 +105,10 @@ module FHIR
       cap = capability_statement
       if cap.is_a?(FHIR::CapabilityStatement)
         use_r4
+      elsif cap.is_a?(FHIR::R4B::CapabilityStatement)
+        use_r4b
+      elsif cap.is_a?(FHIR::R5::CapabilityStatement)
+        use_r5
       elsif cap.is_a?(FHIR::STU3::CapabilityStatement)
         use_stu3
       elsif cap.is_a?(FHIR::DSTU2::Conformance)
@@ -275,19 +289,35 @@ module FHIR
         rescue
           @cached_capability_statement = nil
         end
-        if @cached_capability_statement.nil? || !@cached_capability_statement.fhirVersion.starts_with?('4')
-          use_stu3
+        if @cached_capability_statement.nil?
+          use_r4b
           begin
-            @cached_capability_statement = parse_reply(FHIR::STU3::CapabilityStatement, frmt, reply)
+            @cached_capability_statement = parse_reply(FHIR::R4B::CapabilityStatement, frmt, reply)
           rescue
             @cached_capability_statement = nil
           end
           unless @cached_capability_statement
-            use_dstu2
+            use_r5
             begin
-              @cached_capability_statement = parse_reply(FHIR::DSTU2::Conformance, frmt, reply)
+              @cached_capability_statement = parse_reply(FHIR::R5::CapabilityStatement, frmt, reply)
             rescue
               @cached_capability_statement = nil
+            end
+            unless @cached_capability_statement
+              use_stu3
+              begin
+                @cached_capability_statement = parse_reply(FHIR::STU3::CapabilityStatement, frmt, reply)
+              rescue
+                @cached_capability_statement = nil
+              end
+              unless @cached_capability_statement
+                use_dstu2
+                begin
+                  @cached_capability_statement = parse_reply(FHIR::DSTU2::Conformance, frmt, reply)
+                rescue
+                  @cached_capability_statement = nil
+                end
+              end
             end
           end
         end
@@ -329,6 +359,18 @@ module FHIR
             else
               FHIR::Json.from_json(response.body)
             end
+          elsif(@fhir_version == :r4b || klass&.ancestors&.include?(FHIR::R4B::Model))
+            if(format.include?('xml'))
+              FHIR::R4B::Xml.from_xml(response.body)
+            else
+              FHIR::R4B::Json.from_json(response.body)
+            end
+          elsif(@fhir_version == :r5 || klass&.ancestors&.include?(FHIR::R5::Model))
+            if(format.include?('xml'))
+              FHIR::R5::Xml.from_xml(response.body)
+            else
+              FHIR::R5::Json.from_json(response.body)
+            end
           else
             if(format.include?('xml'))
               FHIR::STU3::Xml.from_xml(response.body)
@@ -349,7 +391,7 @@ module FHIR
 
       resource.client = self
       resource.each_element do |element, _, _|
-        if element.is_a?(Reference) || element.is_a?(STU3::Reference) || element.is_a?(DSTU2::Reference) || element.respond_to?(:resourceType)
+        if element.is_a?(Reference) || element.is_a?(FHIR::R4B::Reference) || element.is_a?(FHIR::R5::Reference) || element.is_a?(STU3::Reference) || element.is_a?(DSTU2::Reference) || element.respond_to?(:resourceType)
           element.client = self
         end
       end
