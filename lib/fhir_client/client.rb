@@ -440,8 +440,10 @@ module FHIR
     end
 
     def get(path, headers = {})
-      url = Addressable::URI.parse(build_url(path)).to_s
-      FHIR.logger.info "GETTING: #{url}"
+      uri = Addressable::URI.parse(build_url(path))
+      loggable_url = uri.to_hash.except(:user, :password).merge({query: uri.query_values})
+      url = uri.to_s
+      FHIR.logger.info "GETTING: #{loggable_url}"
       headers = clean_headers(headers) unless headers.empty?
       if @use_oauth2_auth
         # @client.refresh!
@@ -451,7 +453,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.error "GET - Request: #{loggable_url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           response = e.response if e.response
@@ -463,15 +465,16 @@ module FHIR
           headers: headers,
           payload: nil
         }
+        loggable_req = req.merge({url: loggable_url})
         res = {
           code: response.status.to_s,
           headers: response.headers,
           body: response.body
         }
         if url.end_with?('/metadata')
-          FHIR.logger.debug "GET - Request: #{req}, Response: [too large]"
+          FHIR.logger.debug "GET - Request: #{loggable_req}, Response: [too large]"
         else
-          FHIR.logger.debug "GET - Request: #{req}, Response: #{response.body.force_encoding('UTF-8')}"
+          FHIR.logger.debug "GET - Request: #{loggable_req}, Response: #{response.body.force_encoding('UTF-8')}"
         end
         @reply = FHIR::ClientReply.new(req, res, self)
       else
@@ -479,7 +482,7 @@ module FHIR
         begin
           response = @client.get(url, headers)
         rescue RestClient::SSLCertificateNotVerified => sslerr
-          FHIR.logger.error "SSL Error: #{url}"
+          FHIR.logger.error "SSL Error: #{loggable_url}"
           req = {
             method: :get,
             url: url,
@@ -498,7 +501,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.error "GET - Request: #{loggable_url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           response = e.response
