@@ -1,5 +1,5 @@
 require_relative '../test_helper'
-
+require 'pry'
 class MultiversionTest < Test::Unit::TestCase
 
   def test_autodetect_stu3
@@ -44,6 +44,36 @@ class MultiversionTest < Test::Unit::TestCase
     assert (client.detect_version == :r4), "Expected Version to be r4, but found #{client.detect_version.to_s}"
     assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
     assert client.cached_capability_statement.is_a?(FHIR::CapabilityStatement)
+    assert client.default_format.include? 'json'
+  end
+
+  def test_autodetect_r4b
+    root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
+    capabilitystatement = File.read(File.join(root, 'fixtures', 'r4b_capabilitystatement.json'))
+    stub_request(:get, /autodetect/).to_return(body: capabilitystatement)
+    client = FHIR::Client.new('autodetect')
+    # Intentionally set the client incorrectly
+    client.default_xml
+    client.use_r4
+    assert client.cached_capability_statement.nil?
+    assert client.detect_version == :r4b, "Expected Version to be r4b, but found #{client.detect_version.to_s}"
+    assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
+    assert client.cached_capability_statement.is_a?(FHIR::R4B::CapabilityStatement)
+    assert client.default_format.include? 'json'
+  end
+
+  def test_autodetect_r5
+    root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
+    capabilitystatement = File.read(File.join(root, 'fixtures', 'r5_capabilitystatement.json'))
+    stub_request(:get, /autodetect/).to_return(body: capabilitystatement)
+    client = FHIR::Client.new('autodetect')
+    # Intentionally set the client incorrectly
+    client.default_xml
+    client.use_r4
+    assert client.cached_capability_statement.nil?
+    assert client.detect_version == :r5, "Expected Version to be r5, but found #{client.detect_version.to_s}"
+    assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
+    assert client.cached_capability_statement.is_a?(FHIR::R5::CapabilityStatement)
     assert client.default_format.include? 'json'
   end
 
@@ -156,7 +186,7 @@ class MultiversionTest < Test::Unit::TestCase
     client.use_r4b
     FHIR::R4B::Model.client = client
     patient = FHIR::R4B::Patient.read('foo')
-    assert_equal :r4, client.reply.fhir_version
+    assert_equal :r4b, client.reply.fhir_version
   end
 
   def test_r5_reply_fhir_version

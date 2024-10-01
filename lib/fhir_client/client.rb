@@ -289,21 +289,21 @@ module FHIR
         rescue
           @cached_capability_statement = nil
         end
-        if @cached_capability_statement.nil?
+        if @cached_capability_statement.nil? || !@cached_capability_statement.fhirVersion.starts_with?('4.0')
           use_r4b
           begin
             @cached_capability_statement = parse_reply(FHIR::R4B::CapabilityStatement, frmt, reply)
           rescue
             @cached_capability_statement = nil
           end
-          unless @cached_capability_statement
+          if @cached_capability_statement.nil? || !@cached_capability_statement.fhirVersion.starts_with?('4')
             use_r5
             begin
               @cached_capability_statement = parse_reply(FHIR::R5::CapabilityStatement, frmt, reply)
             rescue
               @cached_capability_statement = nil
             end
-            unless @cached_capability_statement
+            if @cached_capability_statement.nil? || !@cached_capability_statement.fhirVersion.starts_with?('5')
               use_stu3
               begin
                 @cached_capability_statement = parse_reply(FHIR::STU3::CapabilityStatement, frmt, reply)
@@ -353,11 +353,11 @@ module FHIR
             else
               FHIR::DSTU2::Json.from_json(response.body)
             end
-          elsif(@fhir_version == :r4 || klass&.ancestors&.include?(FHIR::Model))
+          elsif(@fhir_version == :stu3 || klass&.ancestors&.include?(FHIR::STU3::Model))
             if(format.include?('xml'))
-              FHIR::Xml.from_xml(response.body)
+              FHIR::STU3::Xml.from_xml(response.body)
             else
-              FHIR::Json.from_json(response.body)
+              FHIR::STU3::Json.from_json(response.body)
             end
           elsif(@fhir_version == :r4b || klass&.ancestors&.include?(FHIR::R4B::Model))
             if(format.include?('xml'))
@@ -373,9 +373,9 @@ module FHIR
             end
           else
             if(format.include?('xml'))
-              FHIR::STU3::Xml.from_xml(response.body)
+              FHIR::Xml.from_xml(response.body)
             else
-              FHIR::STU3::Json.from_json(response.body)
+              FHIR::Json.from_json(response.body)
             end
           end
         rescue => e
