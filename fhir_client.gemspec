@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
+  spec.required_ruby_version = '>= 3.0.0'
   spec.add_dependency 'activesupport', '>= 3'
   spec.add_dependency 'addressable', '>= 2.3'
   spec.add_dependency 'fhir_models', '>= 4.4.0'
