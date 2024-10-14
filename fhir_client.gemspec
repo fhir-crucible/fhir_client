@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 3.0.0'
   spec.add_dependency 'activesupport', '>= 3'
   spec.add_dependency 'addressable', '>= 2.3'
-  spec.add_dependency 'fhir_models', '>= 4.4.0'
+  spec.add_dependency 'fhir_models', '>= 5.0.0'
   spec.add_dependency 'fhir_stu3_models', '>= 3.1.1'
   spec.add_dependency 'fhir_dstu2_models', '>= 1.1.1'
   spec.add_dependency 'nokogiri', '>= 1.10.4'

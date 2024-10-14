@@ -1,5 +1,4 @@
 require_relative '../test_helper'
-require 'pry'
 class MultiversionTest < Test::Unit::TestCase
 
   def test_autodetect_stu3
