@@ -1,7 +1,7 @@
 inherit_from: .rubocop_todo.yml
 
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 3.0
   Exclude:
     - '*.gemspec'
     - 'Gemfile*'
@@ -10,9 +10,6 @@ AllCops:
     - 'lib/tasks/*'
     - 'vendor/**/*'
 
-Documentation:
-  Enabled: false
-
 Metrics:
   Enabled: false
 
@@ -20,9 +17,6 @@ Style:
   Enabled: false
 
 Layout:
-  Enabled: false
-
-Performance/Casecmp:
   Enabled: false
 
 Naming:
