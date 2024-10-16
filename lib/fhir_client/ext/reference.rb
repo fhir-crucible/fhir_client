@@ -101,7 +101,7 @@ end
 
 module FHIR
   module STU3
-    class Reference
+    class Reference 
       include FHIR::ReferenceExtras
 
       def resource_class
@@ -113,7 +113,7 @@ end
 
 module FHIR
   module R4B
-    class Reference
+    class Reference < FHIR::R4B::Model
       include FHIR::ReferenceExtras
 
       def resource_class
@@ -125,7 +125,7 @@ end
 
 module FHIR
   module R5
-    class Reference
+    class Reference < FHIR::R5::Model
       include FHIR::ReferenceExtras
 
       def resource_class

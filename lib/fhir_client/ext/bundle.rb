@@ -71,7 +71,7 @@ end
 
 module FHIR
   module R4B
-    class Bundle
+    class Bundle < FHIR::R4B::Model
       include FHIR::BundleExtras
     end
   end
@@ -79,7 +79,7 @@ end
 
 module FHIR
   module R5
-    class Bundle
+    class Bundle < FHIR::R5::Model
       include FHIR::BundleExtras
     end
   end
