@@ -110,3 +110,27 @@ module FHIR
     end
   end
 end
+
+module FHIR
+  module R4B
+    class Reference
+      include FHIR::ReferenceExtras
+
+      def resource_class
+        "FHIR::R4B::#{resource_type}".constantize unless contained?
+      end
+    end
+  end
+end
+
+module FHIR
+  module R5
+    class Reference
+      include FHIR::ReferenceExtras
+
+      def resource_class
+        "FHIR::R5::#{resource_type}".constantize unless contained?
+      end
+    end
+  end
+end

@@ -8,9 +8,9 @@ module FHIR
             when :dstu2
               FHIR::DSTU2
             when :r4b
-              FHIR::R4B
+              defined?(FHIR::R4B) ? FHIR::R4B : FHIR
             when :r5
-              FHIR::R5
+              defined?(FHIR::R5) ? FHIR::R5 : FHIR
             else
               FHIR
             end

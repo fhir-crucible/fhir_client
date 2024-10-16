@@ -347,25 +347,25 @@ module FHIR
       return nil unless [200, 201].include? response.code
       res =
         begin
-          if(@fhir_version == :dstu2 || klass&.ancestors&.include?(FHIR::DSTU2::Model))
+          if(@fhir_version == :dstu2 || klass < FHIR::DSTU2::Model)
             if(format.include?('xml'))
               FHIR::DSTU2::Xml.from_xml(response.body)
             else
               FHIR::DSTU2::Json.from_json(response.body)
             end
-          elsif(@fhir_version == :stu3 || klass&.ancestors&.include?(FHIR::STU3::Model))
+          elsif(@fhir_version == :stu3 || klass < FHIR::STU3::Model)
             if(format.include?('xml'))
               FHIR::STU3::Xml.from_xml(response.body)
             else
               FHIR::STU3::Json.from_json(response.body)
             end
-          elsif(@fhir_version == :r4b || klass&.ancestors&.include?(FHIR::R4B::Model))
+          elsif(@fhir_version == :r4b || klass < FHIR::R4B::Model)
             if(format.include?('xml'))
               FHIR::R4B::Xml.from_xml(response.body)
             else
               FHIR::R4B::Json.from_json(response.body)
             end
-          elsif(@fhir_version == :r5 || klass&.ancestors&.include?(FHIR::R5::Model))
+          elsif(@fhir_version == :r5 || klass < FHIR::R5::Model)
             if(format.include?('xml'))
               FHIR::R5::Xml.from_xml(response.body)
             else

@@ -1,6 +1,4 @@
 require 'fhir_models'
-require 'fhir_models/r4b'
-require 'fhir_models/r5'
 require 'fhir_dstu2_models'
 require 'fhir_stu3_models'
 require 'active_support/all'
