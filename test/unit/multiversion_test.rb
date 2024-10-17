@@ -1,5 +1,3 @@
-require 'fhir_models/r4b'
-require 'fhir_models/r5'
 require_relative '../test_helper'
 class MultiversionTest < Test::Unit::TestCase
 
