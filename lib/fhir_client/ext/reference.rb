@@ -82,7 +82,7 @@ module FHIR
     include FHIR::ReferenceExtras
 
     def resource_class
-      "FHIR::#{resource_type}".constantize unless contained?
+      FHIR.const_get(resource_type).constantize unless contained?
     end
   end
 end
@@ -93,7 +93,7 @@ module FHIR
       include FHIR::ReferenceExtras
 
       def resource_class
-        "FHIR::DSTU2::#{resource_type}".constantize unless contained?
+        FHIR::DSTU2.const_get(resource_type).constantize unless contained?
       end
     end
   end
@@ -105,7 +105,7 @@ module FHIR
       include FHIR::ReferenceExtras
 
       def resource_class
-        "FHIR::STU3::#{resource_type}".constantize unless contained?
+        FHIR::STU3.const_get(resource_type).constantize unless contained?
       end
     end
   end
@@ -117,7 +117,7 @@ module FHIR
       include FHIR::ReferenceExtras
 
       def resource_class
-        "FHIR::R4B::#{resource_type}".constantize unless contained?
+        FHIR::R4B.const_get(resource_type).constantize unless contained?
       end
     end
   end
@@ -129,7 +129,7 @@ module FHIR
       include FHIR::ReferenceExtras
 
       def resource_class
-        "FHIR::R5::#{resource_type}".constantize unless contained?
+        FHIR::R5.const_get(resource_type).constantize unless contained?
       end
     end
   end
