@@ -14,7 +14,6 @@ root = File.expand_path '.', File.dirname(File.absolute_path(__FILE__))
 Dir.glob(File.join(root, 'fhir_client', 'sections', '**', '*.rb')).each do |file|
   require file
 end
-require_relative 'fhir_client/ext/model' #require first so reference and bundle can inherit
 Dir.glob(File.join(root, 'fhir_client', 'ext', '**', '*.rb')).each do |file|
   require file
 end
