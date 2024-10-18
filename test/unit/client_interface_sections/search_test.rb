@@ -75,11 +75,18 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
 
     # Stub this request in a slightly more difficult manner to completely ensure that requests
     # contain encoded bodies and there isn't magic obscuring the fact that we are not.
-    search_response = stub_request(:post, 'http://search-test/Patient/_search').
-      with do |request|
-        ['address=123+Sesame+Street&given=name', 'given=name&address=123+Sesame+Street'].include?(request.body) &&
-        request.headers['Content-Type'] == 'application/x-www-form-urlencoded'
-      end.to_return(empty_search_response)
+    search_response = stub_request(:post, "http://search-test/Patient/_search").
+      with(
+        body: {"{\"given\":\"name\",\"address\":\"123 Sesame Street\"}"=>nil},
+        headers: {
+        'Accept'=>'application/fhir+json',
+        'Accept-Charset'=>'utf-8',
+        'Connection'=>'close',
+        'Content-Type'=>'application/x-www-form-urlencoded',
+        'Host'=>'search-test',
+        'User-Agent'=>'Ruby FHIR Client'
+        }).
+      to_return(empty_search_response)
 
     reply = @client.search(
       FHIR::Patient,
@@ -113,10 +120,18 @@ class ClientInterfaceSearchTest < Test::Unit::TestCase
   end
 
   def test_post_search_body_and_params
-    search_response = stub_request(:post, 'http://search-test/Patient/_search?address=123%20Sesame%20Street').
-      with(body: {given: 'name'}, headers: {"Content-Type" => 'application/x-www-form-urlencoded'}).
+    search_response = stub_request(:post, "http://search-test/Patient/_search?address=123%20Sesame%20Street").
+      with(
+        body: {"{\"given\":\"name\"}"=>nil},
+        headers: {
+        'Accept'=>'application/fhir+json',
+        'Accept-Charset'=>'utf-8',
+        'Connection'=>'close',
+        'Content-Type'=>'application/x-www-form-urlencoded',
+        'Host'=>'search-test',
+        'User-Agent'=>'Ruby FHIR Client'
+        }).
       to_return(empty_search_response)
-
     reply = @client.search(
       FHIR::Patient,
       {
