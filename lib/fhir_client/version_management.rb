@@ -7,6 +7,10 @@ module FHIR
               FHIR::STU3
             when :dstu2
               FHIR::DSTU2
+            when :r4b
+              FHIR::R4B
+            when :r5
+              FHIR::R5
             else
               FHIR
             end

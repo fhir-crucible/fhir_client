@@ -18,6 +18,32 @@ class SetClientOnResourceTest < Test::Unit::TestCase
     assert_equal(client, condition.subject.client)
   end
 
+  def test_r4b
+    condition = FHIR::R4B::Condition.new(
+      resourceType: 'Condition',
+      subject: {
+        reference: 'Patient/123'
+      }
+    )
+    client.set_client_on_resource(condition)
+
+    assert_equal(client, condition.client)
+    assert_equal(client, condition.subject.client)
+  end
+
+  def test_r5
+    condition = FHIR::R5::Condition.new(
+      resourceType: 'Condition',
+      subject: {
+        reference: 'Patient/123'
+      }
+    )
+    client.set_client_on_resource(condition)
+
+    assert_equal(client, condition.client)
+    assert_equal(client, condition.subject.client)
+  end
+
   def test_stu3
     condition = FHIR::STU3::Condition.new(
       resourceType: 'Condition',

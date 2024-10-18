@@ -1,5 +1,4 @@
 require_relative '../test_helper'
-
 class MultiversionTest < Test::Unit::TestCase
 
   def test_autodetect_stu3
@@ -47,6 +46,36 @@ class MultiversionTest < Test::Unit::TestCase
     assert client.default_format.include? 'json'
   end
 
+  def test_autodetect_r4b
+    root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
+    capabilitystatement = File.read(File.join(root, 'fixtures', 'r4b_capabilitystatement.json'))
+    stub_request(:get, /autodetect/).to_return(body: capabilitystatement)
+    client = FHIR::Client.new('autodetect')
+    # Intentionally set the client incorrectly
+    client.default_xml
+    client.use_r4
+    assert client.cached_capability_statement.nil?
+    assert client.detect_version == :r4b, "Expected Version to be r4b, but found #{client.detect_version.to_s}"
+    assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
+    assert client.cached_capability_statement.is_a?(FHIR::R4B::CapabilityStatement)
+    assert client.default_format.include? 'json'
+  end
+
+  def test_autodetect_r5
+    root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
+    capabilitystatement = File.read(File.join(root, 'fixtures', 'r5_capabilitystatement.json'))
+    stub_request(:get, /autodetect/).to_return(body: capabilitystatement)
+    client = FHIR::Client.new('autodetect')
+    # Intentionally set the client incorrectly
+    client.default_xml
+    client.use_r4
+    assert client.cached_capability_statement.nil?
+    assert client.detect_version == :r5, "Expected Version to be r5, but found #{client.detect_version.to_s}"
+    assert !client.cached_capability_statement.nil?, 'Expected Capability Statement to be cached'
+    assert client.cached_capability_statement.is_a?(FHIR::R5::CapabilityStatement)
+    assert client.default_format.include? 'json'
+  end
+
   def test_stu3_patient_manual
     stub_request(:get, /stu3/).to_return(body: FHIR::STU3::Patient.new.to_json)
     client = FHIR::Client.new('stu3')
@@ -65,6 +94,23 @@ class MultiversionTest < Test::Unit::TestCase
     assert client.read(FHIR::DSTU2::Patient, 'foo').resource.is_a?(FHIR::DSTU2::Patient)
   end
 
+  def test_r4b_patient_manual
+    stub_request(:get, /r4b/).to_return(body: FHIR::R4B::Patient.new({ 'id': 'foo' }).to_json)
+    client = FHIR::Client.new('r4b')
+    client.default_json
+    client.use_r4b
+    assert_equal :r4b, client.fhir_version
+    assert client.read(FHIR::R4B::Patient, 'foo').resource.is_a?(FHIR::R4B::Patient)
+  end
+
+  def test_r5_patient_manual
+    stub_request(:get, /r5/).to_return(body: FHIR::R5::Patient.new({ 'id': 'foo' }).to_json)
+    client = FHIR::Client.new('r5')
+    client.default_json
+    client.use_r5
+    assert_equal :r5, client.fhir_version
+    assert client.read(FHIR::R5::Patient, 'foo').resource.is_a?(FHIR::R5::Patient)
+  end
 
   def test_r4_patient_manual
     stub_request(:get, /r4/).to_return(body: FHIR::Patient.new({ 'id': 'foo' }).to_json)
@@ -130,6 +176,26 @@ class MultiversionTest < Test::Unit::TestCase
     FHIR::Model.client = client
     patient = FHIR::Patient.read('foo')
     assert_equal :r4, client.reply.fhir_version
+  end
+
+  def test_r4b_reply_fhir_version
+    stub_request(:get, /r4b/).to_return(body: FHIR::R4B::Patient.new({ 'id': 'foo' }).to_json)
+    client = FHIR::Client.new('r4b')
+    client.default_json
+    client.use_r4b
+    FHIR::R4B::Model.client = client
+    patient = FHIR::R4B::Patient.read('foo')
+    assert_equal :r4b, client.reply.fhir_version
+  end
+
+  def test_r5_reply_fhir_version
+    stub_request(:get, /r5/).to_return(body: FHIR::R5::Patient.new({ 'id': 'foo' }).to_json)
+    client = FHIR::Client.new('r5')
+    client.default_json
+    client.use_r5
+    FHIR::R5::Model.client = client
+    patient = FHIR::R5::Patient.read('foo')
+    assert_equal :r5, client.reply.fhir_version
   end
 
   def test_stu3_accept_mime_type_json

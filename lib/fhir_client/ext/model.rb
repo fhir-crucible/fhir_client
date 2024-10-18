@@ -144,3 +144,19 @@ module FHIR
     end
   end
 end
+
+module FHIR
+  module R4B
+    class Model < FHIR::Model
+      include FHIR::ModelExtras
+    end
+  end
+end
+
+module FHIR
+  module R5
+    class Model < FHIR::Model
+      include FHIR::ModelExtras
+    end
+  end
+end
